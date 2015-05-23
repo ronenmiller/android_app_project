@@ -1,0 +1,15 @@
+127.0.0.1 - - [23/May/2015:11:44:48 +0300] "GET / HTTP/1.1" 404 994
+0:0:0:0:0:0:0:1 - - [23/May/2015:11:44:49 +0300] "GET /ToursAppServer/index.html HTTP/1.1" 304 -
+127.0.0.1 - - [23/May/2015:11:55:33 +0300] "GET / HTTP/1.1" 404 994
+127.0.0.1 - - [23/May/2015:12:09:27 +0300] "GET / HTTP/1.1" 404 994
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:09:28 +0300] "GET /ToursAppServer/tours_slet HTTP/1.1" 200 -
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:10:11 +0300] "POST /ToursAppServer/tours_slet HTTP/1.1" 200 -
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:10:14 +0300] "GET /ToursAppServer/index.html HTTP/1.1" 200 1072
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:10:21 +0300] "POST /ToursAppServer/tours_slet HTTP/1.1" 200 -
+127.0.0.1 - - [23/May/2015:12:15:48 +0300] "GET / HTTP/1.1" 404 994
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:15:49 +0300] "GET /ToursAppServer/tours_slet HTTP/1.1" 200 -
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:15:57 +0300] "GET /ToursAppServer/index,html HTTP/1.1" 404 1044
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:16:06 +0300] "POST /ToursAppServer/tours_slet HTTP/1.1" 200 -
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:16:31 +0300] "GET /ToursAppServer/index.html HTTP/1.1" 304 -
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:16:32 +0300] "POST /ToursAppServer/tours_slet HTTP/1.1" 200 -
+0:0:0:0:0:0:0:1 - - [23/May/2015:12:16:40 +0300] "POST /ToursAppServer/tours_slet HTTP/1.1" 200 -
