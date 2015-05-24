@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION add_tour(p_u_id uuid, p_city_name VARCHAR(255), p_region_name VARCHAR (255), p_country_name VARCHAR(255), p_t_duration NUMERIC, p_t_description VARCHAR(255), p_t_photos bytea[], p_t_languages INTEGER)
+CREATE OR REPLACE FUNCTION add_tour(p_u_id uuid, p_city_name VARCHAR(255), p_region_name VARCHAR (255), p_country_name VARCHAR(255), p_t_duration NUMERIC, p_t_description TEXT, p_t_photos bytea[], p_t_languages INTEGER)
 	RETURNS VOID AS 
 $$
 DECLARE
