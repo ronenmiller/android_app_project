@@ -23,7 +23,7 @@ public class ToursServerServlet extends HttpServlet {
      */
     public ToursServerServlet() {
         super();
-        JDBCServer.init();
+        //JDBCServer.init();
         // TODO Auto-generated constructor stub
     }
 
