@@ -1,9 +1,7 @@
 eclipse_ee_ws/.metadata/.log
 eclipse_ee_ws/.metadata/.plugins
 eclipse_ee_ws/.metadata/version.ini
-eclipse_and_ws/.metadata/.lock
-eclipse_and_ws/.metadata/.log
-eclipse_and_ws/.metadata/.plugins
-eclipse_and_ws/.metadata/version.ini
-eclipse_and_ws/.metadata/.lock
 eclipse_ee_ws/Servers/Tomcat v8.0 Server at localhost-config/server.xml
+eclipse_ee_ws/ToursAppServer/.classpath
+eclipse_ee_ws/.metadata/.mylyn
+
