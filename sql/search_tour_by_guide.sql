@@ -11,7 +11,7 @@ BEGIN
 	WHERE users.u_name = v_guide_name;
 
 	IF NOT FOUND THEN
-        RAISE EXCEPTION 'No guide named % found', $1;
+        RAISE EXCEPTION 'No guide named % was found', $1;
     END IF;
 	
 	RETURN QUERY 

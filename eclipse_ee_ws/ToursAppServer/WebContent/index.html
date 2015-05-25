@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="windows-1255">
-<title>Froms page</title>
+<title>Tomcat page</title>
 </head>
 <body>
 
@@ -18,7 +18,11 @@
 //-->
 <form	name="add_user" method="post" action="tours_slet">
 	<div class = "css">
-	User Name:<input type="text" name="reqType" value="add">
+	Function Type:
+	<select name = "reqType">
+  		<option value="add" selected>add</option>
+  		<option value="rm">rm</option>
+	</select>
 	</div>
 	<div class = "css">
 	User Name:<input type="text" name="uname" value="john88doe">
