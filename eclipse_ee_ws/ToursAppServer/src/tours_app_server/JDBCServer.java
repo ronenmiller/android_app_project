@@ -59,10 +59,13 @@ public final class JDBCServer {
 	 * @return 		<code>true</code> if the update completed successfully, <code>false</code> otherwise.
 	 */
 	private static boolean updateDB(CallableStatement cstmt) {
-		boolean successful = false;
+		boolean isSuccessful = false;
 		try {
-			successful = cstmt.execute();
+			isSuccessful = cstmt.execute();
 			System.out.println("Database update executed successfully...");
+		}
+		catch (PSQLException pe) {
+			pe.printStackTrace();
 		}
 		catch (SQLException se) {
 			se.printStackTrace();
@@ -70,28 +73,9 @@ public final class JDBCServer {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		finally {
-			//finally block used to close resources
-			try {
-				if (cstmt != null)
-					cstmt.close();
-			}
-			catch (SQLException se) {
-				// TODO: nothing we can do?
-			}
-			try {
-				if (conn != null)
-					conn.close();
-			}
-		    catch (SQLException se) {
-		    	se.printStackTrace();
-		    	System.out.println("Error: SQL exception at conn.close() in exec query");
-		    	System.exit(1);
-		    } //end finally-try
-		} //end finally
 		
-		return successful;
-	} // end-method execDBQuery 
+		return isSuccessful;
+	} // end-method updateDB 
 	
 	/**
 	 * Execute a query.
@@ -102,10 +86,14 @@ public final class JDBCServer {
 	 */
 	private static ResultSet execDBQuery(CallableStatement cstmt) {
 		ResultSet rs = null;
-		
 		try {
-			rs = cstmt.executeQuery();
+			if (cstmt.execute()) {
+				rs = cstmt.executeQuery();
+			}
 			System.out.println("Database query executed successfully...");
+		}
+		catch (PSQLException pe) {
+			pe.printStackTrace();
 		}
 		catch (SQLException se) {
 			se.printStackTrace();
@@ -113,28 +101,22 @@ public final class JDBCServer {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		finally {
-			//finally block used to close resources
-			try {
-				if (cstmt != null)
-					cstmt.close();
-			}
-			catch (SQLException se) {
-				// TODO: nothing we can do?
-			}
-			try {
-				if (conn != null)
-					conn.close();
-			}
-		    catch (SQLException se) {
-		    	se.printStackTrace();
-		    	System.out.println("Error: SQL exception at conn.close() in exec query");
-		    	System.exit(1);
-		    } //end finally-try
-		} //end finally
 		
 		return rs;
 	} // end-method execDBQuery 
+	
+	public static boolean closeStatement(CallableStatement cstmt) {
+		try {
+			if (cstmt != null)
+				cstmt.close();
+		}
+		catch (SQLException se) {
+			System.out.println("Error: closing statement failed");
+			return false;
+		}
+		
+		return true;
+	}
 	   
    /**
     * Add a new user to the database.
@@ -147,8 +129,6 @@ public final class JDBCServer {
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
 	public static boolean addUser(String uname, String password, String email, String phnum, boolean utype) {
-		init(); // establish a connection to the database
-		
 		CallableStatement cstmt = null;
 		String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
 		System.out.println("Adding the user to the database...");
@@ -173,12 +153,18 @@ public final class JDBCServer {
 			cstmt.setString(4, phnum); // phone number
 			cstmt.setBoolean(5, utype); // user type
 		}
-		catch (SQLException se){
+		catch (SQLException se) {
 			System.out.println("Error: SQL exception setting parameters in addUser");
 			System.exit(1);
 		}
 		
-		return updateDB(cstmt);
+		boolean isSuccessful = updateDB(cstmt);
+		
+		// free the resources
+		closeStatement(cstmt);
+		
+		return isSuccessful;
+		
 	}
 	
    /**
@@ -192,18 +178,18 @@ public final class JDBCServer {
     * @param password	the user's chosen password
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
-	public static boolean rmUser(String uname,String password) {
-		init(); // establish a connection to the database
-		
+	public static boolean rmUser(String uname,String password) {		
 		CallableStatement cstmt = null;
 		String sql = "{call rm_user (?, ?)}";
 		System.out.println("Removing the user from the database...");
 		
 		try {
-		   if (conn != null)
+		   if (conn != null) {
 			   cstmt = conn.prepareCall(sql);
-		   else 
+		   }
+		   else { 
 			   System.out.println("Error: connection in rmUser is null!");
+		   }
 		}
 		catch (SQLException se) {
 			//TODO: nothing we can do?
@@ -219,8 +205,60 @@ public final class JDBCServer {
 			System.exit(1);
 		}
 		
-		return updateDB(cstmt);
+		boolean isSuccessful = updateDB(cstmt);
+		
+		// free the resources
+		closeStatement(cstmt);
+		
+		return isSuccessful;
 	}
+	
+	public static ResultSet getCityIdByName(String city, String region, String country) {
+		CallableStatement cstmt = null;
+		String sql = "{call find_cityid_by_name (?, ?, ?)}";
+		System.out.println("Getting city ID from the database...");
+		
+		try {
+		   if (conn != null) {
+			   cstmt = conn.prepareCall(sql);
+		   }
+		   else { 
+			   System.out.println("Error: connection in rmUser is null!");
+		   }
+		}
+		catch (SQLException se) {
+			//TODO: nothing we can do?
+			System.out.println("Error: SQL exception at prepareCall in getCityIdByName\n" + se);
+			System.exit(1);
+		}
+		try {
+			cstmt.setString(1, city); // city name
+			cstmt.setString(2, region); // region or state name
+			cstmt.setString(3, country); // country name
+		}
+		catch(SQLException se) {
+			System.out.println("Error: SQL exception setting parameters in getCityIdByName");
+			System.exit(1);
+		}
+		
+		ResultSet rs = execDBQuery(cstmt);
+		
+		// example for using the result
+		/*try {	
+			rs.next();
+			System.out.println(rs.getString(1));
+		}
+		catch (SQLException se) {
+			System.out.println("Error: SQL exception reading parameters in getCityIdByName");
+			System.exit(1);
+		}*/
+		
+		// free the resources
+		closeStatement(cstmt);
+		
+		return rs;
+	}
+	
 }
 
 	  

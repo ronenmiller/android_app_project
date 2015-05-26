@@ -23,7 +23,7 @@ public class ToursServerServlet extends HttpServlet {
      */
     public ToursServerServlet() {
         super();
-        //JDBCServer.init();
+        JDBCServer.init(); // establish a connection to the database
         // TODO Auto-generated constructor stub
     }
 
@@ -43,6 +43,10 @@ public class ToursServerServlet extends HttpServlet {
 		String password = request.getParameter("password");
 		String email = request.getParameter("email");
 		String phnum = request.getParameter("phnum");
+		
+		String cityname = request.getParameter("city");
+		String regionname = request.getParameter("region");
+		String countryname = request.getParameter("country");
 		boolean utype = request.getParameter("utype") != null ? true:false;
 		System.out.println("Servlet doPost> Passing following values to server"
 				+ "\n"+reqType+ "\n"+uname+ "\n"+ password+ "\n" + email+ "\n" + phnum+ "\n" + utype+ "\n");
@@ -50,6 +54,8 @@ public class ToursServerServlet extends HttpServlet {
 			JDBCServer.addUser(uname, password, email, phnum, utype);
 		else if (reqType.equals("rm"))
 			JDBCServer.rmUser(uname, password);
+		else if (reqType.equals("find_cityid"))
+			JDBCServer.getCityIdByName(cityname, regionname, countryname);
 	}
 
 }
