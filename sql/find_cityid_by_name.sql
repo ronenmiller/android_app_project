@@ -1,10 +1,9 @@
 CREATE OR REPLACE FUNCTION find_cityid_by_name(p_city_name VARCHAR(255), p_region_name VARCHAR (255), p_country_name VARCHAR(255))
-	RETURNS VARCHAR(255) AS 
+	RETURNS SETOF VARCHAR(255) AS 
 $$
 DECLARE
 	v_country_id      VARCHAR(255);
 	v_region_id       VARCHAR(255);
-	v_city_id         VARCHAR(255);
 BEGIN
 	SELECT country.countryid
 	INTO v_country_id
@@ -25,8 +24,9 @@ BEGIN
         RAISE EXCEPTION 'No region named % in country % was found', $2, $3;
     END IF;
     
+	RETURN QUERY 
 	SELECT cities.cityid
-	INTO v_city_id
+	--INTO v_city_id
 	FROM cities 
 	WHERE cities.countryid = v_country_id 
 	AND cities.regionid = v_region_id 
@@ -35,8 +35,10 @@ BEGIN
 	IF NOT FOUND THEN
         RAISE EXCEPTION 'No city named % was found', $1;
     END IF;
+    
+    RETURN;
 	
-	RETURN v_city_id;
+	--RETURN v_city_id;
 END;
 $$ 
 LANGUAGE 'plpgsql';
