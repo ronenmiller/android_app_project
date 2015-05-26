@@ -111,9 +111,24 @@ public final class JDBCServer {
 				cstmt.close();
 		}
 		catch (SQLException se) {
-			System.out.println("Error: closing statement failed");
+			System.out.println("Error: closing statement failed!");
 			return false;
 		}
+		
+		return true;
+	}
+	
+	public static boolean closeConnection(Connection conn)
+	{
+		try {
+			if (conn != null)
+				conn.close();
+			}
+			catch (SQLException se) {
+				se.printStackTrace();
+				System.out.println("Error: closing connection failed!");
+				System.exit(1);
+			}
 		
 		return true;
 	}
@@ -129,39 +144,43 @@ public final class JDBCServer {
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
 	public static boolean addUser(String uname, String password, String email, String phnum, boolean utype) {
+		boolean isSuccessful = false;
 		CallableStatement cstmt = null;
-		String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
-		System.out.println("Adding the user to the database...");
 		
 		try {
-		   if (conn != null) {
-			   cstmt = conn.prepareCall(sql);
-		   }
-		   else { 
-			   System.out.println("Error: connection in addUser is null!");
-		   }
+			try {
+			   if (conn != null) {
+				   String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
+				   cstmt = conn.prepareCall(sql);
+			   }
+			   else { 
+				   System.out.println("Error: connection in addUser is null!");
+			   }
+			}
+			catch (SQLException se) {
+				//TODO: nothing we can do?
+				System.out.println("Error: SQL exception at prepareCall in add user\n" + se);
+				System.exit(1);
+			}
+			try {
+				cstmt.setString(1, uname); // user name
+				cstmt.setString(2, password); // password
+				cstmt.setString(3, email); // email
+				cstmt.setString(4, phnum); // phone number
+				cstmt.setBoolean(5, utype); // user type
+			}
+			catch (SQLException se) {
+				System.out.println("Error: SQL exception setting parameters in addUser");
+				System.exit(1);
+			}
+			
+			System.out.println("Adding the user to the database...");
+			isSuccessful = updateDB(cstmt);
 		}
-		catch (SQLException se) {
-			//TODO: nothing we can do?
-			System.out.println("Error: SQL exception at prepareCall in add user\n" + se);
-			System.exit(1);
+		finally {
+			// free the resources
+			closeStatement(cstmt);
 		}
-		try {
-			cstmt.setString(1, uname); // user name
-			cstmt.setString(2, password); // password
-			cstmt.setString(3, email); // email
-			cstmt.setString(4, phnum); // phone number
-			cstmt.setBoolean(5, utype); // user type
-		}
-		catch (SQLException se) {
-			System.out.println("Error: SQL exception setting parameters in addUser");
-			System.exit(1);
-		}
-		
-		boolean isSuccessful = updateDB(cstmt);
-		
-		// free the resources
-		closeStatement(cstmt);
 		
 		return isSuccessful;
 		
@@ -178,72 +197,86 @@ public final class JDBCServer {
     * @param password	the user's chosen password
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
-	public static boolean rmUser(String uname,String password) {		
+	public static boolean rmUser(String uname,String password) {
+		boolean isSuccessful = false;
 		CallableStatement cstmt = null;
-		String sql = "{call rm_user (?, ?)}";
-		System.out.println("Removing the user from the database...");
 		
 		try {
-		   if (conn != null) {
-			   cstmt = conn.prepareCall(sql);
-		   }
-		   else { 
-			   System.out.println("Error: connection in rmUser is null!");
-		   }
+			try {
+			   if (conn != null) {
+				   String sql = "{call rm_user (?, ?)}";
+				   cstmt = conn.prepareCall(sql);
+			   }
+			   else { 
+				   System.out.println("Error: connection in rmUser is null!");
+			   }
+			}
+			catch (SQLException se) {
+				//TODO: nothing we can do?
+				System.out.println("Error: SQL exception at prepareCall in rmUser\n" + se);
+				System.exit(1);
+			}
+			try {
+				cstmt.setString(1, uname); // user name
+				cstmt.setString(2, password); // password
+			}
+			catch(SQLException se){
+				System.out.println("Error: SQL exception setting parameters in rmUser");
+				System.exit(1);
+			}
+			
+			System.out.println("Removing the user from the database...");
+			isSuccessful = updateDB(cstmt);
 		}
-		catch (SQLException se) {
-			//TODO: nothing we can do?
-			System.out.println("Error: SQL exception at prepareCall in rmUser\n" + se);
-			System.exit(1);
+		finally {
+			// free the resources
+			closeStatement(cstmt);
 		}
-		try {
-			cstmt.setString(1, uname); // user name
-			cstmt.setString(2, password); // password
-		}
-		catch(SQLException se){
-			System.out.println("Error: SQL exception setting parameters in rmUser");
-			System.exit(1);
-		}
-		
-		boolean isSuccessful = updateDB(cstmt);
-		
-		// free the resources
-		closeStatement(cstmt);
 		
 		return isSuccessful;
 	}
 	
 	public static ResultSet getCityIdByName(String city, String region, String country) {
+		ResultSet rs = null;
 		CallableStatement cstmt = null;
-		String sql = "{call find_cityid_by_name (?, ?, ?)}";
-		System.out.println("Getting city ID from the database...");
+		
 		
 		try {
-		   if (conn != null) {
-			   cstmt = conn.prepareCall(sql);
-		   }
-		   else { 
-			   System.out.println("Error: connection in rmUser is null!");
-		   }
+			try {
+			   if (conn != null) {
+				   String sql = "{call find_cityid_by_name (?, ?, ?)}";
+				   cstmt = conn.prepareCall(sql);
+			   }
+			   else { 
+				   System.out.println("Error: connection in getCityIdByName is null!");
+			   }
+			}
+			catch (SQLException se) {
+				//TODO: nothing we can do?
+				System.out.println("Error: SQL exception at prepareCall in getCityIdByName\n" + se);
+				System.exit(1);
+			}
+			try {
+				cstmt.setString(1, city); // city name
+				cstmt.setString(2, region); // region or state name
+				cstmt.setString(3, country); // country name
+			}
+			catch(SQLException se) {
+				System.out.println("Error: SQL exception setting parameters in getCityIdByName");
+				System.exit(1);
+			}
+			
+			System.out.println("Getting city ID from the database...");
+			rs = execDBQuery(cstmt);
 		}
-		catch (SQLException se) {
-			//TODO: nothing we can do?
-			System.out.println("Error: SQL exception at prepareCall in getCityIdByName\n" + se);
-			System.exit(1);
-		}
-		try {
-			cstmt.setString(1, city); // city name
-			cstmt.setString(2, region); // region or state name
-			cstmt.setString(3, country); // country name
-		}
-		catch(SQLException se) {
-			System.out.println("Error: SQL exception setting parameters in getCityIdByName");
-			System.exit(1);
+		finally {
+			// free the resources
+			closeStatement(cstmt);
 		}
 		
-		ResultSet rs = execDBQuery(cstmt);
+		return rs;
 		
-		// example for using the result
+		// example for using the resultSet
 		/*try {	
 			rs.next();
 			System.out.println(rs.getString(1));
@@ -252,11 +285,6 @@ public final class JDBCServer {
 			System.out.println("Error: SQL exception reading parameters in getCityIdByName");
 			System.exit(1);
 		}*/
-		
-		// free the resources
-		closeStatement(cstmt);
-		
-		return rs;
 	}
 	
 }
