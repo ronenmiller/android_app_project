@@ -5,4 +5,5 @@ eclipse_ee_ws/Servers/Tomcat v8.0 Server at localhost-config/server.xml
 eclipse_ee_ws/ToursAppServer/.classpath
 eclipse_ee_ws/.metadata/.mylyn
 eclipse_ee_ws/.metadata
+eclipse_ee_ws/ToursAppServer/.classpath
 
