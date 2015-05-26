@@ -43,7 +43,7 @@ public class ClientExample {
             HttpPost httpPost = new HttpPost("http://localhost:8080/ToursAppServer/tours_slet");
     		
             List <NameValuePair> nvps = new ArrayList <NameValuePair>();
-            nvps.add(new BasicNameValuePair("reqType", "add"));
+            nvps.add(new BasicNameValuePair("reqType", "rm"));
             nvps.add(new BasicNameValuePair("uname", "HollyShit"));
             nvps.add(new BasicNameValuePair("email", "holyshit@gmail.com"));
             nvps.add(new BasicNameValuePair("phnum", "0545325689"));
@@ -52,7 +52,7 @@ public class ClientExample {
             CloseableHttpResponse response2 = httpclient.execute(httpPost);
 
             try {
-               // System.out.println(response2.getStatusLine());
+            	//System.out.println(response2.getStatusLine());
                 HttpEntity entity2 = response2.getEntity();
                 // do something useful with the response body
                 // and ensure it is fully consumed
