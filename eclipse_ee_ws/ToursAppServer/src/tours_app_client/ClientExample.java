@@ -43,7 +43,7 @@ public class ClientExample {
             HttpPost httpPost = new HttpPost("http://localhost:8080/ToursAppServer/tours_slet");
     		
             List <NameValuePair> nvps = new ArrayList <NameValuePair>();
-            nvps.add(new BasicNameValuePair("reqType", "add"));
+            nvps.add(new BasicNameValuePair("reqType", "rm"));
             nvps.add(new BasicNameValuePair("uname", "HollyShit"));
             nvps.add(new BasicNameValuePair("email", "holyshit@gmail.com"));
             nvps.add(new BasicNameValuePair("phnum", "0545325689"));
