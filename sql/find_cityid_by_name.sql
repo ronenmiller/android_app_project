@@ -37,8 +37,7 @@ BEGIN
     END IF;
     
     RETURN;
-	
-	--RETURN v_city_id;
+
 END;
 $$ 
 LANGUAGE 'plpgsql';
