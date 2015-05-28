@@ -220,7 +220,7 @@ public final class JDBCServer {
 				cstmt.setString(1, uname); // user name
 				cstmt.setString(2, password); // password
 			}
-			catch(SQLException se){
+			catch (SQLException se) {
 				System.out.println("Error: SQL exception setting parameters in rmUser");
 				System.exit(1);
 			}
@@ -239,7 +239,6 @@ public final class JDBCServer {
 	public static ResultSet getCityIdByName(String city, String region, String country) {
 		ResultSet rs = null;
 		CallableStatement cstmt = null;
-		
 		
 		try {
 			try {
@@ -261,7 +260,7 @@ public final class JDBCServer {
 				cstmt.setString(2, region); // region or state name
 				cstmt.setString(3, country); // country name
 			}
-			catch(SQLException se) {
+			catch (SQLException se) {
 				System.out.println("Error: SQL exception setting parameters in getCityIdByName");
 				System.exit(1);
 			}
@@ -275,17 +274,58 @@ public final class JDBCServer {
 		}
 		
 		return rs;
+	}
 		
+	public static ResultSet validateUsername(String username) {
+		ResultSet rs = null;
+		CallableStatement cstmt = null;
+		
+		try {
+			try {
+				 if (conn != null) {
+					   String sql = "{call validate_username (?)}";
+					   cstmt = conn.prepareCall(sql);
+				   }
+				   else { 
+					   System.out.println("Error: connection in validateUsername is null!");
+				   }
+				}
+				catch (SQLException se) {
+					//TODO: nothing we can do?
+					System.out.println("Error: SQL exception at prepareCall in validateUsername\n" + se);
+					System.exit(1);
+				}
+				try {
+					cstmt.setString(1, username); // user name
+				}
+				catch (SQLException se) {
+					System.out.println("Error: SQL exception setting parameters in validateUsername");
+					System.exit(1);
+				}
+				
+				System.out.println("Validating unique username using the database...");
+				rs = execDBQuery(cstmt);
+
+			
 		// example for using the resultSet
-		/*try {	
+		try {	
 			rs.next();
-			System.out.println(rs.getString(1));
+			System.out.println(rs.getBoolean(1));
 		}
 		catch (SQLException se) {
-			System.out.println("Error: SQL exception reading parameters in getCityIdByName");
+			System.out.println("Error: SQL exception reading parameters in validateUsername");
 			System.exit(1);
-		}*/
+		}
+		}
+		finally {
+			// free the resources
+			closeStatement(cstmt);
+		}
+			
+		return rs;
 	}
+	
+	
 	
 }
 
