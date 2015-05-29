@@ -53,6 +53,40 @@ public final class JDBCServer {
 		}
 	}
 	
+	
+	/**
+	 *   
+	 * @return	<code>true</code> if the statement was closed successfully, <code>false</code> otherwise.
+	 */
+	public static boolean closeStatement() {
+		try {
+			if (cstmt != null)
+				cstmt.close();
+		}
+		catch (SQLException se) {
+			System.out.println("Error: closing statement failed!");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static boolean closeConnection()
+	{
+		try {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		catch (SQLException se) {
+			se.printStackTrace();
+			System.out.println("Error: closing connection failed!");
+			System.exit(1);
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Execute a statement which updates the current state of the database.
 	 * 
@@ -106,34 +140,7 @@ public final class JDBCServer {
 		return rs;
 	} // end-method execDBQuery 
 	
-	public static boolean closeStatement() {
-		try {
-			if (cstmt != null)
-				cstmt.close();
-		}
-		catch (SQLException se) {
-			System.out.println("Error: closing statement failed!");
-			return false;
-		}
-		
-		return true;
-	}
 	
-	public static boolean closeConnection()
-	{
-		try {
-			if (conn != null) {
-				conn.close();
-			}
-		}
-		catch (SQLException se) {
-			se.printStackTrace();
-			System.out.println("Error: closing connection failed!");
-			System.exit(1);
-		}
-		
-		return true;
-	}
 	   
    /**
     * Add a new user to the database.
