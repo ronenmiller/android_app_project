@@ -144,8 +144,6 @@ public final class JDBCServer {
 		
 		return rs;
 	} // end-method execDBQuery 
-	
-	
 	   
    /**
     * Add a new user to the database.
@@ -249,6 +247,16 @@ public final class JDBCServer {
 		return updateDB(cstmt);
 	}
 	
+	/**
+	 * Finds a city's unique ID based on the names of the city, region/state and country.
+	 *  
+	 * @param city		 the name of the requested city
+	 * @param region	 the name of the region/state where the city is located
+	 * @param country	 the name of the country where the city is located
+	 * @return ResultSet <code>ResultSet</code> containing a <code>String</code> with the city's ID.
+	 * 					 If no match is found, returns <code>null</code>.
+	 */
+	// the returned city ID will help find queries related to the requested city faster.
 	public static ResultSet getCityIdByName(String city, String region, String country) {
 		// if exists, clear previous statement
 		try {
