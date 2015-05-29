@@ -53,8 +53,8 @@ public final class JDBCServer {
 		}
 	}
 	
-	
 	/**
+	 * Close the class's statement object in order to free up resources.
 	 *   
 	 * @return	<code>true</code> if the statement was closed successfully, <code>false</code> otherwise.
 	 */
@@ -71,6 +71,11 @@ public final class JDBCServer {
 		return true;
 	}
 	
+	/**
+	 * Close the class's connection object in order to free up resources.
+	 *   
+	 * @return	<code>true</code> if the connection was closed successfully, <code>false</code> otherwise.
+	 */
 	public static boolean closeConnection()
 	{
 		try {
