@@ -277,7 +277,7 @@ public final class JDBCServer {
 		return execDBQuery(cstmt);
 	}
 		
-	public static ResultSet validateUsername(String username) {
+	public static ResultSet validateUniqueUsername(String username) {
 		// if exists, clear previous statement
 		try {
 			if (cstmt != null) {
@@ -291,7 +291,7 @@ public final class JDBCServer {
 		
 		try {
 			if (conn != null) {
-				   String sql = "{call validate_username (?)}";
+				   String sql = "{call validate_unique_username (?)}";
 				   cstmt = conn.prepareCall(sql);
 			   }
 			   else { 

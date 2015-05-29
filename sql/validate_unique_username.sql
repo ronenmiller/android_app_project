@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION validate_username(p_u_name VARCHAR(80))
+CREATE OR REPLACE FUNCTION validate_unique_username(p_u_name VARCHAR(80))
 	RETURNS BOOLEAN AS 
 $$
 DECLARE
