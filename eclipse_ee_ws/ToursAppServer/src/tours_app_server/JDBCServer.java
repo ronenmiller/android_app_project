@@ -122,7 +122,8 @@ public final class JDBCServer {
 	 * 
 	 * @param cstmt the statement to execute
 	 * @return 		<code>ResultSet</code> containing the rows which match the query.
-	 * 				If no match is found, returns <code>null</code>.
+	 * 				If no match is found, returns an empty <code>ResultSet</code>. 
+	 * 				If an error occurred, returns <code>null</code>.
 	 */
 	private static ResultSet execDBQuery(CallableStatement cstmt) {
 		ResultSet rs = null;
@@ -254,7 +255,8 @@ public final class JDBCServer {
 	 * @param region	 the name of the region/state where the city is located
 	 * @param country	 the name of the country where the city is located
 	 * @return ResultSet <code>ResultSet</code> containing a <code>String</code> with the city's ID.
-	 * 					 If no match is found, returns <code>null</code>.
+	 * 					 If no match is found, the returned string is empty.
+	 * 					 If an error occurred, returns <code>null</code>.
 	 */
 	// the returned city ID will help find queries related to the requested city faster.
 	public static ResultSet getCityIdByName(String city, String region, String country) {
@@ -296,7 +298,18 @@ public final class JDBCServer {
 		System.out.println("Getting city ID from the database...");
 		return execDBQuery(cstmt);
 	}
-		
+	
+	/**
+	 * Validates that the desired user name is not already taken.
+	 * <p>
+	 * Invoke as soon as the user is done typing his requested user name.
+	 * <p>
+	 *  	
+	 * @param username   the desired user name
+	 * @return ResultSet <code>ResultSet</code> containing a <code>boolean</code>:
+	 * 					 <code>true</code> if the user name is available, <code>false</code> false otherwise.
+	 * 					 If an error occurred, returns <code>null</code>.
+	 */
 	public static ResultSet validateUniqueUsername(String username) {
 		// if exists, clear previous statement
 		try {
@@ -331,21 +344,8 @@ public final class JDBCServer {
 			System.exit(1);
 		}
 			
-		ResultSet rs = execDBQuery(cstmt);
-		
 		System.out.println("Validating unique username using the database...");
-			
-		// example for using the resultSet
-		try {	
-			rs.next();
-			System.out.println(rs.getBoolean(1));
-		}
-		catch (SQLException se) {
-			System.out.println("Error: SQL exception reading parameters in validateUsername");
-			System.exit(1);
-		}
-			
-		return rs;
+		return execDBQuery(cstmt);
 	}
 	
 }
