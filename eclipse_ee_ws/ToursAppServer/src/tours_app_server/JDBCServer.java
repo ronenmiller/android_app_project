@@ -273,7 +273,7 @@ public final class JDBCServer {
 			
 		try {
 		   if (conn != null) {
-			   String sql = "{call find_cityid_by_name (?, ?, ?)}";
+			   String sql = "{call query_cityid_by_name (?, ?, ?)}";
 			   cstmt = conn.prepareCall(sql);
 		   }
 		   else { 
@@ -307,7 +307,7 @@ public final class JDBCServer {
 	 *  	
 	 * @param username   the desired user name
 	 * @return ResultSet <code>ResultSet</code> containing a <code>boolean</code>:
-	 * 					 <code>true</code> if the user name is available, <code>false</code> false otherwise.
+	 * 					 <code>true</code> if the user name is not taken, <code>false</code> false otherwise.
 	 * 					 If an error occurred, returns <code>null</code>.
 	 */
 	public static ResultSet validateUniqueUsername(String username) {
