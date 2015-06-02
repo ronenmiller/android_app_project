@@ -24,6 +24,7 @@ public final class JDBCServer {
 	
 	// the connection to the DB
 	static Connection conn = null;
+	static CallableStatement cstmt = null;
 	
 	/**
 	 * Constructor: Initialize connection and class variables.
@@ -50,6 +51,45 @@ public final class JDBCServer {
 		   System.out.println("Error: unable to get driver connection!");
 		   System.exit(1);
 		}
+	}
+	
+	/**
+	 * Close the class's statement object in order to free up resources.
+	 *   
+	 * @return	<code>true</code> if the statement was closed successfully, <code>false</code> otherwise.
+	 */
+	public static boolean closeStatement() {
+		try {
+			if (cstmt != null)
+				cstmt.close();
+		}
+		catch (SQLException se) {
+			System.out.println("Error: closing statement failed!");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Close the class's connection object in order to free up resources.
+	 *   
+	 * @return	<code>true</code> if the connection was closed successfully, <code>false</code> otherwise.
+	 */
+	public static boolean closeConnection()
+	{
+		try {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		catch (SQLException se) {
+			se.printStackTrace();
+			System.out.println("Error: closing connection failed!");
+			System.exit(1);
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -82,7 +122,8 @@ public final class JDBCServer {
 	 * 
 	 * @param cstmt the statement to execute
 	 * @return 		<code>ResultSet</code> containing the rows which match the query.
-	 * 				If no match is found, returns <code>null</code>.
+	 * 				If no match is found, returns an empty <code>ResultSet</code>. 
+	 * 				If an error occurred, returns <code>null</code>.
 	 */
 	private static ResultSet execDBQuery(CallableStatement cstmt) {
 		ResultSet rs = null;
@@ -104,34 +145,6 @@ public final class JDBCServer {
 		
 		return rs;
 	} // end-method execDBQuery 
-	
-	public static boolean closeStatement(CallableStatement cstmt) {
-		try {
-			if (cstmt != null)
-				cstmt.close();
-		}
-		catch (SQLException se) {
-			System.out.println("Error: closing statement failed!");
-			return false;
-		}
-		
-		return true;
-	}
-	
-	public static boolean closeConnection(Connection conn)
-	{
-		try {
-			if (conn != null)
-				conn.close();
-			}
-			catch (SQLException se) {
-				se.printStackTrace();
-				System.out.println("Error: closing connection failed!");
-				System.exit(1);
-			}
-		
-		return true;
-	}
 	   
    /**
     * Add a new user to the database.
@@ -144,46 +157,45 @@ public final class JDBCServer {
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
 	public static boolean addUser(String uname, String password, String email, String phnum, boolean utype) {
-		boolean isSuccessful = false;
-		CallableStatement cstmt = null;
+		// if exists, clear previous statement
+		try {
+			if (cstmt != null) {
+				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
+				cstmt.clearParameters(); // clears the current parameter values immediately.
+			}
+		}
+		catch (SQLException se) {
+			se.printStackTrace();
+		}
 		
 		try {
-			try {
-			   if (conn != null) {
-				   String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
-				   cstmt = conn.prepareCall(sql);
-			   }
-			   else { 
-				   System.out.println("Error: connection in addUser is null!");
-			   }
-			}
-			catch (SQLException se) {
-				//TODO: nothing we can do?
-				System.out.println("Error: SQL exception at prepareCall in add user\n" + se);
-				System.exit(1);
-			}
-			try {
-				cstmt.setString(1, uname); // user name
-				cstmt.setString(2, password); // password
-				cstmt.setString(3, email); // email
-				cstmt.setString(4, phnum); // phone number
-				cstmt.setBoolean(5, utype); // user type
-			}
-			catch (SQLException se) {
-				System.out.println("Error: SQL exception setting parameters in addUser");
-				System.exit(1);
-			}
-			
-			System.out.println("Adding the user to the database...");
-			isSuccessful = updateDB(cstmt);
+		   if (conn != null) {
+			   String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
+			   cstmt = conn.prepareCall(sql);
+		   }
+		   else { 
+			   System.out.println("Error: connection in addUser is null!");
+		   }
 		}
-		finally {
-			// free the resources
-			closeStatement(cstmt);
+		catch (SQLException se) {
+			//TODO: nothing we can do?
+			System.out.println("Error: SQL exception at prepareCall in add user\n" + se);
+			System.exit(1);
+		}
+		try {
+			cstmt.setString(1, uname); // user name
+			cstmt.setString(2, password); // password
+			cstmt.setString(3, email); // email
+			cstmt.setString(4, phnum); // phone number
+			cstmt.setBoolean(5, utype); // user type
+		}
+		catch (SQLException se) {
+			System.out.println("Error: SQL exception setting parameters in addUser");
+			System.exit(1);
 		}
 		
-		return isSuccessful;
-		
+		System.out.println("Adding the user to the database...");
+		return updateDB(cstmt); 
 	}
 	
    /**
@@ -198,93 +210,142 @@ public final class JDBCServer {
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
 	public static boolean rmUser(String uname,String password) {
-		boolean isSuccessful = false;
-		CallableStatement cstmt = null;
-		
+		// if exists, clear previous statement
 		try {
-			try {
-			   if (conn != null) {
-				   String sql = "{call rm_user (?, ?)}";
-				   cstmt = conn.prepareCall(sql);
-			   }
-			   else { 
-				   System.out.println("Error: connection in rmUser is null!");
-			   }
+			if (cstmt != null) {
+				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
+				cstmt.clearParameters(); // clears the current parameter values immediately.
 			}
-			catch (SQLException se) {
-				//TODO: nothing we can do?
-				System.out.println("Error: SQL exception at prepareCall in rmUser\n" + se);
-				System.exit(1);
-			}
-			try {
-				cstmt.setString(1, uname); // user name
-				cstmt.setString(2, password); // password
-			}
-			catch(SQLException se){
-				System.out.println("Error: SQL exception setting parameters in rmUser");
-				System.exit(1);
-			}
-			
-			System.out.println("Removing the user from the database...");
-			isSuccessful = updateDB(cstmt);
-		}
-		finally {
-			// free the resources
-			closeStatement(cstmt);
-		}
-		
-		return isSuccessful;
-	}
-	
-	public static ResultSet getCityIdByName(String city, String region, String country) {
-		ResultSet rs = null;
-		CallableStatement cstmt = null;
-		
-		
-		try {
-			try {
-			   if (conn != null) {
-				   String sql = "{call find_cityid_by_name (?, ?, ?)}";
-				   cstmt = conn.prepareCall(sql);
-			   }
-			   else { 
-				   System.out.println("Error: connection in getCityIdByName is null!");
-			   }
-			}
-			catch (SQLException se) {
-				//TODO: nothing we can do?
-				System.out.println("Error: SQL exception at prepareCall in getCityIdByName\n" + se);
-				System.exit(1);
-			}
-			try {
-				cstmt.setString(1, city); // city name
-				cstmt.setString(2, region); // region or state name
-				cstmt.setString(3, country); // country name
-			}
-			catch(SQLException se) {
-				System.out.println("Error: SQL exception setting parameters in getCityIdByName");
-				System.exit(1);
-			}
-			
-			System.out.println("Getting city ID from the database...");
-			rs = execDBQuery(cstmt);
-		}
-		finally {
-			// free the resources
-			closeStatement(cstmt);
-		}
-		
-		return rs;
-		
-		// example for using the resultSet
-		/*try {	
-			rs.next();
-			System.out.println(rs.getString(1));
 		}
 		catch (SQLException se) {
-			System.out.println("Error: SQL exception reading parameters in getCityIdByName");
+			se.printStackTrace();
+		}
+		
+		try {
+		   if (conn != null) {
+			   String sql = "{call rm_user (?, ?)}";
+			   cstmt = conn.prepareCall(sql);
+		   }
+		   else { 
+			   System.out.println("Error: connection in rmUser is null!");
+		   }
+		}
+		catch (SQLException se) {
+			//TODO: nothing we can do?
+			System.out.println("Error: SQL exception at prepareCall in rmUser\n" + se);
 			System.exit(1);
-		}*/
+		}
+		try {
+			cstmt.setString(1, uname); // user name
+			cstmt.setString(2, password); // password
+		}
+		catch (SQLException se) {
+			System.out.println("Error: SQL exception setting parameters in rmUser");
+			System.exit(1);
+		}
+		
+		System.out.println("Removing the user from the database...");
+		return updateDB(cstmt);
+	}
+	
+	/**
+	 * Finds a city's unique ID based on the names of the city, region/state and country.
+	 *  
+	 * @param city		 the name of the requested city
+	 * @param region	 the name of the region/state where the city is located
+	 * @param country	 the name of the country where the city is located
+	 * @return ResultSet <code>ResultSet</code> containing a <code>String</code> with the city's ID.
+	 * 					 If no match is found, the returned string is empty.
+	 * 					 If an error occurred, returns <code>null</code>.
+	 */
+	// the returned city ID will help find queries related to the requested city faster.
+	public static ResultSet getCityIdByName(String city, String region, String country) {
+		// if exists, clear previous statement
+		try {
+			if (cstmt != null) {
+				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
+				cstmt.clearParameters(); // clears the current parameter values immediately.
+			}
+		}
+		catch (SQLException se) {
+			se.printStackTrace();
+		}
+			
+		try {
+		   if (conn != null) {
+			   String sql = "{call query_cityid_by_name (?, ?, ?)}";
+			   cstmt = conn.prepareCall(sql);
+		   }
+		   else { 
+			   System.out.println("Error: connection in getCityIdByName is null!");
+		   }
+		}
+		catch (SQLException se) {
+			//TODO: nothing we can do?
+			System.out.println("Error: SQL exception at prepareCall in getCityIdByName\n" + se);
+			System.exit(1);
+		}
+		try {
+			cstmt.setString(1, city); // city name
+			cstmt.setString(2, region); // region or state name
+			cstmt.setString(3, country); // country name
+		}
+		catch (SQLException se) {
+			System.out.println("Error: SQL exception setting parameters in getCityIdByName");
+			System.exit(1);
+		}
+		
+		System.out.println("Getting city ID from the database...");
+		return execDBQuery(cstmt);
+	}
+	
+	/**
+	 * Validates that the desired user name is not already taken.
+	 * <p>
+	 * Invoke as soon as the user is done typing his requested user name.
+	 * <p>
+	 *  	
+	 * @param username   the desired user name
+	 * @return ResultSet <code>ResultSet</code> containing a <code>boolean</code>:
+	 * 					 <code>true</code> if the user name is not taken, <code>false</code> false otherwise.
+	 * 					 If an error occurred, returns <code>null</code>.
+	 */
+	public static ResultSet validateUniqueUsername(String username) {
+		// if exists, clear previous statement
+		try {
+			if (cstmt != null) {
+				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
+				cstmt.clearParameters(); // clears the current parameter values immediately.
+			}
+		}
+		catch (SQLException se) {
+			se.printStackTrace();
+		}
+		
+		try {
+			if (conn != null) {
+				   String sql = "{call validate_unique_username (?)}";
+				   cstmt = conn.prepareCall(sql);
+			   }
+			   else { 
+				   System.out.println("Error: connection in validateUsername is null!");
+			   }
+		}
+		catch (SQLException se) {
+			//TODO: nothing we can do?
+			System.out.println("Error: SQL exception at prepareCall in validateUsername\n" + se);
+			System.exit(1);
+		}
+		try {
+			cstmt.setString(1, username); // user name
+		}
+		catch (SQLException se) {
+			System.out.println("Error: SQL exception setting parameters in validateUsername");
+			System.exit(1);
+		}
+			
+		System.out.println("Validating unique username using the database...");
+		return execDBQuery(cstmt);
 	}
 	
 }

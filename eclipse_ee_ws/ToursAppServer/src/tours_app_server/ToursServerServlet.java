@@ -56,6 +56,8 @@ public class ToursServerServlet extends HttpServlet {
 			JDBCServer.rmUser(uname, password);
 		else if (reqType.equals("find_cityid"))
 			JDBCServer.getCityIdByName(cityname, regionname, countryname);
+		else if (reqType.equals("validate_username"))
+			JDBCServer.validateUniqueUsername(uname);
 	}
 
 }

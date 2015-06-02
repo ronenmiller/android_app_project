@@ -251,5 +251,9 @@ CREATE OR REPLACE VIEW view_tours AS
 SELECT users.u_name, tours.t_id, cities.city, states.region, country.country, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
 FROM users, tours, languages, cities, states, country;
 
+CREATE OR REPLACE VIEW view_city_by_name AS
+SELECT cities.city, states.region, country.country
+FROM cities, states, country;
+
 --create OR REPLACE VIEW view_slots AS
 --SElECT 
