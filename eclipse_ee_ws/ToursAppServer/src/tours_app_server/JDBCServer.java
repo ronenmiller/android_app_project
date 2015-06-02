@@ -1,9 +1,9 @@
 package tours_app_server;
 
 import java.sql.*;
-
+import com.google.gson.Gson;
 import org.postgresql.util.PSQLException;
-
+import tours_app_client.Query;
 public final class JDBCServer {
 	/*****************************************************
 	 * definitions to connect to postgres server
@@ -26,6 +26,37 @@ public final class JDBCServer {
 	static Connection conn = null;
 	static CallableStatement cstmt = null;
 	
+	/**
+	 * TODO: move to parser class
+	 */
+	public static void parseJson(String jsonStream){
+		
+		try {
+			Gson gson = new Gson();
+			Query q = gson.fromJson(jsonStream,Query.class);
+			System.out.println(q.reqType);
+			System.out.println(q.email);
+			System.out.println(q.uname);
+			System.out.println(q.phnum);
+			System.out.println(q.password);
+
+			System.out.println("Servlet doPost> Passing following values to server"
+					+ "\n"+q.reqType+ "\n"+q.uname+ "\n"+ q.password+ "\n" + q.email+
+					"\n" + q.phnum+ "\n" + q.utype+ "\n");
+			if (q.reqType.equals("add"))
+				JDBCServer.addUser(q.uname, q.password, q.email, q.phnum, q.utype);
+			else if (q.reqType.equals("rm"))
+				JDBCServer.rmUser(q.uname, q.password);
+			else if (q.reqType.equals("find_cityid"))
+				JDBCServer.getCityIdByName(q.city, q.region, q.country);
+			else if (q.reqType.equals("validate_username"))
+				JDBCServer.validateUniqueUsername(q.uname);
+		} catch (Exception e) {
+		  // crash and burn
+			System.out.println("Error parsing JSON request string");
+		}
+		
+	}
 	/**
 	 * Constructor: Initialize connection and class variables.
 	 */

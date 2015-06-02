@@ -1,12 +1,17 @@
 package tours_app_server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+
+//
 
 /**
  * Servlet implementation class ToursServerServlet
@@ -38,6 +43,32 @@ public class ToursServerServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// Instanciate Gson
+		//Gson gson = new Gson();
+		
+		StringBuffer jb = new StringBuffer();
+		String line = null;
+		try {
+			BufferedReader reader = request.getReader();
+			while ((line = reader.readLine()) != null)
+		    jb.append(line);
+		} 
+		catch (Exception e) { 
+			System.out.println("Parsing error");
+		}
+		System.out.println(jb.toString());
+		String jsonStream = jb.toString();
+		JDBCServer.parseJson(jsonStream);
+	/*
+		try {
+			List <NameValuePair> nvps = gson.fromJson(jb.toString(),List.class);
+		} catch (Exception e) {
+		  // crash and burn
+			throw new IOException("Error parsing JSON request string");
+		}
+		*/
+		/*
+		
 		String reqType = request.getParameter("reqType");
 		String uname = request.getParameter("uname");
 		String password = request.getParameter("password");
@@ -58,6 +89,7 @@ public class ToursServerServlet extends HttpServlet {
 			JDBCServer.getCityIdByName(cityname, regionname, countryname);
 		else if (reqType.equals("validate_username"))
 			JDBCServer.validateUniqueUsername(uname);
+			*/
 	}
 
 }
