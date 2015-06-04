@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        android:useDefaultMargins="true"
+        android:alignmentMode="alignBounds"
+        android:columnOrderPreserved="false"
+
+        android:columnCount="4"
+        >
+
+    <TextView
+            android:text="@string/sign_up_label"
+            android:textSize="32sp"
+
+            android:layout_columnSpan="4"
+            android:layout_gravity="center_horizontal"
+            />
+
+    <TextView
+            android:text="Please fill in your details to sign up:"
+            android:textSize="16sp"
+
+            android:layout_columnSpan="4"
+            android:layout_gravity="start"
+            />
+
+    <TextView
+            android:text="Email address:"
+
+            android:layout_gravity="start"
+            />
+
+    <EditText
+        android:ems="8"
+        android:hint="@string/email_hint" />
+    
+    <TextView
+            android:text="username:"
+			android:layout_column="0"
+            android:layout_gravity="start"
+            />
+
+    <EditText
+        android:ems="8"
+        android:hint="@string/username_hint" />
+	
+     <TextView
+            android:text="Country:"
+			android:layout_column="0"
+            android:layout_gravity="start"
+            />
+
+    <EditText
+        android:ems="8"
+        />
+    
+     <TextView
+            android:text="State:"
+			android:layout_column="0"
+            android:layout_gravity="start"
+            />
+
+    <EditText
+        android:ems="8"
+        />
+    
+     <TextView
+            android:text="Cell Phone Number:"
+			android:layout_column="0"
+            android:layout_gravity="start"
+            />
+
+    <EditText
+        android:ems="8" 
+        />
+    
+    <TextView
+            android:text="Password:"
+            android:layout_column="0"
+            android:layout_gravity="start"
+            />
+
+    <EditText
+            android:ems="8"
+            />
+
+    <Space
+            android:layout_row="4"
+            android:layout_column="0"
+            android:layout_columnSpan="3"
+            android:layout_gravity="fill"
+            />
+
+    <Button
+        android:layout_column="1"
+        android:layout_gravity="left|top"
+        android:layout_row="5"
+        android:text="Submit" />
+
+</GridLayout>
