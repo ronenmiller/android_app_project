@@ -29,76 +29,106 @@
             />
 
     <TextView
-            android:text="Email address:"
-
-            android:layout_gravity="start"
-            />
+        android:layout_gravity="start"
+        android:text="@string/email_label" />
 
     <EditText
+        android:id="@+id/signUpEmailInput"
         android:ems="8"
-        android:hint="@string/email_hint" />
+        android:hint="@string/email_hint" 
+    	android:inputType="textEmailAddress"
+    	/>
     
     <TextView
-            android:text="username:"
-			android:layout_column="0"
-            android:layout_gravity="start"
-            />
+        android:layout_column="0"
+        android:layout_gravity="start"
+        android:text="@string/username_label" />
 
     <EditText
+        android:id="@+id/signUpUNameInput"
         android:ems="8"
         android:hint="@string/username_hint" />
 	
      <TextView
-            android:text="Country:"
-			android:layout_column="0"
-            android:layout_gravity="start"
-            />
+         android:layout_column="0"
+         android:layout_gravity="start"
+         android:text="@string/country_label" />
 
     <EditText
-        android:ems="8"
-        />
+        android:id="@+id/signUpCountryInput"
+        android:ems="8" />
     
      <TextView
-            android:text="State:"
-			android:layout_column="0"
-            android:layout_gravity="start"
-            />
+         android:layout_column="0"
+         android:layout_gravity="start"
+         android:text="@string/state_label" />
 
     <EditText
-        android:ems="8"
-        />
-    
-     <TextView
-            android:text="Cell Phone Number:"
-			android:layout_column="0"
-            android:layout_gravity="start"
-            />
-
-    <EditText
-        android:ems="8" 
-        />
+        android:id="@+id/signUpStateInput"
+        android:ems="8" />
     
     <TextView
-            android:text="Password:"
-            android:layout_column="0"
-            android:layout_gravity="start"
-            />
+        android:layout_column="0"
+        android:layout_gravity="start"
+        android:text="@string/city_label" />
 
     <EditText
-            android:ems="8"
-            />
+        android:id="@+id/signUpCityInput"
+        android:ems="8" />
+    
+     <TextView
+         android:layout_column="0"
+         android:layout_gravity="start"
+         android:text="@string/ph_no_label" />
+
+    <EditText
+        android:id="@+id/signUpPhoneInput"
+        android:ems="8" 
+    	android:inputType="phone"
+    />
+    
+    <TextView
+        android:layout_column="0"
+        android:layout_gravity="start"
+        android:text="@string/password_label" 
+        
+        />
+
+    <EditText
+        android:id="@+id/signUpPassInput"
+        android:ems="8"
+        android:inputType="textPassword" />
+
+    <TextView
+        android:layout_column="0"
+        android:layout_gravity="start"
+        android:text="@string/re_enter_pass_label" />
+
+    <EditText
+        android:id="@+id/signUpREPassInput"
+        android:ems="8"
+        android:inputType="textPassword"
+         />
 
     <Space
-            android:layout_row="4"
+            android:layout_row="8"
             android:layout_column="0"
             android:layout_columnSpan="3"
             android:layout_gravity="fill"
             />
 
     <Button
+        android:id="@+id/submitSignUpButton"
+        android:layout_column="0"
+        android:layout_gravity="center"
+        android:layout_row="9"
+        android:text="@string/submit_label" />
+
+    <Button
+        android:id="@+id/backFromSUButton"
         android:layout_column="1"
-        android:layout_gravity="left|top"
-        android:layout_row="5"
-        android:text="Submit" />
+        android:layout_gravity="center"
+        android:layout_row="9"
+        android:text="@string/back_label" />
 
 </GridLayout>

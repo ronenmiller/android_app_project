@@ -10,5 +10,16 @@
     <string name="sign_up_label">Sign Up!</string>
     <string name="title_activity_sign_up">Sign Up</string>
     <string name="email_hint">johndoe@site.com</string>
+    <string name="back_label">Back</string>
+    <string name="submit_label">Submit</string>
+    <string name="password_label">Password</string>
+    <string name="re_enter_pass_label">Re-Enter Password</string>
+    <string name="ph_no_label">Cell Phone Number</string>
+    <string name="state_label">State</string>
+    <string name="country_label">Country</string>
+    <string name="username_label">User Name</string>
+    <string name="email_label">Email</string>
+    <string name="phone_hint">without prefix</string>
+    <string name="city_label">City</string>
 
 </resources>

@@ -1648,9 +1648,10 @@ containing a value of this type.
         public static final int action_mode_bar=0x7f09002e;
         public static final int action_mode_bar_stub=0x7f09002d;
         public static final int action_mode_close_button=0x7f090020;
-        public static final int action_settings=0x7f090043;
+        public static final int action_settings=0x7f09004d;
         public static final int activity_chooser_view_content=0x7f090021;
         public static final int always=0x7f090014;
+        public static final int backFromSUButton=0x7f09004c;
         public static final int beginning=0x7f09001b;
         public static final int checkbox=0x7f090029;
         public static final int collapseActionView=0x7f090015;
@@ -1693,8 +1694,17 @@ containing a value of this type.
         public static final int showCustom=0x7f090010;
         public static final int showHome=0x7f090011;
         public static final int showTitle=0x7f090012;
+        public static final int signUpCityInput=0x7f090047;
+        public static final int signUpCountryInput=0x7f090045;
+        public static final int signUpEmailInput=0x7f090043;
+        public static final int signUpPassInput=0x7f090049;
+        public static final int signUpPhoneInput=0x7f090048;
+        public static final int signUpREPassInput=0x7f09004a;
+        public static final int signUpStateInput=0x7f090046;
+        public static final int signUpUNameInput=0x7f090044;
         public static final int signupButton=0x7f090042;
         public static final int split_action_bar=0x7f090004;
+        public static final int submitSignUpButton=0x7f09004b;
         public static final int submit_area=0x7f09003c;
         public static final int tabMode=0x7f09000c;
         public static final int title=0x7f090027;
@@ -1820,13 +1830,24 @@ containing a value of this type.
         public static final int abc_toolbar_collapse_description=0x7f0a0004;
         public static final int action_settings=0x7f0a0012;
         public static final int app_name=0x7f0a0010;
+        public static final int back_label=0x7f0a0019;
+        public static final int city_label=0x7f0a0023;
+        public static final int country_label=0x7f0a001f;
         public static final int email_hint=0x7f0a0018;
+        public static final int email_label=0x7f0a0021;
         public static final int hello_world=0x7f0a0011;
         public static final int login_label=0x7f0a0015;
         public static final int password_hint=0x7f0a0014;
+        public static final int password_label=0x7f0a001b;
+        public static final int ph_no_label=0x7f0a001d;
+        public static final int phone_hint=0x7f0a0022;
+        public static final int re_enter_pass_label=0x7f0a001c;
         public static final int sign_up_label=0x7f0a0016;
+        public static final int state_label=0x7f0a001e;
+        public static final int submit_label=0x7f0a001a;
         public static final int title_activity_sign_up=0x7f0a0017;
         public static final int username_hint=0x7f0a0013;
+        public static final int username_label=0x7f0a0020;
     }
     public static final class style {
         /** 

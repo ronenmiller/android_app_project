@@ -1,10 +1,12 @@
 package tours_app_server;
 
 import java.sql.*;
+import org.apache.commons.validator.routines.EmailValidator;
 import com.google.gson.Gson;
 import org.postgresql.util.PSQLException;
 import tours_app_client.Query;
 public final class JDBCServer {
+	static EmailValidator emailValidator = EmailValidator.getInstance();
 	/*****************************************************
 	 * definitions to connect to postgres server
 	 *****************************************************/
@@ -39,13 +41,16 @@ public final class JDBCServer {
 			System.out.println(q.uname);
 			System.out.println(q.phnum);
 			System.out.println(q.password);
-
-			System.out.println("Servlet doPost> Passing following values to server"
+			if (!emailValidator.isValid(q.email)){
+				System.out.println("Servlet parseJson> Error - invalid email");
+				return;
+			}
+			System.out.println("Servlet parseJson> Passing following values to server"
 					+ "\n"+q.reqType+ "\n"+q.uname+ "\n"+ q.password+ "\n" + q.email+
 					"\n" + q.phnum+ "\n" + q.utype+ "\n");
-			if (q.reqType.equals("add"))
+			if (q.reqType.equals("addUser"))
 				JDBCServer.addUser(q.uname, q.password, q.email, q.phnum, q.utype);
-			else if (q.reqType.equals("rm"))
+			else if (q.reqType.equals("rmUser"))
 				JDBCServer.rmUser(q.uname, q.password);
 			else if (q.reqType.equals("find_cityid"))
 				JDBCServer.getCityIdByName(q.city, q.region, q.country);

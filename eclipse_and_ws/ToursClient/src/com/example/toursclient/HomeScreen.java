@@ -12,12 +12,13 @@ import android.widget.Toast;
 
 
 public class HomeScreen extends ActionBarActivity {
-   
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
+        
+        /* instaciate email validator */
         
         /* declare homescreen objects*/ 
         Button loginButton = (Button) findViewById(R.id.loginButton);
