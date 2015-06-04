@@ -11,25 +11,25 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public class QueryDispacher {
 	
 	QueryDispacher(){
 	}
+	static Gson gson = new Gson();
 	static Integer dispatchQuery(Query q){
+		System.out.println("Successfully dispatching");
         try {
         	HttpClient httpclient = new DefaultHttpClient();
         	
         	// Instanciate Gson 
-        	//Gson gson = new Gson();
-        	GsonBuilder gsonBuilder = new GsonBuilder();
-        	Gson gson = gsonBuilder.create();
+        	
         	// JSON string
         	String json;
-        	/*
+        	
         	// http post 
-        	HttpPost httpPost = new HttpPost("http://localhost:8080/ToursAppServer/tours_slet");
+        	// my ip: 85.250.73.34
+        	HttpPost httpPost = new HttpPost("http://85.250.73.34:8080/ToursAppServer/tours_slet");
             
             // convert list to JSON format string
             json = gson.toJson(q);
@@ -38,9 +38,13 @@ public class QueryDispacher {
             httpPost.setHeader("Accept", "application/json");
             httpPost.setHeader("Content-type", "application/json");
             HttpResponse response = httpclient.execute(httpPost);
-            */
+            System.out.println(response.getStatusLine());
+            System.out.println("Successfully Executed");
+            
         }
-        catch (Exception e){}
+        catch (Exception e){
+        	System.out.println("Caught Ex: "+e.toString());
+        }
         /* catch (ClientProtocolException e) {
             // TODO print error
         	return 1;
