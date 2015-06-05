@@ -25,7 +25,7 @@ public class ClientExample {
         	// http post 
             HttpPost httpPost = new HttpPost("http://10.0.0.1:8080/ToursAppServer/tours_slet");
             Query q = new Query();
-            q.reqType = "add";
+            q.reqType = "addUser";
             q.uname = "Moti_Ban";
             q.email = "bannan@gmail.com";
             q.phnum = "0545555689";
