@@ -23,7 +23,7 @@ public class ClientExample {
         	String json;
         	
         	// http post 
-            HttpPost httpPost = new HttpPost("http://localhost:8080/ToursAppServer/tours_slet");
+            HttpPost httpPost = new HttpPost("http://10.0.0.1:8080/ToursAppServer/tours_slet");
             Query q = new Query();
             q.reqType = "add";
             q.uname = "Moti_Ban";

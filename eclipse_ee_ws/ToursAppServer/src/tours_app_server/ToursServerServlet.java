@@ -59,7 +59,10 @@ public class ToursServerServlet extends HttpServlet {
 		System.out.println(jb.toString());
 		String jsonStream = jb.toString();
 		JDBCServer.parseJson(jsonStream);
-		response.setDateHeader("asdasad", 10);
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.getWriter().write("Response from servlet!");
+		response.getWriter().flush();
+		response.getWriter().close();
 	}
 
 }

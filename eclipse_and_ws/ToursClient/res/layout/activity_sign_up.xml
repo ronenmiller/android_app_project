@@ -1,32 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-
-        android:useDefaultMargins="true"
-        android:alignmentMode="alignBounds"
-        android:columnOrderPreserved="false"
-
-        android:columnCount="4"
-        >
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:alignmentMode="alignBounds"
+    android:columnCount="4"
+    android:columnOrderPreserved="false"
+    android:useDefaultMargins="true" 
+    >
 
     <TextView
-            android:text="@string/sign_up_label"
-            android:textSize="32sp"
-
-            android:layout_columnSpan="4"
-            android:layout_gravity="center_horizontal"
-            />
+        android:layout_columnSpan="4"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/sign_up_label"
+        android:textSize="32sp" />
 
     <TextView
-            android:text="Please fill in your details to sign up:"
-            android:textSize="16sp"
-
-            android:layout_columnSpan="4"
-            android:layout_gravity="start"
-            />
+        android:layout_columnSpan="4"
+        android:layout_gravity="start"
+        android:text="Please fill in your details to sign up:"
+        android:textSize="16sp" />
 
     <TextView
         android:layout_gravity="start"
@@ -35,10 +27,9 @@
     <EditText
         android:id="@+id/signUpEmailInput"
         android:ems="8"
-        android:hint="@string/email_hint" 
-    	android:inputType="textEmailAddress"
-    	/>
-    
+        android:hint="@string/email_hint"
+        android:inputType="textEmailAddress" />
+
     <TextView
         android:layout_column="0"
         android:layout_gravity="start"
@@ -48,25 +39,25 @@
         android:id="@+id/signUpUNameInput"
         android:ems="8"
         android:hint="@string/username_hint" />
-	
-     <TextView
-         android:layout_column="0"
-         android:layout_gravity="start"
-         android:text="@string/country_label" />
+
+    <TextView
+        android:layout_column="0"
+        android:layout_gravity="start"
+        android:text="@string/country_label" />
 
     <EditText
         android:id="@+id/signUpCountryInput"
         android:ems="8" />
-    
-     <TextView
-         android:layout_column="0"
-         android:layout_gravity="start"
-         android:text="@string/state_label" />
+
+    <TextView
+        android:layout_column="0"
+        android:layout_gravity="start"
+        android:text="@string/state_label" />
 
     <EditText
         android:id="@+id/signUpStateInput"
         android:ems="8" />
-    
+
     <TextView
         android:layout_column="0"
         android:layout_gravity="start"
@@ -75,24 +66,21 @@
     <EditText
         android:id="@+id/signUpCityInput"
         android:ems="8" />
-    
-     <TextView
-         android:layout_column="0"
-         android:layout_gravity="start"
-         android:text="@string/ph_no_label" />
 
-    <EditText
-        android:id="@+id/signUpPhoneInput"
-        android:ems="8" 
-    	android:inputType="phone"
-    />
-    
     <TextView
         android:layout_column="0"
         android:layout_gravity="start"
-        android:text="@string/password_label" 
-        
-        />
+        android:text="@string/ph_no_label" />
+
+    <EditText
+        android:id="@+id/signUpPhoneInput"
+        android:ems="8"
+        android:inputType="phone" />
+
+    <TextView
+        android:layout_column="0"
+        android:layout_gravity="start"
+        android:text="@string/password_label" />
 
     <EditText
         android:id="@+id/signUpPassInput"
@@ -107,28 +95,26 @@
     <EditText
         android:id="@+id/signUpREPassInput"
         android:ems="8"
-        android:inputType="textPassword"
-         />
+        android:inputType="textPassword" />
 
     <Space
-            android:layout_row="8"
-            android:layout_column="0"
-            android:layout_columnSpan="3"
-            android:layout_gravity="fill"
-            />
+        android:layout_column="0"
+        android:layout_columnSpan="3"
+        android:layout_gravity="fill"
+        android:layout_row="8" />
 
     <Button
         android:id="@+id/submitSignUpButton"
         android:layout_column="0"
-        android:layout_gravity="center"
-        android:layout_row="9"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_row="10"
         android:text="@string/submit_label" />
 
     <Button
         android:id="@+id/backFromSUButton"
         android:layout_column="1"
-        android:layout_gravity="center"
-        android:layout_row="9"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_row="10"
         android:text="@string/back_label" />
 
 </GridLayout>

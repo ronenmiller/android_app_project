@@ -29,11 +29,11 @@ public class SignUpActivity extends ActionBarActivity {
         final EditText signUpREPassInput = (EditText)findViewById(R.id.signUpREPassInput);
         
         //defaults
-        signUpEmailInput.setText("a@gmail.com");
-        signUpUNameInput.setText("username1");
-        signUpPhoneInput.setText("0545352688");
-        signUpPassInput.setText("abc123");
-        signUpREPassInput.setText("abc123");
+        signUpEmailInput.setText("ale@gmail.com");
+        signUpUNameInput.setText("alehandro1");
+        signUpPhoneInput.setText("0542442688");
+        signUpPassInput.setText("abc123456");
+        signUpREPassInput.setText("abc123456");
 		
         
         
@@ -79,7 +79,7 @@ public class SignUpActivity extends ActionBarActivity {
 						
 						// if all checks are OK dispatch query
 						if(checkStatus){
-							Integer status = QueryDispacher.dispatchQuery(q);
+							boolean status = QueryDispacher.dispatchQuery(q);
 						}
 						
 					}
