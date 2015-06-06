@@ -28,17 +28,18 @@ public class HomeScreen extends ActionBarActivity {
         final EditText passwordInput = (EditText)findViewById(R.id.passwordInput);
         
         final Intent goToSignUpScreen = new Intent(this,SignUpActivity.class);
+        final Intent goToWelcomScreen = new Intent(this,WelcomeActivity.class);
         
         /* LoginButton onClick listeners */
+        //TODO : login
         loginButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				String username = usernameInput.getText().toString();
 				String password = passwordInput.getText().toString();
 				String output = "User Name: "+username+" Password: "+password;
-				Toast.makeText(getApplicationContext(), output, 
-						   Toast.LENGTH_LONG).show();
-						   
+				Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
+				startActivity(goToWelcomScreen);
 			}
 		});
         
