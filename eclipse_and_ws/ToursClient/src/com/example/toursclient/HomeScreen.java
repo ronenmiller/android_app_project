@@ -28,7 +28,7 @@ public class HomeScreen extends ActionBarActivity {
         final EditText passwordInput = (EditText)findViewById(R.id.passwordInput);
         
         final Intent goToSignUpScreen = new Intent(this,SignUpActivity.class);
-        final Intent goToWelcomScreen = new Intent(this,WelcomeActivity.class);
+        final Intent goToMenuScreen = new Intent(this,MenuActivity.class);
         
         /* LoginButton onClick listeners */
         //TODO : login
@@ -39,7 +39,7 @@ public class HomeScreen extends ActionBarActivity {
 				String password = passwordInput.getText().toString();
 				String output = "User Name: "+username+" Password: "+password;
 				Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
-				startActivity(goToWelcomScreen);
+				startActivity(goToMenuScreen);
 			}
 		});
         
@@ -53,8 +53,14 @@ public class HomeScreen extends ActionBarActivity {
 		});
         
     }
-
-
+    /*
+    @Override
+    public void onPause(){
+    	super.onPause();
+    	finish();
+    }
+    */
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

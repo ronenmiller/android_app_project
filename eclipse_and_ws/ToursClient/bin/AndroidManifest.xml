@@ -33,6 +33,10 @@
             android:name=".WelcomeActivity"
             android:label="@string/title_activity_welcome" >
         </activity>
+        <activity
+            android:name=".MenuActivity"
+            android:label="@string/title_activity_menu" >
+        </activity>
     </application>
 
 </manifest>
