@@ -20,7 +20,7 @@ public class ResultSetConverter {
 
     /**
      * Convert a result set into a JSON Array
-     * @param  resultSet	 the <code>ResultSet</code> to convert to JSON format.
+     * @param  resultSet	 the <code>ResultSet</code> to convert to JSON format
      * @return JSONArray     An array whose elements are the rows of the <code>ResultSet</code>.
      * 						 Each element contains columns with their respected values.
      * @throws SQLException  if a database access error occurs    
@@ -45,6 +45,15 @@ public class ResultSetConverter {
         return jsonArray;
     }
     
+    /**
+     * Obtain a single boolean result from result set.
+     * 
+     * @param resultSet					the <code>ResultSet</code> from which to obtain the data.
+     * 									resultSet must include a single result (one row and one column)
+     * @return							A <code>boolean</code> value contained in resultSet. 
+     * @throws SQLException 			if a database access error occurs or this method is called on a closed resultSet
+     * @throws IllegalArgumentException if resultSet contains a value which is not a <code>boolean</code>
+     */
     public static boolean convertResultSetIntoBoolean(ResultSet resultSet) throws SQLException {
     	final int FIRST_COLUMN = 1;
     	
@@ -53,10 +62,19 @@ public class ResultSetConverter {
     		return resultSet.getBoolean(FIRST_COLUMN);
     	}
     	else {
-    		return false;
+    		throw new IllegalArgumentException("IllegalArgumentExeception: value in ResultSet is not a boolean"); 
     	}
     }
     
+    /**
+     * Obtain a single String result from result set.
+     * 
+     * @param resultSet					the <code>ResultSet</code> from which to obtain the data.
+     * 									resultSet must include a single result (one row and one column)
+     * @return							A <code>String</code> value contained in resultSet. 
+     * @throws SQLException 			if a database access error occurs or this method is called on a closed resultSet
+     * @throws IllegalArgumentException if resultSet contains a value which is not a <code>String</code>
+     */
     public static String convertResultSetIntoString(ResultSet resultSet) throws SQLException {
     	final int FIRST_COLUMN = 1;
     	
@@ -65,7 +83,28 @@ public class ResultSetConverter {
     		return resultSet.getString(FIRST_COLUMN);
     	}
     	else {
-    		return null;
+    		throw new IllegalArgumentException("IllegalArgumentExeception: value in ResultSet is not a String"); 
+    	}
+    }
+    
+    /**
+     * Obtain a single integer result from result set.
+     * 
+     * @param resultSet					the <code>ResultSet</code> from which to obtain the data.
+     * 									resultSet must include a single result (one row and one column)
+     * @return							An <code>int</code> value contained in resultSet. 
+     * @throws SQLException 			if a database access error occurs or this method is called on a closed resultSet
+     * @throws IllegalArgumentException if resultSet contains a value which is not an <code>int</code>
+     */
+    public static int convertResultSetIntoInt(ResultSet resultSet) throws SQLException {
+    	final int FIRST_COLUMN = 1;
+    	
+    	resultSet.next();
+    	if (resultSet.getMetaData().getColumnType(FIRST_COLUMN) == java.sql.Types.INTEGER) {
+    		return resultSet.getInt(FIRST_COLUMN);
+    	}
+    	else {
+    		throw new IllegalArgumentException("IllegalArgumentExeception: value in ResultSet is not an integer"); 
     	}
     }
 
