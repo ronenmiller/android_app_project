@@ -41,11 +41,10 @@ LANGUAGE 'plpgsql';
 
 --SELECT test();
 --SELECT * FROM search_tour_by_city('Los Angeles','California','United States');
---SELECT * FROM find_cityid_by_name('Los Angeles','California','United States');
+SELECT * FROM query_cityid_by_name('Los Angeles','California','United States');
 --SELECT validate_username('ronen');
 --SELECT * FROM search_tour_by_guide('ronen');
 --SELECT * FROM open_slots_by_tour(1);
 --SELECT * FROM rate2tour;
 --SELECT * FROM tours;
 --SELECT * FROM users; 
-SELECT * FROM query_city_by_name('New');

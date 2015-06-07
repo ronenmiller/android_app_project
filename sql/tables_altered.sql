@@ -130,7 +130,7 @@ TABLE:		u_id - a unique user ID of the tour's guide,
 */
 DROP TABLE IF EXISTS tours CASCADE;
 CREATE TABLE tours (
-	u_id 		uuid 	     NOT NULL REFERENCES users(u_id),
+	u_id 		uuid 	     NOT NULL REFERENCES users(u_id) ON DELETE RESTRICT,
 	t_id		INTEGER      PRIMARY KEY,
 	t_cityid	VARCHAR(255) NOT NULL REFERENCES cities(cityid) ON DELETE RESTRICT,
 	t_duration	NUMERIC	     NOT NULL,
