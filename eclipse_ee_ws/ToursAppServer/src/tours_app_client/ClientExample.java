@@ -20,23 +20,54 @@ public class ClientExample {
         	// Instanciate Gson 
         	Gson gson = new Gson();
         	// JSON string
-        	String json;
-        	
+        	String Address = "http://localhost:8080/ToursAppServer/tours_slet";
+        	//String Address = "http://10.0.0.1:8080/ToursAppServer/tours_slet";
         	// http post 
-            HttpPost httpPost = new HttpPost("http://10.0.0.1:8080/ToursAppServer/tours_slet");
-            Query q = new Query();
-            q.reqType = "addUser";
-            q.uname = "Moti_Ban";
-            q.email = "bannan@gmail.com";
-            q.phnum = "0545555689";
-            q.password = "secret2013";
+            HttpPost httpPost = new HttpPost(Address);
+            /*
+    		 * Create addUser queryContainer:
+    		 */
+    		// Container for addUser
+    		QueryContainer qC = new QueryContainer("addUser");
+    		// Query to turn into JSON
+    		AddUserQuery q = new AddUserQuery("Moti_Ban","secret2013","bannan@gmail.com","0545555689",false);
             
-            // convert list to JSON format string
-            json = gson.toJson(q);
             
-            //System.out.println(json);
+            /*
+             * pack Query into JSON format String and put into container
+             * then pack entire container into JSON
+             */
+            Gson g = new Gson();
+            String j1 = g.toJson(q);
+            System.out.println("Packed JSON QueryAddUser String is:\n "+ j1);
+            qC.setQuery(j1);
+            String j2 = g.toJson(qC);//, QueryContainer.class);
+            System.out.println("\nPacked JSON QueryContainer String is:\n "+ j2);
+            
+            
+            
+            /*
+    		 * Create getCityid queryContainer:
+    		 */
+    		// Container for addUser
+    		QueryContainer qC2 = new QueryContainer("getCityId");
+    		// Query to turn into JSON
+    		GeoQuery q2 = new GeoQuery("Los Angeles","California","United States");
+    		
+            
+            
+            /*
+             * pack Query into JSON format String and put into container
+             * then pack entire container into JSON
+             */
+            String j_1 = g.toJson(q2);
+            System.out.println("Packed JSON QueryAddUser String is:\n "+ j_1);
+            qC2.setQuery(j_1);
+            String j_2 = g.toJson(qC2);//, QueryContainer.class);
+            System.out.println("\nPacked JSON QueryContainer String is:\n "+ j_2);
+            
        
-            httpPost.setEntity(new StringEntity(json));
+            httpPost.setEntity(new StringEntity(j_2));
             httpPost.setHeader("Accept", "application/json");
             httpPost.setHeader("Content-type", "application/json");
             CloseableHttpResponse response = httpclient.execute(httpPost);

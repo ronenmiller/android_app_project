@@ -1,10 +1,20 @@
 package tours_app_server;
 
 import java.sql.*;
+import java.util.ArrayList;
+
 import org.apache.commons.validator.routines.EmailValidator;
+
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+
+import org.json.JSONArray;
 import org.postgresql.util.PSQLException;
-import tours_app_client.Query;
+
+import tours_app_client.AddUserQuery;
+import tours_app_client.GeoQuery;
+import tours_app_client.QueryContainer;
+
 public final class JDBCServer {
 	static EmailValidator emailValidator = EmailValidator.getInstance();
 	/*****************************************************
@@ -31,36 +41,46 @@ public final class JDBCServer {
 	/**
 	 * TODO: move to parser class
 	 */
-	public static void parseJson(String jsonStream){
+	
+	public static String fetchResponse(String jsonStream) {
 		
 		try {
+			// fetch request type
 			Gson gson = new Gson();
-			Query q = gson.fromJson(jsonStream,Query.class);
-			System.out.println(q.reqType);
-			System.out.println(q.email);
-			System.out.println(q.uname);
-			System.out.println(q.phnum);
-			System.out.println(q.password);
-			if (!emailValidator.isValid(q.email)){
-				System.out.println("Servlet parseJson> Error - invalid email");
-				return;
-			}
-			System.out.println("Servlet parseJson> Passing following values to server"
-					+ "\n"+q.reqType+ "\n"+q.uname+ "\n"+ q.password+ "\n" + q.email+
-					"\n" + q.phnum+ "\n" + q.utype+ "\n");
-			if (q.reqType.equals("addUser"))
-				JDBCServer.addUser(q.uname, q.password, q.email, q.phnum, q.utype);
-			else if (q.reqType.equals("rmUser"))
+			QueryContainer queryContainer =  gson.fromJson(jsonStream, QueryContainer.class);
+	        String reqType = queryContainer.getType();
+	        
+	        if (reqType.equals("addUser")) {
+	        	AddUserQuery addUserQuery = gson.fromJson(queryContainer.getQuery(), AddUserQuery.class);
+	        	String username = addUserQuery.getUname();
+	        	String password = addUserQuery.getPass();
+	        	String email = addUserQuery.getEmail();
+	        	String phoneNumber = addUserQuery.getPhnum();
+	        	boolean userType = addUserQuery.getUtype();
+	        	return addUser(username, password, email, phoneNumber, userType);
+	        }
+	        
+	        if (reqType.equals("getCityId"))
+	        {
+	        	GeoQuery geoQuery = gson.fromJson(queryContainer.getQuery(), GeoQuery.class);
+	        	String city = geoQuery.getCity();
+	        	String region = geoQuery.getRegion();
+	        	String country = geoQuery.getCountry();
+	        	return getCityIdByName(city, region, country);
+	        	
+	        }
+			/*else if (q.reqType.equals("rmUser"))
 				JDBCServer.rmUser(q.uname, q.password);
 			else if (q.reqType.equals("find_cityid"))
 				JDBCServer.getCityIdByName(q.city, q.region, q.country);
 			else if (q.reqType.equals("validate_username"))
-				JDBCServer.validateUniqueUsername(q.uname);
+				JDBCServer.validateUniqueUsername(q.uname);*/
 		} catch (Exception e) {
 		  // crash and burn
 			System.out.println("Error parsing JSON request string");
 		}
 		
+		return "abc";
 	}
 	/**
 	 * Constructor: Initialize connection and class variables.
@@ -129,28 +149,30 @@ public final class JDBCServer {
 	}
 	
 	/**
-	 * Execute a statement which updates the current state of the database.
+	 * Execute a statement which modifies the current state of the database.
 	 * 
 	 * @param cstmt the statement to execute
-	 * @return 		<code>true</code> if the update completed successfully, <code>false</code> otherwise.
+	 * @return 		<code>true</code> if the modification completed successfully, <code>false</code> otherwise.
 	 */
-	private static boolean updateDB(CallableStatement cstmt) {
-		boolean isSuccessful = false;
+	private static boolean modifyDB(CallableStatement cstmt) {
+		
 		try {
-			isSuccessful = cstmt.execute();
-			System.out.println("Database update executed successfully...");
+			System.out.println("Updating database...");
+			return cstmt.execute();
 		}
 		catch (PSQLException pe) {
 			pe.printStackTrace();
+			return false;
 		}
 		catch (SQLException se) {
 			se.printStackTrace();
+			return false;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 		
-		return isSuccessful;
 	} // end-method updateDB 
 	
 	/**
@@ -161,25 +183,24 @@ public final class JDBCServer {
 	 * 				If no match is found, returns an empty <code>ResultSet</code>. 
 	 * 				If an error occurred, returns <code>null</code>.
 	 */
-	private static ResultSet execDBQuery(CallableStatement cstmt) {
-		ResultSet rs = null;
+	private static ResultSet queryDB(CallableStatement cstmt) {
 		try {
-			if (cstmt.execute()) {
-				rs = cstmt.executeQuery();
-			}
-			System.out.println("Database query executed successfully...");
+			System.out.println("Running query...");
+			return cstmt.executeQuery();
 		}
 		catch (PSQLException pe) {
 			pe.printStackTrace();
+			return null;
 		}
 		catch (SQLException se) {
 			se.printStackTrace();
+			return null;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
 		
-		return rs;
 	} // end-method execDBQuery 
 	   
    /**
@@ -192,7 +213,7 @@ public final class JDBCServer {
     * @param utype		the user can specify whether he is also a guide
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
-	public static boolean addUser(String uname, String password, String email, String phnum, boolean utype) {
+	public static String addUser(String uname, String password, String email, String phnum, boolean utype) {
 		// if exists, clear previous statement
 		try {
 			if (cstmt != null) {
@@ -230,8 +251,15 @@ public final class JDBCServer {
 			System.exit(1);
 		}
 		
+		// modify database
 		System.out.println("Adding the user to the database...");
-		return updateDB(cstmt); 
+		BooleanResponse booleanResponse = new BooleanResponse(modifyDB(cstmt));
+		
+		// pack the result into JSON format
+		Gson gson = new Gson();
+		ResponseContainer responseContainer = new ResponseContainer("addUser");
+		responseContainer.setResponse(gson.toJson(booleanResponse));
+		return gson.toJson(responseContainer); 
 	}
 	
    /**
@@ -281,7 +309,7 @@ public final class JDBCServer {
 		}
 		
 		System.out.println("Removing the user from the database...");
-		return updateDB(cstmt);
+		return modifyDB(cstmt);
 	}
 	
 	/**
@@ -295,7 +323,7 @@ public final class JDBCServer {
 	 * 					 If an error occurred, returns <code>null</code>.
 	 */
 	// the returned city ID will help find queries related to the requested city faster.
-	public static ResultSet getCityIdByName(String city, String region, String country) {
+	public static String getCityIdByName(String city, String region, String country) {
 		// if exists, clear previous statement
 		try {
 			if (cstmt != null) {
@@ -331,8 +359,26 @@ public final class JDBCServer {
 			System.exit(1);
 		}
 		
+		// query database
 		System.out.println("Getting city ID from the database...");
-		return execDBQuery(cstmt);
+		ResultSet resultSet = queryDB(cstmt);
+		String cityId;
+		try {
+			cityId =  ResultSetConverter.convertResultSetIntoString(resultSet);
+		}
+		catch (SQLException e)
+		{
+			cityId = null;
+		}
+		
+		// TODO: handle exception when return value is null
+		StringResponse stringResponse = new StringResponse(cityId);
+		
+		// pack the result into JSON format
+		Gson gson = new Gson();
+		ResponseContainer responseContainer = new ResponseContainer("getCityId");
+		responseContainer.setResponse(gson.toJson(stringResponse));
+		return gson.toJson(responseContainer);
 	}
 	
 	/**
@@ -381,7 +427,7 @@ public final class JDBCServer {
 		}
 			
 		System.out.println("Validating unique username using the database...");
-		return execDBQuery(cstmt);
+		return queryDB(cstmt);
 	}
 	
 }

@@ -4,11 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 
+
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.google.gson.Gson;
 
 
 //
@@ -44,7 +48,7 @@ public class ToursServerServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// Instanciate Gson
-		//Gson gson = new Gson();
+		Gson gson = new Gson();
 		
 		StringBuffer jb = new StringBuffer();
 		String line = null;
@@ -58,9 +62,18 @@ public class ToursServerServlet extends HttpServlet {
 		}
 		System.out.println(jb.toString());
 		String jsonStream = jb.toString();
-		JDBCServer.parseJson(jsonStream);
+		
+		
+		String reponseStream = JDBCServer.fetchResponse(jsonStream);
+		ResponseContainer responseContainer =  gson.fromJson(reponseStream, ResponseContainer.class);
+        String reqType = responseContainer.getType();
+        System.out.println(reqType);
+        System.out.println(responseContainer.getResponse());
+        
+        //response.getWriter().write(JDBCServer.parseJson(jsonStream));
+		//JDBCServer.parseJson(jsonStream);
 		response.setStatus(HttpServletResponse.SC_OK);
-		response.getWriter().write("Response from servlet!");
+		//response.getWriter().write("Response from servlet!");
 		response.getWriter().flush();
 		response.getWriter().close();
 	}
