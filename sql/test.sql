@@ -35,6 +35,7 @@ BEGIN
 		PERFORM add_user('liron','999mmfkd','a@gmail.com','05454948484',B'1');
 		SELECT users.u_id INTO v_u_id_l FROM users WHERE users.u_name = 'liron';
 		PERFORM add_person(v_u_id_l, 'liron','an','a@gmail.com','05454948484','Los Angeles','California','United States', 1);
+		PERFORM rm_user('liron','999mmfkd');
 	END;
 
 
@@ -56,3 +57,4 @@ SELECT test();
 --SELECT * FROM rate2tour;
 --SELECT * FROM tours;
 --SELECT * FROM users;
+--SELECT rm_user('liron','999mmfkd');

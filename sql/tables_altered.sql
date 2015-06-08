@@ -84,23 +84,24 @@ ALTER TABLE users OWNER TO postgres;
 /*
 SECTION: 	Build people table
 DESC:		Build the people table and add additional information about each person
+			A person's details should not be deleted even if the user chooses to delete himself
 TABLE:		u_id - a unique user ID (references u_id in users table),
-		p_first - person's first name,
-		p_last - person's last name,
-		email - unique for each user (primary key),
-		phone_number - must be entered and unique for SMS confirmation,
-		city_id - person current city of residence (ID),
-		state_id - person current state of residence (ID),
-		country_id - person current country of residence (ID),
-		languages - languages spoken by the person
+			p_first - person's first name,
+			p_last - person's last name,
+			email - unique for each user (primary key),
+			phone_number - must be entered and unique for SMS confirmation,
+			city_id - person current city of residence (ID),
+			state_id - person current state of residence (ID),
+			country_id - person current country of residence (ID),
+			languages - languages spoken by the person
 */
 DROP TABLE IF EXISTS people CASCADE;
 CREATE TABLE people (
-	u_id 		uuid 	     REFERENCES users (u_id) NO ACTION, -- don't delete a person details' even if the user chooses to delete himself
+	u_id 		uuid 	     REFERENCES users(u_id), 
 	p_first		VARCHAR(80)  NOT NULL,
 	p_last		VARCHAR(80),
-	email		VARCHAR(80)  PRIMARY KEY, -- email address must be unique
-	phone_number	VARCHAR(80)  UNIQUE NOT NULL, -- must be entered and unique for SMS confirmation
+	email		VARCHAR(80)  PRIMARY KEY REFERENCES users(email) ON UPDATE CASCADE, -- email address must be unique
+	phone_number	VARCHAR(80) REFERENCES users(phone_number) ON UPDATE CASCADE,
 	city_str	VARCHAR(255),
 	state_str	VARCHAR(255),
 	country_str	VARCHAR(255),
