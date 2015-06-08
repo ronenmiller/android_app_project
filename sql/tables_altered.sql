@@ -96,7 +96,7 @@ TABLE:		u_id - a unique user ID (references u_id in users table),
 */
 DROP TABLE IF EXISTS people CASCADE;
 CREATE TABLE people (
-	u_id 		uuid 	     REFERENCES users (u_id) ON DELETE RESTRICT, -- holds unique user ID
+	u_id 		uuid 	     REFERENCES users (u_id) NO ACTION, -- don't delete a person details' even if the user chooses to delete himself
 	p_first		VARCHAR(80)  NOT NULL,
 	p_last		VARCHAR(80),
 	email		VARCHAR(80)  PRIMARY KEY, -- email address must be unique
