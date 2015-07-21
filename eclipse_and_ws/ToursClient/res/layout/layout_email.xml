@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" 
+    android:weightSum = "100">
+
+	<ScrollView 
+	    android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"
+    	android:layout_weight = "15">
+		<LinearLayout 
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="vertical" >
+		    
+		    <TextView
+		        android:id="@+id/textView1"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/tv_email_addresses"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+			
+		    <EditText
+		        android:id="@+id/etEmails"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:ems="10" 
+		        android:inputType="textEmailAddress"/>
+		
+		    <TextView
+		        android:id="@+id/textView3"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="Name"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <EditText
+		        android:id="@+id/etName"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:ems="10" />
+		    
+		    <TextView
+		        android:id="@+id/textView2"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="Intro"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <EditText
+		        android:id="@+id/etIntro"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:ems="10" />
+		
+		    <TextView
+		        android:id="@+id/textView4"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="Stupid Things"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <EditText
+		        android:id="@+id/etThings"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:ems="10" />
+		    
+		     <TextView
+		        android:id="@+id/textView5"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="Hateful Act"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <EditText
+		        android:id="@+id/etAction"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:ems="10" />
+		    
+		    <TextView
+		        android:id="@+id/textView6"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="Outro"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <EditText
+		        android:id="@+id/etOutro"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:ems="10" />
+		   
+		    
+		</LinearLayout>
+	</ScrollView>
+
+	<LinearLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" 
+    android:layout_weight = "40">
+
+	    <Button
+	        android:id="@+id/bSentEmail"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:text="Send Email" />
+
+	</LinearLayout>
+	
+	<LinearLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" 
+    android:layout_weight = "45">
+	    <AnalogClock
+	        android:id="@+id/analogClock1"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent" 
+	        android:layout_gravity="center"/>
+	</LinearLayout>
+
+</LinearLayout>

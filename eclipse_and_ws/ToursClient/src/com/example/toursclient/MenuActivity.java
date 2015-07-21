@@ -9,8 +9,8 @@ import android.widget.ListView;
 
 public class MenuActivity extends ListActivity{
 
-	String classes[] = {"Overview","SearchTourActivity","HomeScreen"};
-	String labels[] = {"Overview","Search For Tour","Logout"};
+	String classes[] = {"Overview","SearchTourActivity","Email","HomeScreen"};
+	String labels[] = {"Overview","Search For Tour","Send Vicious Email","Logout"};
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -33,13 +33,4 @@ public class MenuActivity extends ListActivity{
 			e.printStackTrace();
 		}		
 	}
-
-	@Override
-	protected void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-		finish();
-	}
-
-	
 }

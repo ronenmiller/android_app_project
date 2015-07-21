@@ -18,7 +18,6 @@ public class HomeScreen extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
         
-        /* instaciate email validator */
         
         /* declare homescreen objects*/ 
         Button loginButton = (Button) findViewById(R.id.loginButton);
@@ -39,7 +38,7 @@ public class HomeScreen extends ActionBarActivity {
 				String password = passwordInput.getText().toString();
 				String output = "User Name: "+username+" Password: "+password;
 				Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
-				startActivity(goToMenuScreen);
+				startActivity(goToSignUpScreen);
 			}
 		});
         
