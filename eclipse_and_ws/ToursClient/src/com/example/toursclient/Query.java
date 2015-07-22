@@ -12,5 +12,4 @@ public class Query {
 	public String city;
 	public String region;
 	public String country;
-	public String state;
 }

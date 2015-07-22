@@ -61,10 +61,10 @@ public class ClientExample {
              * then pack entire container into JSON
              */
             String j_1 = g.toJson(q2);
-            System.out.println("Packed JSON QueryAddUser String is:\n "+ j_1);
+            System.out.println("1-Packed JSON QueryAddUser String is:\n "+ j_1);
             qC2.setQuery(j_1);
             String j_2 = g.toJson(qC2);//, QueryContainer.class);
-            System.out.println("\nPacked JSON QueryContainer String is:\n "+ j_2);
+            System.out.println("\n2-Packed JSON QueryContainer String is:\n "+ j_2);
             
        
             httpPost.setEntity(new StringEntity(j_2));

@@ -67,6 +67,7 @@ public class ToursServerServlet extends HttpServlet {
 		String reponseStream = JDBCServer.fetchResponse(jsonStream);
 		ResponseContainer responseContainer =  gson.fromJson(reponseStream, ResponseContainer.class);
         String reqType = responseContainer.getType();
+        response.getWriter().write(reponseStream);
         System.out.println(reqType);
         System.out.println(responseContainer.getResponse());
         
