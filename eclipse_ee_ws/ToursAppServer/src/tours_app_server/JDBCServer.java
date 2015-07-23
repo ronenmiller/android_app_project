@@ -1,15 +1,19 @@
 package tours_app_server;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
-import org.json.JSONObject;
+import org.json.JSONArray;
 import org.postgresql.util.PSQLException;
+
+import tours_app_client.AddUserQuery;
+import tours_app_client.GeoQuery;
+import tours_app_client.QueryContainer;
 
 public final class JDBCServer {
 	static EmailValidator emailValidator = EmailValidator.getInstance();
@@ -43,34 +47,28 @@ public final class JDBCServer {
 		try {
 			// fetch request type
 			Gson gson = new Gson();
-			Message requestMessage = gson.fromJson(jsonStream, Message.class);
-			if (requestMessage.getMessageJson() == null) {
-				throw new IllegalArgumentException("Incoming message is empty!");
-			}
-			
-			JSONObject requestJSON = new JSONObject(requestMessage.getMessageJson());
-			
-			switch (requestMessage.getMessageID()) {
-				case Message.MessageTypes.ADD_USER: {
-					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
-					String password = requestJSON.getString(Message.MessageKeys.USER_PASSWORD_KEY);
-					String email    = requestJSON.getString(Message.MessageKeys.USER_EMAIL_KEY);
-					String phone    = requestJSON.getString(Message.MessageKeys.USER_PHONE_KEY);
-					boolean isGuide = Boolean.getBoolean(requestJSON.
-							getString(Message.MessageKeys.USER_TYPE_KEY));
-					return addUser(username, password, email, phone, isGuide);
-				}
-				case Message.MessageTypes.GET_CITY_ID: {
-		        	String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
-		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
-		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
-		        	return getCityIdByName(city, region, country);
-				}
-				default: {
-					throw new IllegalArgumentException("Illegal message ID!");
-				}
-			}
-	       
+			QueryContainer queryContainer =  gson.fromJson(jsonStream, QueryContainer.class);
+	        String reqType = queryContainer.getType();
+	        
+	        if (reqType.equals("addUser")) {
+	        	AddUserQuery addUserQuery = gson.fromJson(queryContainer.getQuery(), AddUserQuery.class);
+	        	String username = addUserQuery.getUname();
+	        	String password = addUserQuery.getPass();
+	        	String email = addUserQuery.getEmail();
+	        	String phoneNumber = addUserQuery.getPhnum();
+	        	boolean userType = addUserQuery.getUtype();
+	        	return addUser(username, password, email, phoneNumber, userType);
+	        }
+	        
+	        if (reqType.equals("getCityId"))
+	        {
+	        	GeoQuery geoQuery = gson.fromJson(queryContainer.getQuery(), GeoQuery.class);
+	        	String city = geoQuery.getCity();
+	        	String region = geoQuery.getRegion();
+	        	String country = geoQuery.getCountry();
+	        	return getCityIdByName(city, region, country);
+	        	
+	        }
 			/*else if (q.reqType.equals("rmUser"))
 				JDBCServer.rmUser(q.uname, q.password);
 			else if (q.reqType.equals("find_cityid"))
@@ -97,7 +95,7 @@ public final class JDBCServer {
 		   Class.forName(JDBC_DRIVER);
 		}
 		catch (ClassNotFoundException ex) {
-		   System.err.println("Error: unable to load driver class!");
+		   System.out.println("Error: unable to load driver class!");
 		   System.exit(1);
 		}
 		// Get JDBC Driver Manager connection
@@ -106,7 +104,7 @@ public final class JDBCServer {
 		   conn = DriverManager.getConnection(DB_URL, USER, PASS);
 		}
 		catch (SQLException se) {
-		   System.err.println("Error: unable to get driver connection!");
+		   System.out.println("Error: unable to get driver connection!");
 		   System.exit(1);
 		}
 	}
@@ -143,7 +141,7 @@ public final class JDBCServer {
 		}
 		catch (SQLException se) {
 			se.printStackTrace();
-			System.err.println("Error: closing connection failed!");
+			System.out.println("Error: closing connection failed!");
 			System.exit(1);
 		}
 		
@@ -255,17 +253,13 @@ public final class JDBCServer {
 		
 		// modify database
 		System.out.println("Adding the user to the database...");
-		
-		String isModified = String.valueOf(modifyDB(cstmt));
-		Map<String, String> map = new HashMap<String, String>();
-		map.put(Message.MessageKeys.IS_MODIFIED, isModified);
-				
-		String messageJsonStr = new JSONObject(map).toString();
-		Message message = new Message(Message.MessageTypes.ADD_USER, messageJsonStr);
+		BooleanResponse booleanResponse = new BooleanResponse(modifyDB(cstmt));
 		
 		// pack the result into JSON format
 		Gson gson = new Gson();
-		return gson.toJson(message); 
+		ResponseContainer responseContainer = new ResponseContainer("addUser");
+		responseContainer.setResponse(gson.toJson(booleanResponse));
+		return gson.toJson(responseContainer); 
 	}
 	
    /**
@@ -370,7 +364,7 @@ public final class JDBCServer {
 		ResultSet resultSet = queryDB(cstmt);
 		String cityId;
 		try {
-			cityId = ResultSetConverter.convertResultSetIntoString(resultSet);
+			cityId =  ResultSetConverter.convertResultSetIntoString(resultSet);
 		}
 		catch (SQLException e)
 		{
@@ -378,25 +372,13 @@ public final class JDBCServer {
 		}
 		
 		// TODO: handle exception when return value is null
-		
-		Map<String, String> map = new HashMap<String, String>();
-		map.put(Message.MessageKeys.LOCATION_CITY_ID_KEY, cityId);
-		String messageJsonStr = new JSONObject(map).toString();
-		Message message = new Message(Message.MessageTypes.GET_CITY_ID, messageJsonStr);
-		
-		/*try {
-			resultSet.close();
-			cstmt.close();
-			conn.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
+		StringResponse stringResponse = new StringResponse(cityId);
 		
 		// pack the result into JSON format
 		Gson gson = new Gson();
-		return gson.toJson(message);
-		
+		ResponseContainer responseContainer = new ResponseContainer("getCityId");
+		responseContainer.setResponse(gson.toJson(stringResponse));
+		return gson.toJson(responseContainer);
 	}
 	
 	/**

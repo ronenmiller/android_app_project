@@ -6,16 +6,11 @@ import java.io.IOException;
 
 
 
-
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
@@ -38,18 +33,22 @@ public class ToursServerServlet extends HttpServlet {
     public ToursServerServlet() {
         super();
         JDBCServer.init(); // establish a connection to the database
+        // TODO Auto-generated constructor stub
     }
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException { }
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+		// Instanciate Gson
+		Gson gson = new Gson();
 		
 		StringBuffer jb = new StringBuffer();
 		String line = null;
@@ -65,23 +64,14 @@ public class ToursServerServlet extends HttpServlet {
 		String jsonStream = jb.toString();
 		
 		
-		String responseJsonStr = JDBCServer.fetchResponse(jsonStream);
-		System.out.println("bla: " + responseJsonStr);
-		
-		// Instantiate Gson
-		Gson gson = new Gson();
-		Message responseMessage = gson.fromJson(responseJsonStr, Message.class);
-		System.out.println(responseMessage.getMessageID());
-		try {
-			JSONObject testJson = new JSONObject(responseMessage.getMessageJson());
-			//System.out.println("Value: " + testJson.get(Message.MessageKeys.LOCATION_CITY_ID_KEY));
-			System.out.println("Value: " + testJson.get(Message.MessageKeys.IS_MODIFIED));
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		String reponseStream = JDBCServer.fetchResponse(jsonStream);
+		ResponseContainer responseContainer =  gson.fromJson(reponseStream, ResponseContainer.class);
+        String reqType = responseContainer.getType();
+        System.out.println(reqType);
+        System.out.println(responseContainer.getResponse());
         
-        //response.getWriter().write(responseJsonStr);
+        //response.getWriter().write(JDBCServer.parseJson(jsonStream));
+		//JDBCServer.parseJson(jsonStream);
 		response.setStatus(HttpServletResponse.SC_OK);
 		//response.getWriter().write("Response from servlet!");
 		response.getWriter().flush();
