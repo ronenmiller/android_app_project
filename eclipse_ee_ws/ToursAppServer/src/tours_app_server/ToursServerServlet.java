@@ -68,8 +68,8 @@ public class ToursServerServlet extends HttpServlet {
 			System.out.println(responseMessage.getMessageID());
 			try {
 				JSONObject testJson = new JSONObject(responseMessage.getMessageJson());
-				System.out.println("Value: " + testJson.get(Message.MessageKeys.LOCATION_CITY_ID_KEY));
-				//System.out.println("Value: " + testJson.get(Message.MessageKeys.IS_MODIFIED));
+				//System.out.println("Value: " + testJson.get(Message.MessageKeys.LOCATION_CITY_ID_KEY));
+				System.out.println("Value: " + testJson.get(Message.MessageKeys.IS_MODIFIED));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
