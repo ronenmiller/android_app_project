@@ -30,7 +30,6 @@ public class ClientExample {
         	//String Address = "http://10.0.0.1:8080/ToursAppServer/tours_slet";
         	// http post 
             HttpPost httpPost = new HttpPost(Address);
-<<<<<<< HEAD
 
     		Map<String, String> mapa = new HashMap<String, String>();
     		mapa.put(Message.MessageKeys.USER_NAME_KEY, "Moti_Ban");
@@ -41,49 +40,6 @@ public class ClientExample {
     		JSONObject jsonObjectM = new JSONObject(mapa);
     		Message messageM = new Message(Message.MessageTypes.ADD_USER, jsonObjectM.toString());
     		String messageJsonM = gson.toJson(messageM);
-=======
-            /*
-    		 * Create addUser queryContainer:
-    		 */
-    		// Container for addUser
-    		QueryContainer qC = new QueryContainer("addUser");
-    		// Query to turn into JSON
-    		AddUserQuery q = new AddUserQuery("Moti_Ban","secret2013","bannan@gmail.com","0545555689",false);
-            
-            
-            /*
-             * pack Query into JSON format String and put into container
-             * then pack entire container into JSON
-             */
-            Gson g = new Gson();
-            String j1 = g.toJson(q);
-            System.out.println("Packed JSON QueryAddUser String is:\n "+ j1);
-            qC.setQuery(j1);
-            String j2 = g.toJson(qC);//, QueryContainer.class);
-            System.out.println("\nPacked JSON QueryContainer String is:\n "+ j2);
-            
-            
-            
-            /*
-    		 * Create getCityid queryContainer:
-    		 */
-    		// Container for addUser
-    		QueryContainer qC2 = new QueryContainer("getCityId");
-    		// Query to turn into JSON
-    		GeoQuery q2 = new GeoQuery("Los Angeles","California","United States");
-    		
-            
-            
-            /*
-             * pack Query into JSON format String and put into container
-             * then pack entire container into JSON
-             */
-            String j_1 = g.toJson(q2);
-            System.out.println("1-Packed JSON QueryAddUser String is:\n "+ j_1);
-            qC2.setQuery(j_1);
-            String j_2 = g.toJson(qC2);//, QueryContainer.class);
-            System.out.println("\n2-Packed JSON QueryContainer String is:\n "+ j_2);
->>>>>>> origin/master
             
     		Map<String, String> map = new HashMap<String, String>();
     		map.put(Message.MessageKeys.LOCATION_CITY_NAME_KEY, "Los Angeles");
