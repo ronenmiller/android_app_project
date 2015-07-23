@@ -65,6 +65,7 @@ public class ToursServerServlet extends HttpServlet {
 		String jsonStream = jb.toString();
 		
 		
+<<<<<<< HEAD
 		String responseJsonStr = JDBCServer.fetchResponse(jsonStream);
 		System.out.println("bla: " + responseJsonStr);
 		
@@ -80,6 +81,14 @@ public class ToursServerServlet extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+=======
+		String reponseStream = JDBCServer.fetchResponse(jsonStream);
+		ResponseContainer responseContainer =  gson.fromJson(reponseStream, ResponseContainer.class);
+        String reqType = responseContainer.getType();
+        response.getWriter().write(reponseStream);
+        System.out.println(reqType);
+        System.out.println(responseContainer.getResponse());
+>>>>>>> origin/master
         
         //response.getWriter().write(responseJsonStr);
 		response.setStatus(HttpServletResponse.SC_OK);

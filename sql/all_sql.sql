@@ -84,23 +84,24 @@ ALTER TABLE users OWNER TO postgres;
 /*
 SECTION: 	Build people table
 DESC:		Build the people table and add additional information about each person
+			A person's details should not be deleted even if the user chooses to delete himself
 TABLE:		u_id - a unique user ID (references u_id in users table),
-		p_first - person's first name,
-		p_last - person's last name,
-		email - unique for each user (primary key),
-		phone_number - must be entered and unique for SMS confirmation,
-		city_id - person current city of residence (ID),
-		state_id - person current state of residence (ID),
-		country_id - person current country of residence (ID),
-		languages - languages spoken by the person
+			p_first - person's first name,
+			p_last - person's last name,
+			email - unique for each user (primary key),
+			phone_number - must be entered and unique for SMS confirmation,
+			city_id - person current city of residence (ID),
+			state_id - person current state of residence (ID),
+			country_id - person current country of residence (ID),
+			languages - languages spoken by the person
 */
 DROP TABLE IF EXISTS people CASCADE;
 CREATE TABLE people (
-	u_id 		uuid 	     REFERENCES users (u_id) ON DELETE RESTRICT, -- holds unique user ID
+	u_id 		uuid 	     REFERENCES users(u_id), 
 	p_first		VARCHAR(80)  NOT NULL,
 	p_last		VARCHAR(80),
-	email		VARCHAR(80)  PRIMARY KEY, -- email address must be unique
-	phone_number	VARCHAR(80)  UNIQUE NOT NULL, -- must be entered and unique for SMS confirmation
+	email		VARCHAR(80)  PRIMARY KEY REFERENCES users(email) ON UPDATE CASCADE, -- email address must be unique
+	phone_number	VARCHAR(80) REFERENCES users(phone_number) ON UPDATE CASCADE,
 	city_str	VARCHAR(255),
 	state_str	VARCHAR(255),
 	country_str	VARCHAR(255),
@@ -130,7 +131,7 @@ TABLE:		u_id - a unique user ID of the tour's guide,
 */
 DROP TABLE IF EXISTS tours CASCADE;
 CREATE TABLE tours (
-	u_id 		uuid 	     NOT NULL REFERENCES users(u_id),
+	u_id 		uuid 	     NOT NULL REFERENCES users(u_id) ON DELETE RESTRICT,
 	t_id		INTEGER      PRIMARY KEY,
 	t_cityid	VARCHAR(255) NOT NULL REFERENCES cities(cityid) ON DELETE RESTRICT,
 	t_duration	NUMERIC	     NOT NULL,
@@ -251,9 +252,12 @@ CREATE OR REPLACE VIEW view_tours AS
 SELECT users.u_name, tours.t_id, cities.city, states.region, country.country, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
 FROM users, tours, languages, cities, states, country;
 
+CREATE OR REPLACE VIEW view_city_by_name AS
+SELECT cities.city, states.region, country.country
+FROM cities, states, country;
+
 --create OR REPLACE VIEW view_slots AS
 --SElECT 
-
 
 CREATE OR REPLACE FUNCTION add_user(p_u_name VARCHAR(80), p_u_pass VARCHAR(16), p_email VARCHAR(80), p_phone_number VARCHAR(80), p_u_type BIT)
 	RETURNS VOID AS 
@@ -283,7 +287,54 @@ END;
 $$ 
 LANGUAGE 'plpgsql';
 
+
+/* Adds a regisitered user's personal details to the database.
+
+* @param  u_id	    	the allocated user id to each person
+* @param  p_first		person's first name
+* @param  p_last		person's last name
+* @param  email			person's email address
+* @param  phone_number  person's phone number (for tours approval and security)
+* @param  city_str		person's city of residence
+* @param  state_str		the state where the above city is located
+* @param  country_str   the country where the above state is located
+* @param  languages		preffered language to be used in the app UI
+  
+* @return VOID		  
+*/
+
+DROP FUNCTION IF EXISTS add_person(uuid, VARCHAR(16), VARCHAR(80), VARCHAR(80), VARCHAR(255), VARCHAR(255), VARCHAR(255), INTEGER);
+CREATE OR REPLACE FUNCTION add_person(u_id uuid, p_first VARCHAR(80), p_last VARCHAR(80), email VARCHAR(80), phone_number VARCHAR(80), city_str VARCHAR(255), state_str VARCHAR(255), country_str VARCHAR(255), languages INTEGER)
+	RETURNS VOID AS 
+$$
+DECLARE
+	_exception_err TEXT;
+BEGIN
+	BEGIN
+		INSERT INTO people(u_id, p_first, p_last, email, phone_number, city_str, state_str, country_str, languages)
+		VALUES (u_id, p_first, p_last, email, phone_number, city_str, state_str, country_str, languages);
+
+	EXCEPTION 
+		WHEN unique_violation THEN
+			GET STACKED DIAGNOSTICS _exception_err = MESSAGE_TEXT;
+			RAISE unique_violation USING MESSAGE = _exception_err;
+		WHEN foreign_key_violation THEN
+			GET STACKED DIAGNOSTICS _exception_err = MESSAGE_TEXT;
+			RAISE foreign_key_violation USING MESSAGE = _exception_err;
+		WHEN OTHERS THEN
+			GET STACKED DIAGNOSTICS _exception_err = MESSAGE_TEXT;
+			RAISE EXCEPTION USING MESSAGE = _exception_err;
+	
+	END;
+
+	RETURN;
+END;
+$$ 
+LANGUAGE 'plpgsql';
+
+
 /* TODO: need to remove all user's appearances in other tables as well */
+DROP FUNCTION IF EXISTS rm_user(VARCHAR(80), VARCHAR(16));
 CREATE OR REPLACE FUNCTION rm_user(p_u_name VARCHAR(80), p_u_pass VARCHAR(16))
 	RETURNS VOID AS 
 $$
@@ -291,7 +342,19 @@ DECLARE
 	v_exception_err TEXT;
 BEGIN
 	BEGIN
-		DELETE FROM users WHERE (u_name = p_u_name AND u_pass = p_u_pass);
+		-- A person's details should not be deleted even if the user chooses to delete himself
+		ALTER TABLE people DROP CONSTRAINT IF EXISTS people_u_id_fkey;
+		ALTER TABLE people DROP CONSTRAINT IF EXISTS people_email_fkey;
+		ALTER TABLE people DROP CONSTRAINT IF EXISTS people_phone_number_fkey;
+
+		-- TODO: add users to slots and attach ON DELETE RESTRICT (if a user is signed up to a tour, delete operation should fail)
+		DELETE FROM users 
+		WHERE (users.u_name = p_u_name AND users.u_pass = p_u_pass);
+
+		ALTER TABLE people ADD CONSTRAINT people_u_id_fkey FOREIGN KEY (u_id) REFERENCES users(u_id) NOT VALID;
+		ALTER TABLE people ADD CONSTRAINT people_email_fkey FOREIGN KEY (email) REFERENCES users(email) NOT VALID;
+		ALTER TABLE people ADD CONSTRAINT people_phone_number_fkey FOREIGN KEY (phone_number) REFERENCES users(phone_number) NOT VALID;
+
 	EXCEPTION 
 		WHEN OTHERS THEN
 			GET STACKED DIAGNOSTICS v_exception_err = MESSAGE_TEXT;
@@ -302,6 +365,8 @@ END;
 $$ 
 LANGUAGE 'plpgsql';
 
+
+/* add tour */
 CREATE OR REPLACE FUNCTION add_tour(p_u_id uuid, p_city_name VARCHAR(255), p_region_name VARCHAR (255), p_country_name VARCHAR(255), p_t_duration NUMERIC, p_t_description TEXT, p_t_photos bytea[], p_t_languages INTEGER)
 	RETURNS VOID AS 
 $$
@@ -658,6 +723,59 @@ BEGIN
 	HAVING slots.ts_vacant > 0;
 
 	RETURN;
+END;
+$$ 
+LANGUAGE 'plpgsql';
+
+/* Finds a unique city ID in the database based on the city's name, region, and country.  
+*
+* @param  city_name	    the name of the requested city
+* @param  region_name	the name of the region/state where the city is located
+* @param  country_name	the name of the country where the city is located
+* @return VARCHAR(255)	the requested city's ID.		  
+*/
+
+DROP FUNCTION IF EXISTS query_cityid_by_name(CHARACTER VARYING, CHARACTER VARYING, CHARACTER VARYING);
+CREATE OR REPLACE FUNCTION query_cityid_by_name(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255))
+	RETURNS VARCHAR(255) AS 
+$$
+DECLARE
+	_country_id      VARCHAR(255);
+	_region_id       VARCHAR(255);
+	_city_id 		 VARCHAR(255);
+BEGIN
+	SELECT country.countryid
+	INTO _country_id
+	FROM country
+	WHERE country.country = country_name;
+
+	IF NOT FOUND THEN
+        RAISE EXCEPTION 'No country named % was found', $3;
+    END IF;
+
+	SELECT states.regionid
+	INTO _region_id
+	FROM states 
+	WHERE states.countryid = _country_id 
+	AND states.region = region_name;
+	
+	IF NOT FOUND THEN
+        RAISE EXCEPTION 'No region named % in country % was found', $2, $3;
+    END IF;
+    
+	SELECT cities.cityid
+	INTO _city_id
+	FROM cities 
+	WHERE cities.countryid = _country_id 
+	AND cities.regionid = _region_id 
+	AND cities.city = city_name;
+	
+	IF NOT FOUND THEN
+        RAISE EXCEPTION 'No city named % in region % of country % was found', $1, $2, $3;
+    END IF;
+    
+    RETURN _city_id;
+
 END;
 $$ 
 LANGUAGE 'plpgsql';

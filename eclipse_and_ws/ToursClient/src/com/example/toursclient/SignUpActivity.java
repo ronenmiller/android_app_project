@@ -21,9 +21,9 @@ public class SignUpActivity extends ActionBarActivity {
         
         final EditText signUpEmailInput = (EditText)findViewById(R.id.signUpEmailInput);
         final EditText signUpUNameInput = (EditText)findViewById(R.id.signUpUNameInput);
-        final EditText signUpCountryInput = (EditText)findViewById(R.id.signUpCountryInput);
-        final EditText signUpStateInput = (EditText)findViewById(R.id.signUpStateInput);
-        final EditText signUpCityInput = (EditText)findViewById(R.id.signUpCityInput);
+        //final EditText signUpCountryInput = (EditText)findViewById(R.id.signUpCountryInput);
+        //final EditText signUpStateInput = (EditText)findViewById(R.id.signUpStateInput);
+        //final EditText signUpCityInput = (EditText)findViewById(R.id.signUpCityInput);
         final EditText signUpPhoneInput = (EditText)findViewById(R.id.signUpPhoneInput);
         final EditText signUpPassInput = (EditText)findViewById(R.id.signUpPassInput);
         final EditText signUpREPassInput = (EditText)findViewById(R.id.signUpREPassInput);
@@ -47,30 +47,26 @@ public class SignUpActivity extends ActionBarActivity {
 				new Thread(new Runnable() {
 				    public void run() {
 				    	System.out.println("Successfully running");
+				    	
 						Boolean checkStatus = true;
-						Query q = new Query();
-			            q.reqType = "addUser";
-			            String email = signUpEmailInput.getText().toString();
-						q.uname = signUpUNameInput.getText().toString();
-						q.country = signUpCountryInput.getText().toString();
-						q.state = signUpStateInput.getText().toString();
-						q.city = signUpCityInput.getText().toString();
-						q.phnum = signUpPhoneInput.getText().toString();
-						q.email = email;
 						
+			            String email = signUpEmailInput.getText().toString();
+						String uname = signUpUNameInput.getText().toString();
+						//q.country = signUpCountryInput.getText().toString();
+						//String state = signUpStateInput.getText().toString();
+						//q.city = signUpCityInput.getText().toString();
+						String phnum = signUpPhoneInput.getText().toString();
 						// check parameters
 						String pass = signUpPassInput.getText().toString();
 						String rEPass = signUpREPassInput.getText().toString();
+						boolean utype = false;
 						if (pass.isEmpty() || rEPass.isEmpty()){
 							Toast.makeText(getApplicationContext(), "Error - Please fill in password!", 
 									   Toast.LENGTH_LONG).show();
 							checkStatus = false;
 							return;
 						}
-						if (pass.equals(rEPass)){
-							q.password = pass;
-						}
-						else{
+						if (!(pass.equals(rEPass))){
 							Toast.makeText(getApplicationContext(), "Mismatch in password inputs!", 
 									   Toast.LENGTH_LONG).show();
 							checkStatus = false;
@@ -79,9 +75,12 @@ public class SignUpActivity extends ActionBarActivity {
 						
 						// if all checks are OK dispatch query
 						if(checkStatus){
-							boolean status = QueryDispacher.dispatchQuery(q);
+							QueryContainer addUserQC = new QueryContainer("addUser");
+							AddUserQuery q = new AddUserQuery(uname, pass, email, phnum, utype);
+							addUserQC.setQuery(QueryDispacher.gson.toJson(q));
+							Boolean status = QueryDispacher.dispatchQuery(addUserQC);
+							System.out.println("Returned status is: "+ status.toString());
 						}
-						
 					}
 				}).start();
 			}
