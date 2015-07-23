@@ -32,7 +32,7 @@ public final class JDBCServer {
 	static final String PASS = "abc";
 	
 	public static String fetchResponse(String jsonStream) {
-		
+	
 		try {
 			// fetch request type
 			Gson gson = new Gson();
@@ -51,7 +51,7 @@ public final class JDBCServer {
 					String phone    = requestJSON.getString(Message.MessageKeys.USER_PHONE_KEY);
 					boolean isGuide = Boolean.getBoolean(requestJSON.
 							getString(Message.MessageKeys.USER_TYPE_KEY));
-					//return addUser(username, password, email, phone, isGuide);
+					return addUser(username, password, email, phone, isGuide);
 				}
 				case Message.MessageTypes.GET_CITY_ID: {
 		        	String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
@@ -234,58 +234,58 @@ public final class JDBCServer {
     * @param isGuide	the user can specify whether he is also a guide
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
-	/*public static String addUser(String username, String password, String email, String phone, boolean isGuide) {
-		// if exists, clear previous statement
-		try {
-			if (resultSet != null) {
-				resultSet.clearBatch(); // empties this statement object's current list of SQL commands
-				resultSet.clearParameters(); // clears the current parameter values immediately.
-			}
-		}
-		catch (SQLException se) {
-			se.printStackTrace();
-		}
+	public static String addUser(String username, String password, String email, String phone, boolean isGuide) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
 		
 		try {
 		   if (connection != null) {
 			   String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
-			   resultSet = connection.prepareCall(sql);
+			   cstmt = connection.prepareCall(sql);
 		   }
 		   else { 
-			   System.out.println("Error: connection in addUser is null!");
+			   throw new NullPointerException("Error: connection is null in addUser!");
 		   }
 		}
 		catch (SQLException se) {
-			//TODO: nothing we can do?
-			System.out.println("Error: SQL exception at prepareCall in add user\n" + se);
+			System.out.println("Error: SQL exception at prepareCall in addUser\n" + se);
 			System.exit(1);
 		}
 		try {
-			resultSet.setString(1, uname); // user name
-			resultSet.setString(2, password); // password
-			resultSet.setString(3, email); // email
-			resultSet.setString(4, phnum); // phone number
-			resultSet.setBoolean(5, utype); // user type
+			final int FIRST_PARAMETER = 1;
+			final int SECOND_PARAMETER = 2;
+			final int THIRD_PARAMETER = 3;
+			final int FOURTH_PARAMETER = 4;
+			final int FIFTH_PARAMETER = 5;
+			cstmt.setString(FIRST_PARAMETER, username); // user name
+			cstmt.setString(SECOND_PARAMETER, password); // password
+			cstmt.setString(THIRD_PARAMETER, email); // email
+			cstmt.setString(FOURTH_PARAMETER, phone); // phone number
+			cstmt.setBoolean(FIFTH_PARAMETER, isGuide); // user type
 		}
 		catch (SQLException se) {
-			System.out.println("Error: SQL exception setting parameters in addUser");
+			System.err.println("Error: SQL exception setting parameters in addUser");
 			System.exit(1);
 		}
 		
 		// modify database
 		System.out.println("Adding the user to the database...");
+		String isModified = String.valueOf(modifyServerDB(cstmt));
 		
-		String isModified = String.valueOf(modifyServerDB(resultSet));
+		// release resources
+		closeStatement(cstmt);
+		closeConnection(connection);
+		
+		// generate JSON message with the results
 		Map<String, String> map = new HashMap<String, String>();
 		map.put(Message.MessageKeys.IS_MODIFIED, isModified);
-				
 		String messageJsonStr = new JSONObject(map).toString();
+		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.ADD_USER, messageJsonStr);
-		
-		// pack the result into JSON format
+		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);
-	}*/
+	}
 	
    /**
     * remove an existing user from the database.
@@ -350,7 +350,7 @@ public final class JDBCServer {
 	// the returned city ID will help find queries related to the requested city faster.
 	public static String getCityIdByName(String city, String region, String country) {
 		Connection connection = initConnection();
-		CallableStatement cstmt = null;;
+		CallableStatement cstmt = null;
 			
 		try {
 		   if (connection != null) {
@@ -374,7 +374,7 @@ public final class JDBCServer {
 			cstmt.setString(THIRD_PARAMETER, country);
 		}
 		catch (SQLException se) {
-			System.out.println("Error: SQL exception setting parameters in getCityIdByName");
+			System.err.println("Error: SQL exception setting parameters in getCityIdByName");
 			System.exit(1);
 		}
 		
