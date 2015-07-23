@@ -1,21 +1,18 @@
 package tours_app_server;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 import org.postgresql.util.PSQLException;
 
-import tours_app_client.AddUserQuery;
-import tours_app_client.GeoQuery;
-import tours_app_client.QueryContainer;
-
 public final class JDBCServer {
+	// TODO: remove email validator? not in use
 	static EmailValidator emailValidator = EmailValidator.getInstance();
 	/*****************************************************
 	 * definitions to connect to postgres server
@@ -34,41 +31,39 @@ public final class JDBCServer {
 	static final String USER = "postgres";
 	static final String PASS = "abc";
 	
-	// the connection to the DB
-	static Connection conn = null;
-	static CallableStatement cstmt = null;
-	
-	/**
-	 * TODO: move to parser class
-	 */
-	
 	public static String fetchResponse(String jsonStream) {
 		
 		try {
 			// fetch request type
 			Gson gson = new Gson();
-			QueryContainer queryContainer =  gson.fromJson(jsonStream, QueryContainer.class);
-	        String reqType = queryContainer.getType();
-	        
-	        if (reqType.equals("addUser")) {
-	        	AddUserQuery addUserQuery = gson.fromJson(queryContainer.getQuery(), AddUserQuery.class);
-	        	String username = addUserQuery.getUname();
-	        	String password = addUserQuery.getPass();
-	        	String email = addUserQuery.getEmail();
-	        	String phoneNumber = addUserQuery.getPhnum();
-	        	boolean userType = addUserQuery.getUtype();
-	        	return addUser(username, password, email, phoneNumber, userType);
-	        }
-	        
-	        if (reqType.equals("getCityId"))
-	        {
-	        	GeoQuery geoQuery = gson.fromJson(queryContainer.getQuery(), GeoQuery.class);
-	        	String city = geoQuery.getCity();
-	        	String region = geoQuery.getRegion();
-	        	String country = geoQuery.getCountry();
-	        	return getCityIdByName(city, region, country);
-	        	
-	        }
+			Message requestMessage = gson.fromJson(jsonStream, Message.class);
+			if (requestMessage.getMessageJson() == null) {
+				throw new IllegalArgumentException("Incoming message is empty!");
+			}
+			
+			JSONObject requestJSON = new JSONObject(requestMessage.getMessageJson());
+			
+			switch (requestMessage.getMessageID()) {
+				case Message.MessageTypes.ADD_USER: {
+					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
+					String password = requestJSON.getString(Message.MessageKeys.USER_PASSWORD_KEY);
+					String email    = requestJSON.getString(Message.MessageKeys.USER_EMAIL_KEY);
+					String phone    = requestJSON.getString(Message.MessageKeys.USER_PHONE_KEY);
+					boolean isGuide = Boolean.getBoolean(requestJSON.
+							getString(Message.MessageKeys.USER_TYPE_KEY));
+					//return addUser(username, password, email, phone, isGuide);
+				}
+				case Message.MessageTypes.GET_CITY_ID: {
+		        	String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
+		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
+		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
+		        	return getCityIdByName(city, region, country);
+				}
+				default: {
+					throw new IllegalArgumentException("Illegal message ID!");
+				}
+			}
+	       
 			/*else if (q.reqType.equals("rmUser"))
 				JDBCServer.rmUser(q.uname, q.password);
 			else if (q.reqType.equals("find_cityid"))
@@ -80,47 +75,52 @@ public final class JDBCServer {
 			System.out.println("Error parsing JSON request string");
 		}
 		
-		return "abc";
+		return null;
 	}
 	/**
 	 * Constructor: Initialize connection and class variables.
 	 */
-	public static void init() {
+	public static Connection initConnection() {
 		/******************************************************
 		 * Establish connection to server and driver
 		 ******************************************************/
 		System.out.println("JDBCServer> init...");
+		Connection connection = null;
 		// Register JDBC driver
 		try {
 		   Class.forName(JDBC_DRIVER);
 		}
 		catch (ClassNotFoundException ex) {
-		   System.out.println("Error: unable to load driver class!");
+		   System.err.println("Error: unable to load driver class!");
 		   System.exit(1);
 		}
 		// Get JDBC Driver Manager connection
 		try {
 		   System.out.println("Connecting to database...");
-		   conn = DriverManager.getConnection(DB_URL, USER, PASS);
+		   connection = DriverManager.getConnection(DB_URL, USER, PASS);
 		}
 		catch (SQLException se) {
-		   System.out.println("Error: unable to get driver connection!");
+		   System.err.println("Error: unable to get driver connection!");
 		   System.exit(1);
 		}
+		
+		return connection;
 	}
 	
 	/**
-	 * Close the class's statement object in order to free up resources.
+	 * Close the given <code>ResultSet></code> object in order to free up resources.
 	 *   
-	 * @return	<code>true</code> if the statement was closed successfully, <code>false</code> otherwise.
+	 * @param resultSet the <code>ResultSet</code> to be closed 
+	 * @return			<code>true</code> if the statement was closed successfully,
+	 * 					<code>false</code> otherwise.
 	 */
-	public static boolean closeStatement() {
+	public static boolean closeResultSet(ResultSet resultSet) {
 		try {
-			if (cstmt != null)
-				cstmt.close();
+			if (resultSet != null)
+				resultSet.close();
 		}
 		catch (SQLException se) {
-			System.out.println("Error: closing statement failed!");
+			System.err.println("Error closing result set: " + se);
 			return false;
 		}
 		
@@ -128,21 +128,42 @@ public final class JDBCServer {
 	}
 	
 	/**
-	 * Close the class's connection object in order to free up resources.
+	 * Close the given <code>CallableSatement</code> object in order to free up resources.
 	 *   
-	 * @return	<code>true</code> if the connection was closed successfully, <code>false</code> otherwise.
+	 * @param cstmt the <code>CallableSatement</code> to be closed 
+	 * @return		<code>true</code> if the statement was closed successfully,
+	 * 				<code>false</code> otherwise.
 	 */
-	public static boolean closeConnection()
+	public static boolean closeStatement(CallableStatement cstmt) {
+		try {
+			if (cstmt != null)
+				cstmt.close();
+		}
+		catch (SQLException se) {
+			System.err.println("Error closing statement: " + se);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Close the given <code>Connection</code> object in order to free up resources.
+	 * 
+	 * @param connection the <code>Connection</code> to be closed 
+	 * @return			 <code>true</code> if the connection was closed successfully, 
+	 * 					 <code>false</code> otherwise.
+	 */
+	public static boolean closeConnection(Connection connection)
 	{
 		try {
-			if (conn != null) {
-				conn.close();
+			if (connection != null) {
+				connection.close();
 			}
 		}
 		catch (SQLException se) {
-			se.printStackTrace();
-			System.out.println("Error: closing connection failed!");
-			System.exit(1);
+			System.err.println("Error closing connection: " + se);
+			return false;
 		}
 		
 		return true;
@@ -154,7 +175,7 @@ public final class JDBCServer {
 	 * @param cstmt the statement to execute
 	 * @return 		<code>true</code> if the modification completed successfully, <code>false</code> otherwise.
 	 */
-	private static boolean modifyDB(CallableStatement cstmt) {
+	private static boolean modifyServerDB(CallableStatement cstmt) {
 		
 		try {
 			System.out.println("Updating database...");
@@ -206,19 +227,19 @@ public final class JDBCServer {
    /**
     * Add a new user to the database.
     * 
-    * @param uname 		the user's name in the application
+    * @param username 	the user's name in the application
     * @param password	the user's chosen password
     * @param email		the user's email address
-    * @param phnum		the user's phone number
-    * @param utype		the user can specify whether he is also a guide
+    * @param phone		the user's phone number
+    * @param isGuide	the user can specify whether he is also a guide
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
-	public static String addUser(String uname, String password, String email, String phnum, boolean utype) {
+	/*public static String addUser(String username, String password, String email, String phone, boolean isGuide) {
 		// if exists, clear previous statement
 		try {
-			if (cstmt != null) {
-				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
-				cstmt.clearParameters(); // clears the current parameter values immediately.
+			if (resultSet != null) {
+				resultSet.clearBatch(); // empties this statement object's current list of SQL commands
+				resultSet.clearParameters(); // clears the current parameter values immediately.
 			}
 		}
 		catch (SQLException se) {
@@ -226,9 +247,9 @@ public final class JDBCServer {
 		}
 		
 		try {
-		   if (conn != null) {
+		   if (connection != null) {
 			   String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
-			   cstmt = conn.prepareCall(sql);
+			   resultSet = connection.prepareCall(sql);
 		   }
 		   else { 
 			   System.out.println("Error: connection in addUser is null!");
@@ -240,11 +261,11 @@ public final class JDBCServer {
 			System.exit(1);
 		}
 		try {
-			cstmt.setString(1, uname); // user name
-			cstmt.setString(2, password); // password
-			cstmt.setString(3, email); // email
-			cstmt.setString(4, phnum); // phone number
-			cstmt.setBoolean(5, utype); // user type
+			resultSet.setString(1, uname); // user name
+			resultSet.setString(2, password); // password
+			resultSet.setString(3, email); // email
+			resultSet.setString(4, phnum); // phone number
+			resultSet.setBoolean(5, utype); // user type
 		}
 		catch (SQLException se) {
 			System.out.println("Error: SQL exception setting parameters in addUser");
@@ -253,14 +274,18 @@ public final class JDBCServer {
 		
 		// modify database
 		System.out.println("Adding the user to the database...");
-		BooleanResponse booleanResponse = new BooleanResponse(modifyDB(cstmt));
+		
+		String isModified = String.valueOf(modifyServerDB(resultSet));
+		Map<String, String> map = new HashMap<String, String>();
+		map.put(Message.MessageKeys.IS_MODIFIED, isModified);
+				
+		String messageJsonStr = new JSONObject(map).toString();
+		Message message = new Message(Message.MessageTypes.ADD_USER, messageJsonStr);
 		
 		// pack the result into JSON format
 		Gson gson = new Gson();
-		ResponseContainer responseContainer = new ResponseContainer("addUser");
-		responseContainer.setResponse(gson.toJson(booleanResponse));
-		return gson.toJson(responseContainer); 
-	}
+		return gson.toJson(message);
+	}*/
 	
    /**
     * remove an existing user from the database.
@@ -273,12 +298,12 @@ public final class JDBCServer {
     * @param password	the user's chosen password
     * @return 			<code>true</code> if the operation succeeded, <code>false</code> otherwise.
     */
-	public static boolean rmUser(String uname,String password) {
+	/*public static boolean rmUser(String uname,String password) {
 		// if exists, clear previous statement
 		try {
-			if (cstmt != null) {
-				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
-				cstmt.clearParameters(); // clears the current parameter values immediately.
+			if (resultSet != null) {
+				resultSet.clearBatch(); // empties this statement object's current list of SQL commands
+				resultSet.clearParameters(); // clears the current parameter values immediately.
 			}
 		}
 		catch (SQLException se) {
@@ -286,9 +311,9 @@ public final class JDBCServer {
 		}
 		
 		try {
-		   if (conn != null) {
+		   if (connection != null) {
 			   String sql = "{call rm_user (?, ?)}";
-			   cstmt = conn.prepareCall(sql);
+			   resultSet = connection.prepareCall(sql);
 		   }
 		   else { 
 			   System.out.println("Error: connection in rmUser is null!");
@@ -300,8 +325,8 @@ public final class JDBCServer {
 			System.exit(1);
 		}
 		try {
-			cstmt.setString(1, uname); // user name
-			cstmt.setString(2, password); // password
+			resultSet.setString(1, uname); // user name
+			resultSet.setString(2, password); // password
 		}
 		catch (SQLException se) {
 			System.out.println("Error: SQL exception setting parameters in rmUser");
@@ -309,8 +334,8 @@ public final class JDBCServer {
 		}
 		
 		System.out.println("Removing the user from the database...");
-		return modifyDB(cstmt);
-	}
+		return modifyServerDB(resultSet);
+	}*/
 	
 	/**
 	 * Finds a city's unique ID based on the names of the city, region/state and country.
@@ -324,35 +349,29 @@ public final class JDBCServer {
 	 */
 	// the returned city ID will help find queries related to the requested city faster.
 	public static String getCityIdByName(String city, String region, String country) {
-		// if exists, clear previous statement
-		try {
-			if (cstmt != null) {
-				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
-				cstmt.clearParameters(); // clears the current parameter values immediately.
-			}
-		}
-		catch (SQLException se) {
-			se.printStackTrace();
-		}
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;;
 			
 		try {
-		   if (conn != null) {
+		   if (connection != null) {
 			   String sql = "{call query_cityid_by_name (?, ?, ?)}";
-			   cstmt = conn.prepareCall(sql);
+			   cstmt = connection.prepareCall(sql);
 		   }
 		   else { 
-			   System.out.println("Error: connection in getCityIdByName is null!");
+			   throw new NullPointerException("Error: connection is null in getCityIdByName!");
 		   }
 		}
 		catch (SQLException se) {
-			//TODO: nothing we can do?
-			System.out.println("Error: SQL exception at prepareCall in getCityIdByName\n" + se);
+			System.err.println("Error: SQL exception at prepareCall in getCityIdByName:\n" + se);
 			System.exit(1);
 		}
 		try {
-			cstmt.setString(1, city); // city name
-			cstmt.setString(2, region); // region or state name
-			cstmt.setString(3, country); // country name
+			final int FIRST_PARAMETER = 1;
+			final int SECOND_PARAMETER = 2;
+			final int THIRD_PARAMETER = 3;
+			cstmt.setString(FIRST_PARAMETER, city);
+			cstmt.setString(SECOND_PARAMETER, region);
+			cstmt.setString(THIRD_PARAMETER, country);
 		}
 		catch (SQLException se) {
 			System.out.println("Error: SQL exception setting parameters in getCityIdByName");
@@ -364,21 +383,27 @@ public final class JDBCServer {
 		ResultSet resultSet = queryDB(cstmt);
 		String cityId;
 		try {
-			cityId =  ResultSetConverter.convertResultSetIntoString(resultSet);
+			cityId = ResultSetConverter.convertResultSetIntoString(resultSet);
 		}
 		catch (SQLException e)
 		{
-			cityId = null;
+			return null;
 		}
 		
-		// TODO: handle exception when return value is null
-		StringResponse stringResponse = new StringResponse(cityId);
+		// release resources
+		closeResultSet(resultSet);
+		closeStatement(cstmt);
+		closeConnection(connection);
 		
-		// pack the result into JSON format
+		// generate JSON message with the results
+		Map<String, String> map = new HashMap<String, String>();
+		map.put(Message.MessageKeys.LOCATION_CITY_ID_KEY, cityId);
+		String messageJsonStr = new JSONObject(map).toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.GET_CITY_ID, messageJsonStr);
+		// convert envelope to JSON format
 		Gson gson = new Gson();
-		ResponseContainer responseContainer = new ResponseContainer("getCityId");
-		responseContainer.setResponse(gson.toJson(stringResponse));
-		return gson.toJson(responseContainer);
+		return gson.toJson(message);
 	}
 	
 	/**
@@ -392,12 +417,12 @@ public final class JDBCServer {
 	 * 					 <code>true</code> if the user name is not taken, <code>false</code> false otherwise.
 	 * 					 If an error occurred, returns <code>null</code>.
 	 */
-	public static ResultSet validateUniqueUsername(String username) {
+	/*public static ResultSet validateUniqueUsername(String username) {
 		// if exists, clear previous statement
 		try {
-			if (cstmt != null) {
-				cstmt.clearBatch(); // empties this statement object's current list of SQL commands
-				cstmt.clearParameters(); // clears the current parameter values immediately.
+			if (resultSet != null) {
+				resultSet.clearBatch(); // empties this statement object's current list of SQL commands
+				resultSet.clearParameters(); // clears the current parameter values immediately.
 			}
 		}
 		catch (SQLException se) {
@@ -405,9 +430,9 @@ public final class JDBCServer {
 		}
 		
 		try {
-			if (conn != null) {
+			if (connection != null) {
 				   String sql = "{call validate_unique_username (?)}";
-				   cstmt = conn.prepareCall(sql);
+				   resultSet = connection.prepareCall(sql);
 			   }
 			   else { 
 				   System.out.println("Error: connection in validateUsername is null!");
@@ -419,7 +444,7 @@ public final class JDBCServer {
 			System.exit(1);
 		}
 		try {
-			cstmt.setString(1, username); // user name
+			resultSet.setString(1, username); // user name
 		}
 		catch (SQLException se) {
 			System.out.println("Error: SQL exception setting parameters in validateUsername");
@@ -427,8 +452,8 @@ public final class JDBCServer {
 		}
 			
 		System.out.println("Validating unique username using the database...");
-		return queryDB(cstmt);
-	}
+		return queryDB(resultSet);
+	}*/
 	
 }
 

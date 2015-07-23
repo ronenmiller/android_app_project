@@ -11,8 +11,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Utility for converting ResultSets into different output formats
- * Original code can be found at Andrew Zakordonets's Gist:
+ * Utility for converting <code>ResultSet</code>s into different output formats
+ * Original code can be found at Andrew Zakordonets's gist:
  * https://gist.github.com/azakordonets/11040771
  * The code below is a modified version with added functionality.
  */
@@ -83,7 +83,7 @@ public class ResultSetConverter {
     		return resultSet.getString(FIRST_COLUMN);
     	}
     	else {
-    		throw new IllegalArgumentException("IllegalArgumentExeception: value in ResultSet is not a String"); 
+    		throw new IllegalArgumentException("IllegalArgumentExeception: value in ResultSet is not a string"); 
     	}
     }
     
@@ -108,7 +108,7 @@ public class ResultSetConverter {
     	}
     }
 
-    public static int converBooleanIntoInt(boolean bool) {
+    public static int convertBooleanIntoInt(boolean bool) {
         if (bool) return 1;
         else return 0;
     }
@@ -117,7 +117,7 @@ public class ResultSetConverter {
         if (bool.equals("false")) return 0;
         else if (bool.equals("true")) return 1;
         else {
-            throw new IllegalArgumentException("Wrong value is passed to the method. Value is " + bool);
+            throw new IllegalArgumentException("IllegalArgumentExeception: Wrong value is passed to the method. Value is " + bool);
         }
     }
 
