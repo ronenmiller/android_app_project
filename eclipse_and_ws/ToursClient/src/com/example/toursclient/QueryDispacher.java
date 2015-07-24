@@ -13,51 +13,63 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
+/**
+ * Class QueryDispacher
+ * In charge of sending HTTP requests to DB server
+ * and returning the result.
+ */
 public class QueryDispacher {
 	
 	QueryDispacher(){
 	}
-	// Instanciate Gson 
+	// Instantiate Gson member for conversion 
 	static Gson gson = new Gson();
-	static boolean dispatchQuery(QueryContainer q){
+	
+	static String dispatchQuery(int type, JSONObject jsonObjectM){
 		System.out.println("Successfully dispatching");
 		HttpClient httpclient = new DefaultHttpClient();
         try {
-        	// JSON string
-        	String json;
-        	
-        	// http post 
+        	 /*********************************
+             *  convert JSONObject to Message
+             ********************************/
+            Message messageM = new Message(type, jsonObjectM.toString());
+    		String messageJsonM = gson.toJson(messageM);
+    		
+    		/*********************************
+             *  Setup httpPost
+             ********************************/ 
         	HttpPost httpPost = new HttpPost("http://10.0.0.3:8080/ToursAppServer/tours_slet");
-            
-            // convert list to JSON format string
-            json = gson.toJson(q);
-            System.out.println(json);
-            httpPost.setEntity(new StringEntity(json));
-            httpPost.setHeader("Accept", "application/json");
-            httpPost.setHeader("Content-type", "application/json");
+	    	httpPost.setEntity(new StringEntity(messageJsonM));
+	        httpPost.setHeader("Accept", "application/json");
+	        httpPost.setHeader("Content-type", "application/json");
+           
+	        /*********************************
+             *  send httpPost request and
+             *  get response
+             ********************************/
             HttpResponse response = httpclient.execute(httpPost);
             BufferedReader result = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String resJson = result.readLine();
-            ResponseContainer resC = gson.fromJson(resJson, ResponseContainer.class);
-            BooleanResponse bRes = gson.fromJson(resC.getResponse(), BooleanResponse.class);
-            System.out.println("response:" + Boolean.toString(bRes.getResponse()));
+            
+            System.out.println("response:" + resJson);
             System.out.println("Successfully Executed");
+            return resJson;
         }
-        /*
+        
         catch (ClientProtocolException e) {
         	System.out.println("Caught ex1: "+ e.toString());
-        	return false;
-        } */catch (IOException e) {
+        	return "Error";
+        } catch (IOException e) {
         	System.out.println("Caught ex2: "+ e.toString());
-        	return false;
+        	return "Error";
         }
         catch (Exception e){
         	System.out.println("Caught Ex3: "+e.toString());
-        	return false;
+        	return "Error";
 		}
-        return true;
 	}
 }

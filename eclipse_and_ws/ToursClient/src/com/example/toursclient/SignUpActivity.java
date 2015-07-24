@@ -1,5 +1,8 @@
 package com.example.toursclient;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.support.v7.app.ActionBarActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,7 +12,26 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.toursclient.Message;
+
+//import org.apache.commons.validator.routines.EmailValidator;
+import org.json.JSONObject;
+
+/**
+ * Class for sign up activity
+ */
 public class SignUpActivity extends ActionBarActivity {
+	//EmailValidator emailValidator = EmailValidator.getInstance();
+	
+	public final static boolean isValidEmail(String target) {
+	    if (target == null) {
+	        return false;
+	    } else {
+	        return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+	    }
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -21,14 +43,11 @@ public class SignUpActivity extends ActionBarActivity {
         
         final EditText signUpEmailInput = (EditText)findViewById(R.id.signUpEmailInput);
         final EditText signUpUNameInput = (EditText)findViewById(R.id.signUpUNameInput);
-        //final EditText signUpCountryInput = (EditText)findViewById(R.id.signUpCountryInput);
-        //final EditText signUpStateInput = (EditText)findViewById(R.id.signUpStateInput);
-        //final EditText signUpCityInput = (EditText)findViewById(R.id.signUpCityInput);
         final EditText signUpPhoneInput = (EditText)findViewById(R.id.signUpPhoneInput);
         final EditText signUpPassInput = (EditText)findViewById(R.id.signUpPassInput);
         final EditText signUpREPassInput = (EditText)findViewById(R.id.signUpREPassInput);
         
-        //defaults
+        //TODO: remove defaults for signup once debug is finished
         signUpEmailInput.setText("ale@gmail.com");
         signUpUNameInput.setText("alehandro1");
         signUpPhoneInput.setText("0542442688");
@@ -36,10 +55,10 @@ public class SignUpActivity extends ActionBarActivity {
         signUpREPassInput.setText("abc123456");
 		
         
-        
+        // Back to home screen intent
         final Intent goToHomeScreen = new Intent(this,HomeScreen.class);
         
-        /* LoginButton onClick listeners */
+        // LoginButton onClick listener
         submitSignUpBotton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -52,14 +71,22 @@ public class SignUpActivity extends ActionBarActivity {
 						
 			            String email = signUpEmailInput.getText().toString();
 						String uname = signUpUNameInput.getText().toString();
-						//q.country = signUpCountryInput.getText().toString();
-						//String state = signUpStateInput.getText().toString();
-						//q.city = signUpCityInput.getText().toString();
 						String phnum = signUpPhoneInput.getText().toString();
-						// check parameters
 						String pass = signUpPassInput.getText().toString();
 						String rEPass = signUpREPassInput.getText().toString();
 						boolean utype = false;
+						
+						/******************************
+						 *  check input correctness
+						 ******************************/
+						// validate email
+						if (!isValidEmail(email)){
+							Toast.makeText(getApplicationContext(), "Error- Email is not valid!", 
+									   Toast.LENGTH_LONG).show();
+							checkStatus = false;
+							return;
+						}
+						// validate password
 						if (pass.isEmpty() || rEPass.isEmpty()){
 							Toast.makeText(getApplicationContext(), "Error - Please fill in password!", 
 									   Toast.LENGTH_LONG).show();
@@ -72,14 +99,28 @@ public class SignUpActivity extends ActionBarActivity {
 							checkStatus = false;
 							return;
 						}
+						//TODO: add phone validation
+						//TODO: add user name validation
 						
-						// if all checks are OK dispatch query
+						
+						/******************************
+						 *  pack input into JSON
+						 ******************************/
+						Map<String, String> addUserMap = new HashMap<String, String>();
+						
+						addUserMap.put(Message.MessageKeys.USER_NAME_KEY, uname);
+						addUserMap.put(Message.MessageKeys.USER_PASSWORD_KEY, pass);
+						addUserMap.put(Message.MessageKeys.USER_EMAIL_KEY, email);
+						addUserMap.put(Message.MessageKeys.USER_PHONE_KEY, phnum);
+						addUserMap.put(Message.MessageKeys.USER_TYPE_KEY, "false");
+			    		JSONObject jsonObjectM = new JSONObject(addUserMap);
+			    		
+						/********************************************
+						 *  if all checks are OK dispatch query
+						 *******************************************/
 						if(checkStatus){
-							QueryContainer addUserQC = new QueryContainer("addUser");
-							AddUserQuery q = new AddUserQuery(uname, pass, email, phnum, utype);
-							addUserQC.setQuery(QueryDispacher.gson.toJson(q));
-							Boolean status = QueryDispacher.dispatchQuery(addUserQC);
-							System.out.println("Returned status is: "+ status.toString());
+							String res = QueryDispacher.dispatchQuery(Message.MessageTypes.ADD_USER,jsonObjectM);
+							System.out.println("Signup> Returned string: "+res);
 						}
 					}
 				}).start();

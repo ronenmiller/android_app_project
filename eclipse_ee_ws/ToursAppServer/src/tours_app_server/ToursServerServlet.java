@@ -75,7 +75,7 @@ public class ToursServerServlet extends HttpServlet {
 			}
 		}
         
-        //response.getWriter().write(responseJsonStr);
+        response.getWriter().write(responseJsonStr);
 		response.setStatus(HttpServletResponse.SC_OK);
 		//response.getWriter().write("Response from servlet!");
 		response.getWriter().flush();
