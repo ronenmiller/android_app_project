@@ -28,10 +28,12 @@ public class Message {
 		public static final int ADD_SLOT = 6;
 		public static final int REMOVE_SLOT = 7;
 		public static final int GET_CITY_ID = 8;
+		public static final int VALIDATE_UNIQUE_USERNAME = 9;
 	}
 	
 	public class MessageKeys {
 		public static final String IS_MODIFIED = "IsModified";
+		public static final String IS_EXISTS = "IsExists";
 		
 		public static final String LOCATION_CITY_ID_KEY = "CityID";
 		public static final String LOCATION_CITY_NAME_KEY = "CityName";

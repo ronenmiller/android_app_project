@@ -39,7 +39,14 @@ public class ClientExample {
     		mapa.put(Message.MessageKeys.USER_TYPE_KEY, "false");
     		JSONObject jsonObjectM = new JSONObject(mapa);
     		Message messageM = new Message(Message.MessageTypes.ADD_USER, jsonObjectM.toString());
-    		String messageJsonM = gson.toJson(messageM);
+    		String messageJsonA = gson.toJson(messageM);
+    		
+    		mapa.clear();
+    		mapa.put(Message.MessageKeys.USER_NAME_KEY, "Moti_Ban");
+    		mapa.put(Message.MessageKeys.USER_PASSWORD_KEY, "secret2013");
+    		JSONObject jsonObjectR = new JSONObject(mapa);
+    		Message messageR = new Message(Message.MessageTypes.REMOVE_USER, jsonObjectR.toString());
+    		String messageJsonR = gson.toJson(messageR);
             
     		Map<String, String> map = new HashMap<String, String>();
     		map.put(Message.MessageKeys.LOCATION_CITY_NAME_KEY, "Los Angeles");
@@ -49,7 +56,7 @@ public class ClientExample {
     		Message message = new Message(Message.MessageTypes.GET_CITY_ID, jsonObject.toString());
     		String messageJson = gson.toJson(message);
        
-            httpPost.setEntity(new StringEntity(messageJsonM));
+            httpPost.setEntity(new StringEntity(messageJsonR));
             httpPost.setHeader("Accept", "application/json");
             httpPost.setHeader("Content-type", "application/json");
             CloseableHttpResponse response = httpclient.execute(httpPost);
