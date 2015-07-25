@@ -61,14 +61,14 @@ public class QueryDispacher {
         }
         
         catch (ClientProtocolException e) {
-        	System.out.println("Caught ex1: "+ e.toString());
+        	System.out.println("dispatchQuery> Caught exception ClientProtocolException: "+ e.toString());
         	return "Error";
         } catch (IOException e) {
-        	System.out.println("Caught ex2: "+ e.toString());
+        	System.out.println("dispatchQuery> Caught exception IOException: "+ e.toString());
         	return "Error";
         }
         catch (Exception e){
-        	System.out.println("Caught Ex3: "+e.toString());
+        	System.out.println("dispatchQuery> Caught exception: "+e.toString());
         	return "Error";
 		}
 	}

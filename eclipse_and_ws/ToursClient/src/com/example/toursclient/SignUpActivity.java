@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.toursclient.Message;
 
+import org.json.JSONException;
 //import org.apache.commons.validator.routines.EmailValidator;
 import org.json.JSONObject;
 
@@ -120,7 +121,11 @@ public class SignUpActivity extends ActionBarActivity {
 						 *******************************************/
 						if(checkStatus){
 							String res = QueryDispacher.dispatchQuery(Message.MessageTypes.ADD_USER,jsonObjectM);
-							System.out.println("Signup> Returned string: "+res);
+							Message resM = QueryDispacher.gson.fromJson(res, Message.class);
+							Boolean resB = ResultConverter.getBoolResult(resM, Message.MessageTypes.ADD_USER);
+							if (resB){
+										
+							}
 						}
 					}
 				}).start();

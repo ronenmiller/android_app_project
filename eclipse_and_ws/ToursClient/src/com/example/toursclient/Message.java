@@ -1,6 +1,5 @@
 package com.example.toursclient;
 
-
 public class Message {
 	
 	private final int mMessageID;
@@ -29,10 +28,14 @@ public class Message {
 		public static final int ADD_SLOT = 6;
 		public static final int REMOVE_SLOT = 7;
 		public static final int GET_CITY_ID = 8;
+		public static final int VALIDATE_UNIQUE_USERNAME = 9;
+		public static final int FIND_TOURS_BY_CITY_NAME = 10;
+		public static final int FIND_SLOTS_BY_CITY_NAME = 11;
 	}
 	
 	public class MessageKeys {
 		public static final String IS_MODIFIED = "IsModified";
+		public static final String IS_EXISTS = "IsExists";
 		
 		public static final String LOCATION_CITY_ID_KEY = "CityID";
 		public static final String LOCATION_CITY_NAME_KEY = "CityName";
@@ -47,6 +50,13 @@ public class Message {
 		public static final String USER_EMAIL_KEY = "UserEmail";
 		public static final String USER_PHONE_KEY = "UserPhone";
 		public static final String USER_TYPE_KEY = "UserType";
+		
+		public static final String TOURS_DURATION_KEY = "ToursDuration";
+		public static final String TOURS_DESCRIPTION_KEY = "ToursDescription";
+		public static final String TOURS_PHOTOS_KEY = "ToursPhotos";
+		public static final String TOURS_LANGUAGE_KEY = "ToursLanguage";
+		public static final String TOURS_BY_CITY_KEY = "ToursByCity";
+		public static final String SLOTS_BY_CITY_KEY = "SlotsByCity";
 	}
 
 
