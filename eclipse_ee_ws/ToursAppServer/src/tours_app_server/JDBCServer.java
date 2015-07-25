@@ -8,6 +8,8 @@ import org.apache.commons.validator.routines.EmailValidator;
 
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.postgresql.util.PSQLException;
 
@@ -271,9 +273,13 @@ public final class JDBCServer {
 		}
 		
 		// generate JSON message with the results
-		Map<String, String> map = new HashMap<String, String>();
-		map.put(Message.MessageKeys.IS_MODIFIED, isModified);
-		String messageJsonStr = new JSONObject(map).toString();
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.ADD_USER, messageJsonStr);
 		// convert envelope to JSON format
@@ -324,9 +330,13 @@ public final class JDBCServer {
 		}
 					
 		// generate JSON message with the results
-		Map<String, String> map = new HashMap<String, String>();
-		map.put(Message.MessageKeys.IS_MODIFIED, isModified);
-		String messageJsonStr = new JSONObject(map).toString();
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.REMOVE_USER, messageJsonStr);
 		// convert envelope to JSON format
@@ -379,11 +389,78 @@ public final class JDBCServer {
 		}
 		
 		// generate JSON message with the results
-		Map<String, String> map = new HashMap<String, String>();
-		map.put(Message.MessageKeys.LOCATION_CITY_ID_KEY, cityId);
-		String messageJsonStr = new JSONObject(map).toString();
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.LOCATION_CITY_ID_KEY, cityId);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.GET_CITY_ID, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	/**
+	 * Finds tours in a city based on its name, region/state and country.
+	 *  
+	 * @param city		 the name of the city
+	 * @param region	 the name of the region/state where the city is located
+	 * @param country	 the name of the country where the city is located
+	 * @return           {@link tours_app_server.Message} in JSON format which contains a JSONArray
+	 * 					 object with all the tours.
+	 * 					 If no match is found, the returned string is empty.
+	 * 					 If an error occurred, returns <code>null</code>.
+	 * @throws NullPointerException if the connection to the database failed.
+	 */
+	// the returned city ID will help find queries related to the requested city faster.
+	public static String findToursByCityName(String city, String region, String country) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray toursJsonArray = null; 
+			
+		try {
+		   if (connection != null) {
+			   String sql = "{call query_tour_by_city (?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, city);
+			   cstmt.setString(2, region);
+			   cstmt.setString(3, country);
+			   
+			   // query database
+			   System.out.println("Getting city ID from the database...");
+			   resultSet = queryDB(cstmt);
+			   toursJsonArray = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in getCityIdByName!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} finally {
+			// release resources
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			// TODO: continue here
+			jsonObject.put(Message.MessageKeys.TOURS_BY_CITY_KEY, toursJsonArray);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.FIND_TOURS_BY_CITY_NAME, messageJsonStr);
 		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);
@@ -429,9 +506,13 @@ public final class JDBCServer {
 		}
 
 		// generate JSON message with the results
-		Map<String, String> map = new HashMap<String, String>();
-		map.put(Message.MessageKeys.IS_EXISTS, isUnique);
-		String messageJsonStr = new JSONObject(map).toString();
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_EXISTS, isUnique);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.VALIDATE_UNIQUE_USERNAME, messageJsonStr);
 		// convert envelope to JSON format
