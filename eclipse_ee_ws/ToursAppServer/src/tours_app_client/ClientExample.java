@@ -56,7 +56,7 @@ public class ClientExample {
     		Message message = new Message(Message.MessageTypes.GET_CITY_ID, jsonObject.toString());
     		String messageJson = gson.toJson(message);
        
-            httpPost.setEntity(new StringEntity(messageJsonR));
+            httpPost.setEntity(new StringEntity(messageJsonA));
             httpPost.setHeader("Accept", "application/json");
             httpPost.setHeader("Content-type", "application/json");
             CloseableHttpResponse response = httpclient.execute(httpPost);

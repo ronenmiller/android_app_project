@@ -156,9 +156,8 @@ TABLE:		t_id - a unique tour ID,
 			ts_id - a unique tour slot ID (primary key),
 			ts_date - the tour departs on this date,
 			ts_time - the tour departs on this time,
-			ts_price - tour price per person,
 			ts_vacant - the remaining number of people that can sign up for this tour,
-			ts_active - once the is finished, slot is deactivated: 0 - not active, 1 - active 
+			ts_active - once the tour is finished, slot is deactivated: 0 - not active, 1 - active 
 */
 DROP TABLE IF EXISTS slots CASCADE;
 CREATE TABLE slots (
@@ -166,7 +165,6 @@ CREATE TABLE slots (
 	ts_id		INTEGER  PRIMARY KEY,
 	ts_date		DATE     NOT NULL,
 	ts_time		TIME WITH TIME ZONE NOT NULL,
-	ts_price	REAL 	 NOT NULL,
 	ts_vacant 	INTEGER  NOT NULL,
 	ts_active	BIT 	 NOT NULL,
 	CONSTRAINT chk_price_non_negative CHECK (ts_price >= 0),
@@ -259,6 +257,7 @@ FROM cities, states, country;
 --create OR REPLACE VIEW view_slots AS
 --SElECT 
 
+DROP FUNCTION IF EXISTS add_user(VARCHAR(80), VARCHAR(16), VARCHAR(80), VARCHAR(80), BIT);
 CREATE OR REPLACE FUNCTION add_user(p_u_name VARCHAR(80), p_u_pass VARCHAR(16), p_email VARCHAR(80), p_phone_number VARCHAR(80), p_u_type BIT)
 	RETURNS VOID AS 
 $$
@@ -406,6 +405,7 @@ END;
 $$ 
 LANGUAGE 'plpgsql';
 
+DROP FUNCTION IF EXISTS add_slot(INTEGER, date, TIME WITH TIME ZONE, REAL, INTEGER);
 CREATE OR REPLACE FUNCTION add_slot(p_t_id INTEGER, p_t_date DATE, p_t_time TIME WITH TIME ZONE, p_t_price REAL, p_t_vacant INTEGER)
 	RETURNS SETOF VOID AS 
 $$
@@ -421,8 +421,8 @@ BEGIN
 	END IF;
 	
 	BEGIN
-		INSERT INTO slots(t_id, ts_id, ts_date, ts_time, ts_price, ts_vacant, ts_active)
-		VALUES (p_t_id, v_slot_num, p_t_date, p_t_time, p_t_price, p_t_vacant, B'1');
+		INSERT INTO slots(t_id, ts_id, ts_date, ts_time, ts_vacant, ts_active)
+		VALUES (p_t_id, v_slot_num, p_t_date, p_t_time, p_t_vacant, B'1');
 
 	EXCEPTION 
 		WHEN foreign_key_violation THEN

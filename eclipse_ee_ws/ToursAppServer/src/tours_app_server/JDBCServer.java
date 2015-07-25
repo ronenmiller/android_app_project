@@ -64,6 +64,21 @@ public final class JDBCServer {
 		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
 		        	return getCityIdByName(city, region, country);
 				}
+				case Message.MessageTypes.ADD_TOUR: {
+					String uuid = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+		        	String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
+		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
+		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
+		        	int duration = requestJSON.getInt(Message.MessageKeys.TOURS_DURATION_KEY);
+		        	String description = requestJSON.getString(Message.MessageKeys.TOURS_DESCRIPTION_KEY);
+		        	// TODO: figure out photos
+		        	String photos = requestJSON.getString(Message.MessageKeys.TOURS_PHOTOS_KEY);
+		        	int language = requestJSON.getInt(Message.MessageKeys.TOURS_LANGUAGE_KEY);
+		        	return addTour(uuid, city, region, country, duration, description, photos, language);
+				}
+				case Message.MessageTypes.FIND_TOURS_BY_CITY_NAME: {
+					//TODO: continue here
+				}
 				case Message.MessageTypes.VALIDATE_UNIQUE_USERNAME: {
 					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
 					return isUniqueUsername(username);
@@ -244,7 +259,7 @@ public final class JDBCServer {
 	public static String addUser(String username, String password, String email, String phone, boolean isGuide) {
 		Connection connection = initConnection();
 		CallableStatement cstmt = null;
-		String isModified;
+		boolean isModified;
 		
 		try {
 		   if (connection != null) {
@@ -258,7 +273,7 @@ public final class JDBCServer {
 			   
 			   // modify database
 			   System.out.println("Adding the user to the database...");
-			   isModified = String.valueOf(modifyServerDB(cstmt));
+			   isModified = modifyServerDB(cstmt);
 		   }
 		   else { 
 			   throw new NullPointerException("Error: connection is null in addUser!");
@@ -304,7 +319,7 @@ public final class JDBCServer {
 	public static String rmUser(String username, String password) {
 		Connection connection = initConnection();
 		CallableStatement cstmt = null;
-		String isModified;
+		boolean isModified;
 		
 		try {
 		   if (connection != null) {
@@ -315,7 +330,7 @@ public final class JDBCServer {
 			   
 			   // modify database
 			   System.out.println("Removing the user from the database...");
-			   isModified = String.valueOf(modifyServerDB(cstmt));
+			   isModified = modifyServerDB(cstmt);
 		   }
 		   else { 
 			   throw new NullPointerException("Error: connection is null in rmUser!");
@@ -403,6 +418,56 @@ public final class JDBCServer {
 		return gson.toJson(message);
 	}
 	
+	public static String addTour(String uuid, String city, String region, String country, 
+			int duration, String description, String photos, int language) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call add_tour (?, ?, ?, ?, ?, ?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, uuid);
+			   cstmt.setString(2, city);
+			   cstmt.setString(3, region);
+			   cstmt.setString(4, country);
+			   cstmt.setInt   (5, duration);
+			   cstmt.setString(6, description);
+			   cstmt.setString(7, photos);
+			   cstmt.setInt   (8, language);
+			   
+			   // modify database
+			   System.out.println("Adding tour to the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in addTour!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+					
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.ADD_TOUR, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
 	/**
 	 * Finds tours in a city based on its name, region/state and country.
 	 *  
@@ -482,7 +547,7 @@ public final class JDBCServer {
 		Connection connection = initConnection();
 		CallableStatement cstmt = null;
 		ResultSet resultSet = null;
-		String isUnique;
+		boolean isUnique;
 		
 		try {
 			if (connection != null) {
@@ -490,7 +555,7 @@ public final class JDBCServer {
 			   cstmt = connection.prepareCall(sql);
 			   cstmt.setString(1, username);
 			   resultSet = queryDB(cstmt);
-			   isUnique = String.valueOf(!ResultSetConverter.convertResultSetIntoBoolean(resultSet));
+			   isUnique = !ResultSetConverter.convertResultSetIntoBoolean(resultSet);
 			}
 			else { 
 				throw new NullPointerException("Error: connection is null in validateUniqueUsername!");

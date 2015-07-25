@@ -156,9 +156,8 @@ TABLE:		t_id - a unique tour ID,
 			ts_id - a unique tour slot ID (primary key),
 			ts_date - the tour departs on this date,
 			ts_time - the tour departs on this time,
-			ts_price - tour price per person,
 			ts_vacant - the remaining number of people that can sign up for this tour,
-			ts_active - once the is finished, slot is deactivated: 0 - not active, 1 - active 
+			ts_active - once the tour is finished, slot is deactivated: 0 - not active, 1 - active 
 */
 DROP TABLE IF EXISTS slots CASCADE;
 CREATE TABLE slots (
@@ -166,7 +165,6 @@ CREATE TABLE slots (
 	ts_id		INTEGER  PRIMARY KEY,
 	ts_date		DATE     NOT NULL,
 	ts_time		TIME WITH TIME ZONE NOT NULL,
-	ts_price	REAL 	 NOT NULL,
 	ts_vacant 	INTEGER  NOT NULL,
 	ts_active	BIT 	 NOT NULL,
 	CONSTRAINT chk_price_non_negative CHECK (ts_price >= 0),

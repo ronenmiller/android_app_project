@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION add_slot(p_t_id INTEGER, p_t_date DATE, p_t_time TIME WITH TIME ZONE, p_t_price REAL, p_t_vacant INTEGER)
+DROP FUNCTION IF EXISTS add_slot(INTEGER, date, TIME WITH TIME ZONE, REAL, INTEGER);
+CREATE OR REPLACE FUNCTION add_slot(p_t_id INTEGER, p_t_date DATE, p_t_time TIME WITH TIME ZONE, p_t_vacant INTEGER)
 	RETURNS SETOF VOID AS 
 $$
 DECLARE
@@ -13,8 +14,8 @@ BEGIN
 	END IF;
 	
 	BEGIN
-		INSERT INTO slots(t_id, ts_id, ts_date, ts_time, ts_price, ts_vacant, ts_active)
-		VALUES (p_t_id, v_slot_num, p_t_date, p_t_time, p_t_price, p_t_vacant, B'1');
+		INSERT INTO slots(t_id, ts_id, ts_date, ts_time, ts_vacant, ts_active)
+		VALUES (p_t_id, v_slot_num, p_t_date, p_t_time, p_t_vacant, B'1');
 
 	EXCEPTION 
 		WHEN foreign_key_violation THEN

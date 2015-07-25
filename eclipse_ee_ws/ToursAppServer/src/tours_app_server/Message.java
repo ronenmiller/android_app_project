@@ -51,6 +51,10 @@ public class Message {
 		public static final String USER_PHONE_KEY = "UserPhone";
 		public static final String USER_TYPE_KEY = "UserType";
 		
+		public static final String TOURS_DURATION_KEY = "ToursDuration";
+		public static final String TOURS_DESCRIPTION_KEY = "ToursDescription";
+		public static final String TOURS_PHOTOS_KEY = "ToursPhotos";
+		public static final String TOURS_LANGUAGE_KEY = "ToursLanguage";
 		public static final String TOURS_BY_CITY_KEY = "ToursByCity";
 		public static final String SLOTS_BY_CITY_KEY = "SlotsByCity";
 	}
