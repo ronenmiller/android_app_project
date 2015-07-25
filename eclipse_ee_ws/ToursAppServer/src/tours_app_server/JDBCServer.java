@@ -77,7 +77,10 @@ public final class JDBCServer {
 		        	return addTour(uuid, city, region, country, duration, description, photos, language);
 				}
 				case Message.MessageTypes.FIND_TOURS_BY_CITY_NAME: {
-					//TODO: continue here
+					String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
+		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
+		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
+					return findToursByCityName(city, region, country);
 				}
 				case Message.MessageTypes.VALIDATE_UNIQUE_USERNAME: {
 					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
@@ -480,7 +483,6 @@ public final class JDBCServer {
 	 * 					 If an error occurred, returns <code>null</code>.
 	 * @throws NullPointerException if the connection to the database failed.
 	 */
-	// the returned city ID will help find queries related to the requested city faster.
 	public static String findToursByCityName(String city, String region, String country) {
 		Connection connection = initConnection();
 		CallableStatement cstmt = null;
