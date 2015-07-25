@@ -167,7 +167,7 @@ CREATE TABLE slots (
 	ts_time		TIME WITH TIME ZONE NOT NULL,
 	ts_vacant 	INTEGER  NOT NULL,
 	ts_active	BIT 	 NOT NULL,
-	CONSTRAINT chk_price_non_negative CHECK (ts_price >= 0),
+	/*CONSTRAINT chk_price_non_negative CHECK (ts_price >= 0), TODO: liron removed this parameter so constraint does not work*/
 	CONSTRAINT chk_vacant_non_negative CHECK (ts_vacant >= 0)
 )
 WITH (
