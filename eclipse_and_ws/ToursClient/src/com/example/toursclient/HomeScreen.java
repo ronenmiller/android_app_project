@@ -38,7 +38,8 @@ public class HomeScreen extends ActionBarActivity {
 				String password = passwordInput.getText().toString();
 				String output = "User Name: "+username+" Password: "+password;
 				Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
-				startActivity(goToSignUpScreen);
+				
+				//startActivity(goToSignUpScreen);
 			}
 		});
         

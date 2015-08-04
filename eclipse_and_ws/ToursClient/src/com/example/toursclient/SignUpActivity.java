@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.support.v7.app.ActionBarActivity;
+//import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+//import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,7 +26,8 @@ import org.json.JSONObject;
  */
 public class SignUpActivity extends ActionBarActivity {
 	//EmailValidator emailValidator = EmailValidator.getInstance();
-	
+	//private ProgressDialog executingDialog;
+	//Handler h;
 	public final static boolean isValidEmail(String target) {
 	    if (target == null) {
 	        return false;
@@ -63,7 +66,7 @@ public class SignUpActivity extends ActionBarActivity {
         submitSignUpBotton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				System.out.println("Successfully running1 ");
+				//executingDialog = ProgressDialog.show(SignUpActivity.this, "", getString(R.string.message_executingSignup), true);
 				new Thread(new Runnable() {
 				    public void run() {
 				    	System.out.println("Successfully running");
@@ -75,7 +78,7 @@ public class SignUpActivity extends ActionBarActivity {
 						String phnum = signUpPhoneInput.getText().toString();
 						String pass = signUpPassInput.getText().toString();
 						String rEPass = signUpREPassInput.getText().toString();
-						boolean utype = false;
+						Boolean utype = false;
 						
 						/******************************
 						 *  check input correctness
@@ -113,19 +116,28 @@ public class SignUpActivity extends ActionBarActivity {
 						addUserMap.put(Message.MessageKeys.USER_PASSWORD_KEY, pass);
 						addUserMap.put(Message.MessageKeys.USER_EMAIL_KEY, email);
 						addUserMap.put(Message.MessageKeys.USER_PHONE_KEY, phnum);
-						addUserMap.put(Message.MessageKeys.USER_TYPE_KEY, "false");
+						addUserMap.put(Message.MessageKeys.USER_TYPE_KEY, utype.toString());
 			    		JSONObject jsonObjectM = new JSONObject(addUserMap);
 			    		
 						/********************************************
 						 *  if all checks are OK dispatch query
 						 *******************************************/
 						if(checkStatus){
-							String res = QueryDispacher.dispatchQuery(Message.MessageTypes.ADD_USER,jsonObjectM);
+							String res = QueryDispacher.dispatchQuery(Message.MessageTypes.ADD_USER,jsonObjectM,getApplicationContext());
 							Message resM = QueryDispacher.gson.fromJson(res, Message.class);
-							Boolean resB = ResultConverter.getBoolResult(resM, Message.MessageTypes.ADD_USER);
+							System.out.println(resM);
+							/*Boolean resB = ResultConverter.getBoolResult(resM, Message.MessageTypes.ADD_USER);
+							//executingDialog.dismiss();
 							if (resB){
-										
+								//h.post(loginDone);
+								//Toast.makeText(getApplicationContext(), "Sign up successful!", Toast.LENGTH_LONG).show();
 							}
+							else {
+								//h.post(loginFailed);
+								//Toast.makeText(getApplicationContext(), "Sign up failed!", Toast.LENGTH_LONG).show();
+							}
+							*/
+							
 						}
 					}
 				}).start();
@@ -140,7 +152,24 @@ public class SignUpActivity extends ActionBarActivity {
 			}
 		});
 	}
+/*
+	private final Runnable loginDone = new Runnable() {
+	    public void run() {
+	        executingDialog.dismiss();
+	        setResult(RESULT_OK);
+	        finish();
+	    }
+	};
 
+	private final Runnable loginFailed = new Runnable() {
+	    public void run() {
+	        executingDialog.dismiss();
+	        setResult(RESULT_CANCELED);
+	    }
+	};
+*/
+	
+	 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
