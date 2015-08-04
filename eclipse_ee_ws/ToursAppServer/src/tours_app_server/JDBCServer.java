@@ -1,6 +1,7 @@
 package tours_app_server;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,17 +71,31 @@ public final class JDBCServer {
 		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
 		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
 		        	int duration = requestJSON.getInt(Message.MessageKeys.TOURS_DURATION_KEY);
+		        	String location = requestJSON.getString(Message.MessageKeys.TOURS_LOCATION_KEY);
 		        	String description = requestJSON.getString(Message.MessageKeys.TOURS_DESCRIPTION_KEY);
 		        	// TODO: figure out photos
 		        	String photos = requestJSON.getString(Message.MessageKeys.TOURS_PHOTOS_KEY);
 		        	int language = requestJSON.getInt(Message.MessageKeys.TOURS_LANGUAGE_KEY);
-		        	return addTour(uuid, city, region, country, duration, description, photos, language);
+		        	return addTour(uuid, city, region, country, duration, location, description, photos, language);
 				}
 				case Message.MessageTypes.FIND_TOURS_BY_CITY_NAME: {
 					String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
 		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
 		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
 					return findToursByCityName(city, region, country);
+				}
+				case Message.MessageTypes.ADD_SLOT: {
+					int tourID = requestJSON.getInt(Message.MessageKeys.TOURS_ID_KEY);
+					Date date = (Date)requestJSON.get(Message.MessageKeys.SLOT_DATE_KEY);
+					Time time = (Time)requestJSON.get(Message.MessageKeys.SLOT_TIME_KEY);
+					int vacant = requestJSON.getInt(Message.MessageKeys.SLOT_NUM_VACANT_KEY);
+					return addSlot(tourID, date, time, vacant);
+				}
+				case Message.MessageTypes.FIND_SLOTS_BY_CITY_NAME: {
+					String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
+		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
+		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
+					return findSlotsByCityName(city, region, country);
 				}
 				case Message.MessageTypes.VALIDATE_UNIQUE_USERNAME: {
 					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
@@ -422,23 +437,24 @@ public final class JDBCServer {
 	}
 	
 	public static String addTour(String uuid, String city, String region, String country, 
-			int duration, String description, String photos, int language) {
+			int duration, String location, String description, String photos, int language) {
 		Connection connection = initConnection();
 		CallableStatement cstmt = null;
 		boolean isModified;
 		
 		try {
 		   if (connection != null) {
-			   String sql = "{call add_tour (?, ?, ?, ?, ?, ?, ?, ?)}";
+			   String sql = "{call add_tour (?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 			   cstmt = connection.prepareCall(sql);
 			   cstmt.setString(1, uuid);
 			   cstmt.setString(2, city);
 			   cstmt.setString(3, region);
 			   cstmt.setString(4, country);
 			   cstmt.setInt   (5, duration);
-			   cstmt.setString(6, description);
-			   cstmt.setString(7, photos);
-			   cstmt.setInt   (8, language);
+			   cstmt.setString(6, location);
+			   cstmt.setString(7, description);
+			   cstmt.setString(8, photos);
+			   cstmt.setInt   (9, language);
 			   
 			   // modify database
 			   System.out.println("Adding tour to the database...");
@@ -498,7 +514,7 @@ public final class JDBCServer {
 			   cstmt.setString(3, country);
 			   
 			   // query database
-			   System.out.println("Getting city ID from the database...");
+			   System.out.println("Getting tours from the database...");
 			   resultSet = queryDB(cstmt);
 			   toursJsonArray = ResultSetConverter.convertResultSetIntoJSON(resultSet);
 		   }
@@ -532,6 +548,118 @@ public final class JDBCServer {
 		Gson gson = new Gson();
 		return gson.toJson(message);
 	}
+	
+	public static String addSlot(int tourID, Date date, Time time, int vacant) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call add_slot (?, ?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setInt(1, tourID);
+			   cstmt.setDate(2, date);
+			   cstmt.setTime(3, time);
+			   cstmt.setInt(4, vacant);
+			   
+			   // modify database
+			   System.out.println("Adding slot to the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in addSlot!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+					
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.ADD_SLOT, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	/**
+	 * Finds open slots for tours in a city based on its name, region/state and country.
+	 *  
+	 * @param city		 the name of the city
+	 * @param region	 the name of the region/state where the city is located
+	 * @param country	 the name of the country where the city is located
+	 * @return           {@link tours_app_server.Message} in JSON format which contains a JSONArray
+	 * 					 object with all the open slots.
+	 * 					 If no match is found, the returned string is empty.
+	 * 					 If an error occurred, returns <code>null</code>.
+	 * @throws NullPointerException if the connection to the database failed.
+	 */
+	public static String findSlotsByCityName(String city, String region, String country) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray slotsJsonArray = null; 
+			
+		try {
+		   if (connection != null) {
+			   String sql = "{call query_slots_by_city (?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, city);
+			   cstmt.setString(2, region);
+			   cstmt.setString(3, country);
+			   Date date = Date.valueOf(LocalDate.now());
+			   cstmt.setDate(4, date);
+			   
+			   // query database
+			   System.out.println("Getting slots from the database...");
+			   resultSet = queryDB(cstmt);
+			   slotsJsonArray = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in getCityIdByName!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (NullPointerException npe) {
+			npe.printStackTrace();
+		} finally {
+			// release resources
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			// TODO: continue here
+			jsonObject.put(Message.MessageKeys.SLOTS_BY_CITY_KEY, slotsJsonArray);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.FIND_SLOTS_BY_CITY_NAME, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+
 	
 	/**
 	 * Validates that the desired user name is not already taken.

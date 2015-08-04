@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS query_tour_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255));
-CREATE OR REPLACE FUNCTION query_tour_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255))
+DROP FUNCTION IF EXISTS query_slots_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255), today DATE);
+CREATE OR REPLACE FUNCTION query_slots_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255), today DATE)
 	RETURNS SETOF view_tours AS 
 $$
 DECLARE
@@ -22,7 +22,10 @@ BEGIN
 	FROM users, tours, languages
 	WHERE tours.t_cityid = _city_id
 	AND users.u_id = tours.u_id
-	AND languages.lang_id = tours.t_languages;
+	AND languages.lang_id = tours.t_languages
+	AND slots.ts_date >= today
+	AND slots.ts_vacant > 0
+	AND slots.ts_active = B'1';
 	
 	RETURN;
 END;

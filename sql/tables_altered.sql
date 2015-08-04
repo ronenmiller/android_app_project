@@ -122,6 +122,7 @@ TABLE:		u_id - a unique user ID of the tour's guide,
 			t_state_id - tour is in which state (ID),
 			t_country_id - tour is in which country (ID) tour is in which city (ID),
 			t_duration - tour duration in minutes,
+			t_location - the meetup place for the tour (starting location)
 			t_description - general tour's description,
 			t_photos - some photos of the tour (submitted by the guide),
 			t_languages - all the languages the tour is given in (some might not be available in the slots table),
@@ -135,6 +136,7 @@ CREATE TABLE tours (
 	t_id		INTEGER      PRIMARY KEY,
 	t_cityid	VARCHAR(255) NOT NULL REFERENCES cities(cityid) ON DELETE RESTRICT,
 	t_duration	NUMERIC	     NOT NULL,
+	t_location	VARCHAR(255) NOT NULL,
 	t_description	TEXT,
 	t_photos	bytea[], -- what data type?
 	t_languages	INTEGER      NOT NULL REFERENCES languages(lang_id) ON DELETE RESTRICT, -- should be integer[], how to apply more than one language?
@@ -247,7 +249,7 @@ WITH (
 ALTER TABLE rate2guide OWNER TO postgres;
 
 CREATE OR REPLACE VIEW view_tours AS
-SELECT users.u_name, tours.t_id, cities.city, states.region, country.country, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
+SELECT users.u_name, tours.t_id, cities.city, states.region, country.country, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_location, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
 FROM users, tours, languages, cities, states, country;
 
 CREATE OR REPLACE VIEW view_city_by_name AS

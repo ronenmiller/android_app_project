@@ -122,6 +122,7 @@ TABLE:		u_id - a unique user ID of the tour's guide,
 			t_state_id - tour is in which state (ID),
 			t_country_id - tour is in which country (ID) tour is in which city (ID),
 			t_duration - tour duration in minutes,
+			t_location - the meetup place for the tour (starting location)
 			t_description - general tour's description,
 			t_photos - some photos of the tour (submitted by the guide),
 			t_languages - all the languages the tour is given in (some might not be available in the slots table),
@@ -135,6 +136,7 @@ CREATE TABLE tours (
 	t_id		INTEGER      PRIMARY KEY,
 	t_cityid	VARCHAR(255) NOT NULL REFERENCES cities(cityid) ON DELETE RESTRICT,
 	t_duration	NUMERIC	     NOT NULL,
+	t_location	VARCHAR(255) NOT NULL,
 	t_description	TEXT,
 	t_photos	bytea[], -- what data type?
 	t_languages	INTEGER      NOT NULL REFERENCES languages(lang_id) ON DELETE RESTRICT, -- should be integer[], how to apply more than one language?
@@ -167,7 +169,7 @@ CREATE TABLE slots (
 	ts_time		TIME WITH TIME ZONE NOT NULL,
 	ts_vacant 	INTEGER  NOT NULL,
 	ts_active	BIT 	 NOT NULL,
-	/*CONSTRAINT chk_price_non_negative CHECK (ts_price >= 0), TODO: liron removed this parameter so constraint does not work*/
+/*CONSTRAINT chk_price_non_negative CHECK (ts_price >= 0), TODO: liron removed this parameter so constraint does not work*/
 	CONSTRAINT chk_vacant_non_negative CHECK (ts_vacant >= 0)
 )
 WITH (
@@ -247,7 +249,7 @@ WITH (
 ALTER TABLE rate2guide OWNER TO postgres;
 
 CREATE OR REPLACE VIEW view_tours AS
-SELECT users.u_name, tours.t_id, cities.city, states.region, country.country, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
+SELECT users.u_name, tours.t_id, cities.city, states.region, country.country, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_location, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
 FROM users, tours, languages, cities, states, country;
 
 CREATE OR REPLACE VIEW view_city_by_name AS
@@ -366,37 +368,39 @@ LANGUAGE 'plpgsql';
 
 
 /* add tour */
-CREATE OR REPLACE FUNCTION add_tour(p_u_id uuid, p_city_name VARCHAR(255), p_region_name VARCHAR (255), p_country_name VARCHAR(255), p_t_duration NUMERIC, p_t_description TEXT, p_t_photos bytea[], p_t_languages INTEGER)
+DROP FUNCTION IF EXISTS add_tour(uuid, VARCHAR(255), VARCHAR (255), VARCHAR(255), NUMERIC, TEXT, bytea[], INTEGER);
+CREATE OR REPLACE FUNCTION add_tour(u_id uuid, city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255), duration NUMERIC,
+start_location VARCHAR(255), description TEXT, photos bytea[], languages INTEGER)
 	RETURNS VOID AS 
 $$
 DECLARE
-	v_city_id		VARCHAR(255);
-	v_tour_num		INTEGER;
-	v_exception_err TEXT;
+	_v_city_id		VARCHAR(255);
+	_v_tour_num		INTEGER;
+	_v_exception_err TEXT;
 BEGIN
-	v_city_id = find_cityid_by_name(p_city_name, p_region_name, p_country_name);
+	_v_city_id = find_cityid_by_name(city_name, region_name, country_name);
 	
-	SELECT max(tours.t_id) INTO v_tour_num FROM tours;
-	IF v_tour_num IS NULL THEN
-		v_tour_num = 1;
+	SELECT max(tours.t_id) INTO _v_tour_num FROM tours;
+	IF _v_tour_num IS NULL THEN
+		_v_tour_num = 1;
 	ELSE
-		v_tour_num = v_tour_num + 1;
+		_v_tour_num = _v_tour_num + 1;
 	END IF;
 	
 	BEGIN
 		INSERT INTO tours(u_id, t_id, t_cityid, t_duration, t_description, t_photos, t_languages, t_available)
-		VALUES (p_u_id, v_tour_num, v_city_id, p_t_duration, p_t_description, p_t_photos, p_t_languages, B'0');
+		VALUES (u_id, _v_tour_num, _v_city_id, duration, start_location, description, photos, languages, B'0');
 
 	EXCEPTION 
 		WHEN foreign_key_violation THEN
-			GET STACKED DIAGNOSTICS v_exception_err = MESSAGE_TEXT;
-			RAISE foreign_key_violation USING MESSAGE = v_exception_err;
+			GET STACKED DIAGNOSTICS _v_exception_err = MESSAGE_TEXT;
+			RAISE foreign_key_violation USING MESSAGE = _v_exception_err;
 		WHEN unique_violation THEN
-			GET STACKED DIAGNOSTICS v_exception_err = MESSAGE_TEXT;
-			RAISE unique_violation USING MESSAGE = v_exception_err;
+			GET STACKED DIAGNOSTICS _v_exception_err = MESSAGE_TEXT;
+			RAISE unique_violation USING MESSAGE = _v_exception_err;
 		WHEN OTHERS THEN
-			GET STACKED DIAGNOSTICS v_exception_err = MESSAGE_TEXT;
-			RAISE EXCEPTION USING MESSAGE = v_exception_err;
+			GET STACKED DIAGNOSTICS _v_exception_err = MESSAGE_TEXT;
+			RAISE EXCEPTION USING MESSAGE = _v_exception_err;
 
 	END;
 
@@ -405,35 +409,35 @@ END;
 $$ 
 LANGUAGE 'plpgsql';
 
-DROP FUNCTION IF EXISTS add_slot(INTEGER, date, TIME WITH TIME ZONE, REAL, INTEGER);
-CREATE OR REPLACE FUNCTION add_slot(p_t_id INTEGER, p_t_date DATE, p_t_time TIME WITH TIME ZONE, p_t_price REAL, p_t_vacant INTEGER)
+DROP FUNCTION IF EXISTS add_slot(INTEGER, DATE, TIME WITH TIME ZONE, INTEGER);
+CREATE OR REPLACE FUNCTION add_slot(id INTEGER, s_date DATE, s_time TIME WITH TIME ZONE, s_vacant INTEGER)
 	RETURNS SETOF VOID AS 
 $$
 DECLARE
-	v_slot_num		INTEGER;
-	v_exception_err TEXT;
+	_slot_num		INTEGER;
+	_exception_err TEXT;
 BEGIN
-	SELECT max(slots.ts_id) INTO v_slot_num FROM slots;
-	IF v_slot_num IS NULL THEN
-		v_slot_num = 1;
+	SELECT max(slots.ts_id) INTO _slot_num FROM slots;
+	IF _slot_num IS NULL THEN
+		_slot_num = 1;
 	ELSE
-		v_slot_num = v_slot_num + 1;
+		_slot_num = _slot_num + 1;
 	END IF;
 	
 	BEGIN
 		INSERT INTO slots(t_id, ts_id, ts_date, ts_time, ts_vacant, ts_active)
-		VALUES (p_t_id, v_slot_num, p_t_date, p_t_time, p_t_vacant, B'1');
+		VALUES (id, _slot_num, s_date, s_time, s_vacant, B'1');
 
 	EXCEPTION 
 		WHEN foreign_key_violation THEN
-			GET STACKED DIAGNOSTICS v_exception_err = MESSAGE_TEXT;
-			RAISE foreign_key_violation USING MESSAGE = v_exception_err;
+			GET STACKED DIAGNOSTICS _exception_err = MESSAGE_TEXT;
+			RAISE foreign_key_violation USING MESSAGE = _exception_err;
 		WHEN unique_violation THEN
-			GET STACKED DIAGNOSTICS v_exception_err = MESSAGE_TEXT;
-			RAISE unique_violation USING MESSAGE = v_exception_err;
+			GET STACKED DIAGNOSTICS _exception_err = MESSAGE_TEXT;
+			RAISE unique_violation USING MESSAGE = _exception_err;
 		WHEN OTHERS THEN
-			GET STACKED DIAGNOSTICS v_exception_err = MESSAGE_TEXT;
-			RAISE EXCEPTION USING MESSAGE = v_exception_err;
+			GET STACKED DIAGNOSTICS _exception_err = MESSAGE_TEXT;
+			RAISE EXCEPTION USING MESSAGE = _exception_err;
 
 	END;
 
@@ -560,28 +564,29 @@ END;
 $$ 
 LANGUAGE 'plpgsql';
 
-CREATE OR REPLACE FUNCTION search_tour_by_city(p_city_name VARCHAR(255), p_region_name VARCHAR (255), p_country_name VARCHAR(255))
+DROP FUNCTION IF EXISTS query_tour_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255));
+CREATE OR REPLACE FUNCTION query_tour_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255))
 	RETURNS SETOF view_tours AS 
 $$
 DECLARE
-	v_city_id      VARCHAR(255);
-	v_city_name    VARCHAR(255);
-	v_region_name  VARCHAR(255);
-	v_country_name VARCHAR(255);
+	_city_id      VARCHAR(255);
+	_city_name    VARCHAR(255);
+	_region_name  VARCHAR(255);
+	_country_name VARCHAR(255);
 BEGIN
-	v_city_id = find_cityid_by_name(p_city_name, p_region_name, p_country_name);
+	_city_id = find_cityid_by_name(city_name, region_name, country_name);
 
 	SELECT cities.city, states.region, country.country
-	INTO v_city_name, v_region_name, v_country_name
+	INTO _city_name, _region_name, _country_name
 	FROM cities, states, country 
-	WHERE cities.cityid = v_city_id
+	WHERE cities.cityid = _city_id
 	AND states.regionid = cities.regionid 
 	AND country.countryid = cities.countryid;
 	
 	RETURN QUERY 
-	SELECT users.u_name, tours.t_id, v_city_name, v_region_name, v_country_name, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
+	SELECT users.u_name, tours.t_id, _city_name, _region_name, _country_name, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_location, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
 	FROM users, tours, languages
-	WHERE tours.t_cityid = v_city_id
+	WHERE tours.t_cityid = _city_id
 	AND users.u_id = tours.u_id
 	AND languages.lang_id = tours.t_languages;
 	
@@ -688,6 +693,40 @@ BEGIN
 	AND slots.ts_active = B'1'
 	HAVING slots.ts_vacant > 0;
 
+	RETURN;
+END;
+$$ 
+LANGUAGE 'plpgsql';
+
+DROP FUNCTION IF EXISTS query_slots_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255), today DATE);
+CREATE OR REPLACE FUNCTION query_slots_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255), today DATE)
+	RETURNS SETOF view_tours AS 
+$$
+DECLARE
+	_city_id      VARCHAR(255);
+	_city_name    VARCHAR(255);
+	_region_name  VARCHAR(255);
+	_country_name VARCHAR(255);
+BEGIN
+	_city_id = find_cityid_by_name(city_name, region_name, country_name);
+
+	SELECT cities.city, states.region, country.country
+	INTO _city_name, _region_name, _country_name
+	FROM cities, states, country 
+	WHERE cities.cityid = _city_id
+	AND states.regionid = cities.regionid 
+	AND country.countryid = cities.countryid;
+	
+	RETURN QUERY 
+	SELECT users.u_name, tours.t_id, _city_name, _region_name, _country_name, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_location, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
+	FROM users, tours, languages
+	WHERE tours.t_cityid = _city_id
+	AND users.u_id = tours.u_id
+	AND languages.lang_id = tours.t_languages
+	AND slots.ts_date >= today
+	AND slots.ts_vacant > 0
+	AND slots.ts_active = B'1';
+	
 	RETURN;
 END;
 $$ 
