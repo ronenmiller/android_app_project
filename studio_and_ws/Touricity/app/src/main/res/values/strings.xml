@@ -1,4 +1,28 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
+    <!-- General app strings -->
     <string name="app_name">Touricity</string>
+
+    <!-- Menu-related strings -->
     <string name="action_settings">Settings</string>
+
+    <!-- Activity titles -->
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Location setting -->
+    <string name="pref_location_label">Location</string>
+    <string name="pref_location_key" translatable="false">location</string>
+    <string name="pref_location_default" translatable="false">Haifa, Israel</string>
+
+    <!-- Notifications setting -->
+    <string name="pref_notifications_label">Notifications</string>
+    <string name="pref_notifications_key">notifications</string>
+    <string name="pref_notifications_off">Off</string>
+    <string name="pref_notifications_on">On</string>
+
+    <!-- Sync data setting -->
+    <string name="pref_sync_label">Sync data</string>
+    <string name="pref_sync_key">sync</string>
+    <string name="pref_sync_default">180</string>
+    <string name="pref_sync_summary">Every <xliff:g id="temp">%s</xliff:g> minutes</string>
 </resources>
