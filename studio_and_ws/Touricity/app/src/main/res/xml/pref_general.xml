@@ -20,14 +20,23 @@
         android:defaultValue="true"
         tools:ignore="UnusedAttribute" />
 
+    <SwitchPreference
+        android:title="@string/pref_sync_data_label"
+        android:key="@string/pref_sync_data_key"
+        android:switchTextOff="@string/pref_sync_data_off"
+        android:switchTextOn="@string/pref_sync_data_on"
+        android:defaultValue="true"
+        tools:ignore="UnusedAttribute" />
+
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
     <EditTextPreference
-        android:title="@string/pref_sync_label"
-        android:key="@string/pref_sync_key"
-        android:defaultValue="@string/pref_sync_default"
+        android:title="@string/pref_sync_interval_label"
+        android:key="@string/pref_sync_interval_key"
+        android:defaultValue="@string/pref_sync_interval_default"
         android:inputType="number"
         android:maxLength="4"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:dependency="@string/pref_sync_data_key" />
 
 </PreferenceScreen>
