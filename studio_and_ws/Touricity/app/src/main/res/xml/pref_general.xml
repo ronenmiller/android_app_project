@@ -3,21 +3,6 @@
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
 
-    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
-    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-    <EditTextPreference
-        android:title="@string/pref_location_label"
-        android:key="@string/pref_location_key"
-        android:defaultValue="@string/pref_location_default"
-        android:inputType="text"
-        android:singleLine="true" />
-
-    <il.ac.technion.touricity.LocationListPreference
-        android:title="@string/pref_location_query_label"
-        android:key="@string/pref_location_query_key"
-        android:entries="@array/pref_units_options"
-        android:entryValues="@array/pref_units_values" />
-
     <SwitchPreference
         android:title="@string/pref_notifications_label"
         android:key="@string/pref_notifications_key"

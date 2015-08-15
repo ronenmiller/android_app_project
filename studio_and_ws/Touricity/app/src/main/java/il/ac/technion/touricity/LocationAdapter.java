@@ -2,7 +2,6 @@ package il.ac.technion.touricity;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,17 +55,14 @@ public class LocationAdapter extends CursorAdapter {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
         // Read location type from cursor in order to set the icon
-        String locationType = cursor.getString(SettingsActivity.COL_LOCATION_TYPE);
+        String locationType = cursor.getString(MainFragment.COL_LOCATION_TYPE);
 
         // Set the correct icon using an helper method.
-        Drawable drawable = Utility.getIconResourceForLocationType(context, locationType);
-        if (drawable != null) {
-            viewHolder.iconView.setImageDrawable(Utility
-                    .getIconResourceForLocationType(context, locationType));
-        }
+        viewHolder.iconView.setImageResource(Utility
+                .getIconResourceIdForLocationType(context, locationType));
 
         // Read location display string from cursor
-        String locationName = cursor.getString(SettingsActivity.COL_LOCATION_NAME);
+        String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);
         viewHolder.textView.setText(locationName);
     }
 }

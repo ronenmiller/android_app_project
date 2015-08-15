@@ -20,17 +20,19 @@
 
     </FrameLayout>
 
-    <FrameLayout
+    <LinearLayout
         android:layout_height="wrap_content"
         android:layout_width="0dp"
-        android:layout_weight="1" >
+        android:layout_weight="1"
+        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp" >
 
         <TextView
             android:id="@+id/list_item_location_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-condensed"
-            android:textSize="20sp"/>
+            android:textSize="16sp"/>
 
-    </FrameLayout>
+    </LinearLayout>
 </LinearLayout>

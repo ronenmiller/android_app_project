@@ -49,7 +49,6 @@ public class LocationService extends IntentService {
         String locationsJsonStr = null;
 
         String format = "json";
-        String featureType = "city";
         int resultsLimit = 5;
         String language = "en";
         // TODO: consider removing this parameter on production
@@ -63,7 +62,6 @@ public class LocationService extends IntentService {
                     "http://nominatim.openstreetmap.org/search?";
             final String QUERY_PARAM = "q";
             final String FORMAT_PARAM = "format";
-            final String FEATURE_PARAM = "featureType";
             final String LIMIT_PARAM = "limit";
             final String LANGUAGE_PARAM = "accept-language";
             final String EMAIL_PARAM = "email";
@@ -71,7 +69,6 @@ public class LocationService extends IntentService {
             Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                     .appendQueryParameter(QUERY_PARAM, locationQuery)
                     .appendQueryParameter(FORMAT_PARAM, format)
-                    .appendQueryParameter(FEATURE_PARAM, featureType)
                     .appendQueryParameter(LIMIT_PARAM, Integer.toString(resultsLimit))
                     .appendQueryParameter(LANGUAGE_PARAM, language)
                     .appendQueryParameter(EMAIL_PARAM, email)
@@ -197,6 +194,13 @@ public class LocationService extends IntentService {
                     cvArrayList.add(locationValues);
                 }
             }
+
+            // TODO: maybe delete later
+            // Delete previous results
+            this.getContentResolver().delete(ToursContract.OSMEntry.CONTENT_URI,
+                    null,
+                    null
+            );
 
             // Add to the database
             int inserted = 0;

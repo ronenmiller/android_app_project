@@ -33,26 +33,19 @@ public class Utility {
      * @return Drawable for the corresponding icon. null if no relation is found.
      * @see <a href="https://www.google.com/design/icons/index.html">Material icons site</a>.
      */
-    public static Drawable getIconResourceForLocationType(Context context, String locationType) {
+    public static int getIconResourceIdForLocationType(Context context, String locationType) {
         Drawable drawable = null;
 
         if (locationType.equals("city")) {
-            drawable =  context.getResources().getDrawable(R.drawable.ic_city_black_24dp);
+            return R.drawable.ic_city_24dp;
         } else if (locationType.equals("town")) {
-            drawable =  context.getResources().getDrawable(R.drawable.ic_town_black_24dp);
+            return R.drawable.ic_town_24dp;
         } else if (locationType.equals("village")) {
-            drawable =  context.getResources().getDrawable(R.drawable.ic_town_black_24dp);
+            return R.drawable.ic_town_24dp;
         } else if (locationType.equals("hamlet")) {
-            drawable = context.getResources().getDrawable(R.drawable.ic_hamlet_black_24dp);
+            return R.drawable.ic_hamlet_24dp;
         }
 
-        if (drawable != null) {
-            // Android uses default opacity of 54% for icons. Since the icons obtained from
-            // the material icons site are black, apple the opacity programmatically.
-            // This is the value of opacity between 1-255. 138 is approximately 54%.
-            drawable.setAlpha(138);
-        }
-
-        return drawable;
+        return -1;
     }
 }
