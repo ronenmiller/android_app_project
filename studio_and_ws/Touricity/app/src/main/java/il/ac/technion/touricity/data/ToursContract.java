@@ -37,6 +37,7 @@ public class ToursContract {
     // as the ContentProvider hasn't been given any information on what to do with "givemeroot".
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
     public static final String PATH_LOCATION = "location";
+    public static final String PATH_OSM = "osm";
     public static final String PATH_USERS = "users";
     public static final String PATH_PEOPLE = "people";
     public static final String PATH_TOURS = "tours";
@@ -56,21 +57,25 @@ public class ToursContract {
         return time.setJulianDay(julianDay);
     }*/
 
-    /*
-        Inner class that defines the contents of the location table
-     */
-    public static final class LocationEntry implements BaseColumns {
+    /* Inner class that defines the contents of the location table */
+    public static class LocationEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "location";
 
+        // This is the Open Street Map ID returned by the API
+        // TODO: remove the next comment
+        // This references the LOCATION ID found in the OSM table
+        public static final String COLUMN_LOCATION_ID = "location_id";
+
         // Human readable location string, provided by the API.
+        // Also the display name string to be used in the settings activity.
         public static final String COLUMN_LOCATION_NAME = "location_name";
 
-        // The display name string to be used in the settings activity
+        // The type of location in order to set the correct image in the list view
         public static final String COLUMN_LOCATION_TYPE = "location_type";
 
         // In order to uniquely pinpoint the location on the map when we launch the
-        // map intent, we store the latitude and longitude as returned by openweathermap.
+        // map intent, we store the latitude and longitude as returned by open street map.
         public static final String COLUMN_COORD_LAT = "coord_lat";
         public static final String COLUMN_COORD_LONG = "coord_long";
 
@@ -82,8 +87,46 @@ public class ToursContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
 
-        // TODO: check out how this is used
+        // This URI is returned when inserting a row to the table.
+        // The returned id is the row number of the inserted row.
         public static Uri buildLocationUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+    }
+
+    /* Inner class that defines the contents of the OSM table which holds location queries */
+    public static final class OSMEntry implements BaseColumns {
+        public static final String TABLE_NAME = "osm";
+
+        public static final String COLUMN_LOCATION_ID = "location_id";
+
+        // TODO: use column _ID instead of relevance
+        // Use this field in order to sort the results according to their relevance.
+        public static final String COLUMN_QUERY_RELEVANCE = "relevance";
+
+        // Human readable location string, provided by the API.
+        // Also the display name string to be used in the settings activity.
+        public static final String COLUMN_LOCATION_NAME = "location_name";
+
+        // The type of location in order to set the correct image in the list view
+        public static final String COLUMN_LOCATION_TYPE = "location_type";
+
+        // In order to uniquely pinpoint the location on the map when we launch the
+        // map intent, we store the latitude and longitude as returned by open street map.
+        public static final String COLUMN_COORD_LAT = "coord_lat";
+        public static final String COLUMN_COORD_LONG = "coord_long";
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_OSM).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_OSM;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_OSM;
+
+        // This URI is returned when inserting a row to the table.
+        // The returned id is the row number of the inserted row.
+        public static Uri buildOSMUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
@@ -122,7 +165,8 @@ public class ToursContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_USERS;
 
-        // TODO: check out how this is used
+        // This URI is returned when inserting a row to the table.
+        // The returned id is the row number of the inserted row.
         public static Uri buildUsersUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }

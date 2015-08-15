@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -18,11 +19,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import il.ac.technion.touricity.Utility;
 import il.ac.technion.touricity.data.ToursContract;
 
 public class LocationService extends IntentService {
 
     private final String LOG_TAG = LocationService.class.getSimpleName();
+
+    public static final String BROADCAST_EVENT = "location_service";
 
     public LocationService() {
         super("LocationService");
@@ -46,7 +50,7 @@ public class LocationService extends IntentService {
 
         String format = "json";
         String featureType = "city";
-        int resultsLimit = 10;
+        int resultsLimit = 5;
         String language = "en";
         // TODO: consider removing this parameter on production
         String email = "sesami.open@gmail.com";
@@ -148,7 +152,7 @@ public class LocationService extends IntentService {
         // Location information
         final String OSM_ID = "osm_id";
         final String OSM_NAME = "display_name";
-        final String OSM_CLASS = "class";
+        final String OSM_TYPE = "type";
 
         // Location coordinate
         final String OSM_LATITUDE = "lat";
@@ -158,21 +162,21 @@ public class LocationService extends IntentService {
             JSONArray locationsArray = new JSONArray(locationsJsonStr);
 
             // Store new locations in order for the user to select his desired location
-            ArrayList<ContentValues> locationsList = new ArrayList<>();
+            ArrayList<ContentValues> cvArrayList = new ArrayList<>();
 
             for(int i = 0; i < locationsArray.length(); i++) {
                 // These are the values that will be collected.
                 long locationId;
                 String locationName;
-                String locationClass;
+                String locationType;
                 double locationLatitude;
                 double locationLongitude;
 
                 // Get the JSON object representing the location
                 JSONObject locationObject = locationsArray.getJSONObject(i);
 
-                locationClass = locationObject.getString(OSM_CLASS);
-                if (locationClass.equals("place")) {
+                locationType = locationObject.getString(OSM_TYPE);
+                if (Utility.isPlace(locationType)) {
                     // get requested elements from json
                     locationId = locationObject.getLong(OSM_ID);
                     locationName = locationObject.getString(OSM_NAME);
@@ -181,20 +185,34 @@ public class LocationService extends IntentService {
 
                     ContentValues locationValues = new ContentValues();
 
-                    locationValues.put(ToursContract.LocationEntry._ID, locationId);
-                    locationValues.put(ToursContract.LocationEntry.COLUMN_LOCATION_NAME, locationName);
-                    locationValues.put(ToursContract.LocationEntry.COLUMN_COORD_LAT, locationLatitude);
-                    locationValues.put(ToursContract.LocationEntry.COLUMN_COORD_LONG, locationLongitude);
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_ID, locationId);
+                    // TODO: might need to remove
+                    // Lower is more relevant
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_QUERY_RELEVANCE, i);
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_NAME, locationName);
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_TYPE, locationType);
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_COORD_LAT, locationLatitude);
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_COORD_LONG, locationLongitude);
 
-                    locationsList.add(locationValues);
+                    cvArrayList.add(locationValues);
                 }
             }
 
-            // TODO: let the user choose which location does he mean from ArrayList<ContentV. Implement the next
-            // TODO: lines in a function after returning an ArrayList<ContentValues> to the user
-            // TODO: uncomment after content resolver implementation
-            // add to database
-//            long locationId = addLocation(locationQuery, cityName, cityLatitude, cityLongitude);
+            // Add to the database
+            int inserted = 0;
+            if ( cvArrayList.size() > 0 ) {
+                // Student: call bulkInsert to add the weatherEntries to the database here
+                ContentValues[] cvArray = new ContentValues[cvArrayList.size()];
+                cvArrayList.toArray(cvArray);
+                inserted = this.getContentResolver().bulkInsert(
+                        ToursContract.OSMEntry.CONTENT_URI,
+                        cvArray
+                );
+            }
+
+            sendMessage();
+
+            Log.d(LOG_TAG, "Location service complete. " + inserted + " rows inserted to OSM table.");
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -251,4 +269,11 @@ public class LocationService extends IntentService {
 //
 //        return locationId;
 //    }
+
+    // Send an Intent with an action named "BROADCAST_EVENT".
+    private void sendMessage() {
+        Intent intent = new Intent(BROADCAST_EVENT);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
 }

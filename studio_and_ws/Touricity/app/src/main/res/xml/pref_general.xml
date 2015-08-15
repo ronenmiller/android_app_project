@@ -12,6 +12,12 @@
         android:inputType="text"
         android:singleLine="true" />
 
+    <il.ac.technion.touricity.LocationListPreference
+        android:title="@string/pref_location_query_label"
+        android:key="@string/pref_location_query_key"
+        android:entries="@array/pref_units_options"
+        android:entryValues="@array/pref_units_values" />
+
     <SwitchPreference
         android:title="@string/pref_notifications_label"
         android:key="@string/pref_notifications_key"

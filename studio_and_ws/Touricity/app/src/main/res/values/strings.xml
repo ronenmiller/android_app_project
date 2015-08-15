@@ -3,6 +3,8 @@
     <!-- General app strings -->
     <string name="app_name">Touricity</string>
 
+    <string name="content_authority">il.ac.technion.touricity</string>
+
     <!-- Menu-related strings -->
     <string name="action_settings">Settings</string>
 
@@ -13,6 +15,10 @@
     <string name="pref_location_label">Location</string>
     <string name="pref_location_key" translatable="false">location</string>
     <string name="pref_location_default" translatable="false">Haifa, Israel</string>
+
+    <!-- Location query setting (invisible) -->
+    <string name="pref_location_query_label">Did you mean?</string>
+    <string name="pref_location_query_key" translatable="false">location_query</string>
 
     <!-- Notifications setting -->
     <string name="pref_notifications_label">Notifications</string>

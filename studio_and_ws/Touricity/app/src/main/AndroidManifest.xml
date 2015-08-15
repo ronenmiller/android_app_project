@@ -27,7 +27,13 @@
                 android:value="MainActivity">
             </meta-data>
         </activity>
+
         <service android:name=".service.LocationService"/>
+        <provider
+            android:authorities="@string/content_authority"
+            android:name=".data.ToursProvider"
+            android:exported="false"
+            android:syncable="true" />
     </application>
 
 </manifest>
