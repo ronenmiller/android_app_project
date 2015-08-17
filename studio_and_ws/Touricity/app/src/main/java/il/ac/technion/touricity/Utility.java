@@ -8,6 +8,26 @@ import android.graphics.drawable.Drawable;
  */
 public class Utility {
 
+//    public static Long getPreferredLocationId(Context context) {
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+//        return prefs.getLong(context.getString(R.string.pref_location_id_key), -1);
+//    }
+//
+//    public static void setPreferredLocationId(Context context, long id) {
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+//        prefs.edit().putLong(context.getString(R.string.pref_location_id_key), id).commit();
+//    }
+//
+//    public static String getPreferredLocationName(Context context) {
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+//        return prefs.getString(context.getString(R.string.pref_location_name_key), "");
+//    }
+//
+//    public static void setPreferredLocationName(Context context, String locationName) {
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+//        prefs.edit().putString(context.getString(R.string.pref_location_id_key), locationName).commit();
+//    }
+
     /**
      * Helper method to tell if the location returned by Open Street Map service is a city, town,
      * village or hamlet. Generally, places can be administrative boundaries, counties and even

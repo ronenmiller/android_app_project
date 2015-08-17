@@ -41,19 +41,24 @@ public class ToursDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + LocationEntry.TABLE_NAME + " (" +
                 LocationEntry._ID + " INTEGER PRIMARY KEY," +
 
-                LocationEntry.COLUMN_LOCATION_ID + " INTEGER UNIQUE NOT NULL, " +
-                LocationEntry.COLUMN_LOCATION_NAME + " TEXT UNIQUE NOT NULL, " +
+                LocationEntry.COLUMN_OSM_ID + " INTEGER NOT NULL, " +
+                LocationEntry.COLUMN_LOCATION_NAME + " TEXT NOT NULL, " +
                 LocationEntry.COLUMN_LOCATION_TYPE + " TEXT NOT NULL, " +
                 LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
-                LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL)";
+                LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
+
+                // To assure the application have just one location per OSM ID.
+                // TODO: checks if it really helps with the history management
+                // Replacing the old entry will help manage history suggestions.
+                " UNIQUE (" + LocationEntry.COLUMN_OSM_ID +  ", " +
+                LocationEntry.COLUMN_LOCATION_NAME + ") ON CONFLICT REPLACE);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_LOCATION_TABLE);
 
         final String SQL_CREATE_OSM_TABLE = "CREATE TABLE " + OSMEntry.TABLE_NAME + " (" +
                 OSMEntry._ID + " INTEGER PRIMARY KEY," +
 
-                OSMEntry.COLUMN_LOCATION_ID + " INTEGER UNIQUE NOT NULL, " +
-                OSMEntry.COLUMN_QUERY_RELEVANCE + " INTEGER UNIQUE NOT NULL, " +
+                OSMEntry.COLUMN_OSM_ID + " INTEGER UNIQUE NOT NULL, " +
                 OSMEntry.COLUMN_LOCATION_NAME + " TEXT UNIQUE NOT NULL, " +
                 OSMEntry.COLUMN_LOCATION_TYPE + " TEXT NOT NULL, " +
                 OSMEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +

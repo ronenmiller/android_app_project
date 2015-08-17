@@ -9,18 +9,16 @@
     <string name="action_settings">Settings</string>
 
     <!-- Activity titles -->
+    <string name="title_activity_search">Did you mean?</string>
     <string name="title_activity_settings">Settings</string>
 
-    <!-- Location edit text -->
-    <string name="location_textview">Location</string>
-    <string name="location_default" translatable="false">Haifa, Israel</string>
+    <!-- Main activity's action bar search field -->
+    <string name="search_title">Search</string>
+    <string name="search_hint">Search location</string>
 
     <!-- Location setting -->
-    <string name="pref_location_key" translatable="false">location</string>
-
-    <!-- Location query setting (invisible) -->
-    <string name="pref_location_query_label">Did you mean?</string>
-    <string name="pref_location_query_key" translatable="false">location_query</string>
+    <string name="pref_location_id_key" translatable="false">location_id</string>
+    <string name="pref_location_name_key" translatable="false">location_name</string>
 
     <!-- Notifications setting -->
     <string name="pref_notifications_label">Notifications</string>

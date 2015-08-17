@@ -19,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import il.ac.technion.touricity.SearchFragment;
 import il.ac.technion.touricity.Utility;
 import il.ac.technion.touricity.data.ToursContract;
 
@@ -49,7 +50,7 @@ public class LocationService extends IntentService {
         String locationsJsonStr = null;
 
         String format = "json";
-        int resultsLimit = 5;
+        int resultsLimit = 6;
         String language = "en";
         // TODO: consider removing this parameter on production
         String email = "sesami.open@gmail.com";
@@ -182,10 +183,7 @@ public class LocationService extends IntentService {
 
                     ContentValues locationValues = new ContentValues();
 
-                    locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_ID, locationId);
-                    // TODO: might need to remove
-                    // Lower is more relevant
-                    locationValues.put(ToursContract.OSMEntry.COLUMN_QUERY_RELEVANCE, i);
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_OSM_ID, locationId);
                     locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_NAME, locationName);
                     locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_TYPE, locationType);
                     locationValues.put(ToursContract.OSMEntry.COLUMN_COORD_LAT, locationLatitude);
@@ -194,13 +192,6 @@ public class LocationService extends IntentService {
                     cvArrayList.add(locationValues);
                 }
             }
-
-            // TODO: maybe delete later
-            // Delete previous results
-            this.getContentResolver().delete(ToursContract.OSMEntry.CONTENT_URI,
-                    null,
-                    null
-            );
 
             // Add to the database
             int inserted = 0;
@@ -274,10 +265,11 @@ public class LocationService extends IntentService {
 //        return locationId;
 //    }
 
-    // Send an Intent with an action named "BROADCAST_EVENT".
+    // Send an Intent with an action named "my-event".
     private void sendMessage() {
-        Intent intent = new Intent(BROADCAST_EVENT);
+        Intent intent = new Intent(SearchFragment.BROADCAST_SERVICE_DONE);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
+
 
 }

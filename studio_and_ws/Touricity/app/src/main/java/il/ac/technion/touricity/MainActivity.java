@@ -1,43 +1,40 @@
 package il.ac.technion.touricity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v7.app.ActionBarActivity;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends ActionBarActivity {
+
+    public static final String ACTION_NOT_FOUND = "action_not_found";
+    public static final String ACTION_FOUND = "action_found";
+    public static final String EXTRA_LOC_ID = "extra_loc_id";
+    public static final String EXTRA_LOC_NAME = "extra_loc_name";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        handleIntent(getIntent());
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    protected void onNewIntent(Intent intent) {
+        handleIntent(intent);
+    }
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Context context = this;
-            Intent settingsIntent = new Intent(context, SettingsActivity.class);
-            startActivity(settingsIntent);
-            return true;
+    private void handleIntent(Intent intent) {
+        if (ACTION_NOT_FOUND.equals(intent.getAction())) {
+            Toast.makeText(this, "Location not found.", Toast.LENGTH_LONG).show();
         }
+        else if (ACTION_FOUND.equals(intent.getAction())) {
+            long osmID = intent.getLongExtra(EXTRA_LOC_ID, -1);
+            String locationName = intent.getStringExtra(EXTRA_LOC_NAME);
 
-        return super.onOptionsItemSelected(item);
+            MainFragment mf = (MainFragment)getSupportFragmentManager()
+                    .findFragmentById(R.id.fragment_main);
+            mf.onLocationChanged(osmID, locationName);
+        }
     }
 }

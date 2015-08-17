@@ -57,15 +57,11 @@ public class ToursContract {
         return time.setJulianDay(julianDay);
     }*/
 
-    /* Inner class that defines the contents of the location table */
-    public static class LocationEntry implements BaseColumns {
-
-        public static final String TABLE_NAME = "location";
+    /* Inner class that defines basic characteristics of locations */
+    public static class BasicLocationEntry implements BaseColumns {
 
         // This is the Open Street Map ID returned by the API
-        // TODO: remove the next comment
-        // This references the LOCATION ID found in the OSM table
-        public static final String COLUMN_LOCATION_ID = "location_id";
+        public static final String COLUMN_OSM_ID = "location_id";
 
         // Human readable location string, provided by the API.
         // Also the display name string to be used in the settings activity.
@@ -78,6 +74,13 @@ public class ToursContract {
         // map intent, we store the latitude and longitude as returned by open street map.
         public static final String COLUMN_COORD_LAT = "coord_lat";
         public static final String COLUMN_COORD_LONG = "coord_long";
+
+    }
+
+    /* Inner class that defines the contents of the location table */
+    public static class LocationEntry extends BasicLocationEntry {
+
+        public static final String TABLE_NAME = "location";
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOCATION).build();
@@ -95,26 +98,8 @@ public class ToursContract {
     }
 
     /* Inner class that defines the contents of the OSM table which holds location queries */
-    public static final class OSMEntry implements BaseColumns {
+    public static final class OSMEntry extends BasicLocationEntry {
         public static final String TABLE_NAME = "osm";
-
-        public static final String COLUMN_LOCATION_ID = "location_id";
-
-        // TODO: use column _ID instead of relevance
-        // Use this field in order to sort the results according to their relevance.
-        public static final String COLUMN_QUERY_RELEVANCE = "relevance";
-
-        // Human readable location string, provided by the API.
-        // Also the display name string to be used in the settings activity.
-        public static final String COLUMN_LOCATION_NAME = "location_name";
-
-        // The type of location in order to set the correct image in the list view
-        public static final String COLUMN_LOCATION_TYPE = "location_type";
-
-        // In order to uniquely pinpoint the location on the map when we launch the
-        // map intent, we store the latitude and longitude as returned by open street map.
-        public static final String COLUMN_COORD_LAT = "coord_lat";
-        public static final String COLUMN_COORD_LONG = "coord_long";
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_OSM).build();
