@@ -19,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import il.ac.technion.touricity.MainFragment;
 import il.ac.technion.touricity.SearchFragment;
 import il.ac.technion.touricity.Utility;
 import il.ac.technion.touricity.data.ToursContract;
@@ -205,7 +206,7 @@ public class LocationService extends IntentService {
                 );
             }
 
-            sendMessage();
+            sendMessage(inserted);
 
             Log.d(LOG_TAG, "Location service complete. " + inserted + " rows inserted to OSM table.");
 
@@ -266,8 +267,9 @@ public class LocationService extends IntentService {
 //    }
 
     // Send an Intent with an action named "my-event".
-    private void sendMessage() {
-        Intent intent = new Intent(SearchFragment.BROADCAST_SERVICE_DONE);
+    private void sendMessage(int numResults) {
+        Intent intent = new Intent(MainFragment.BROADCAST_SERVICE_DONE);
+        intent.putExtra(Intent.EXTRA_RETURN_RESULT, numResults);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

@@ -1,10 +1,8 @@
 package il.ac.technion.touricity;
 
-import android.app.SearchManager;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -49,11 +47,9 @@ public class SearchActivity extends AppCompatActivity {
 
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Log.d(LOG_TAG, "In handle intent. Query: " + query);
             SearchFragment sf = (SearchFragment)getSupportFragmentManager()
                     .findFragmentById(R.id.fragment_search);
-            sf.onLocationChanged(query);
+            sf.onLocationChanged();
         }
     }
 }

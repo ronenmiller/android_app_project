@@ -10,10 +10,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
- * {@link il.ac.technion.touricity.LocationAdapter} exposes a list of weather forecasts
+ * {@link il.ac.technion.touricity.RecentLocationAdapter} exposes a list of weather forecasts
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
  */
-public class LocationAdapter extends CursorAdapter {
+public class RecentLocationAdapter extends CursorAdapter {
 
     /**
      * Cache of the children views for a forecast list item.
@@ -23,12 +23,12 @@ public class LocationAdapter extends CursorAdapter {
         public final TextView textView;
 
         public ViewHolder(View view) {
-            iconView = (ImageView) view.findViewById(R.id.list_item_icon);
-            textView = (TextView) view.findViewById(R.id.list_item_location_textview);
+            iconView = (ImageView)view.findViewById(R.id.list_item_recent_icon);
+            textView = (TextView)view.findViewById(R.id.list_item_recent_textview);
         }
     }
 
-    public LocationAdapter(Context context, Cursor c, int flags) {
+    public RecentLocationAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
 
@@ -36,7 +36,7 @@ public class LocationAdapter extends CursorAdapter {
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         // Obtain the layout for each list entry
-        int layoutId = R.layout.list_item_location;
+        int layoutId = R.layout.list_item_recent_loc;
 
         View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
@@ -51,17 +51,15 @@ public class LocationAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
 
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
+        if (cursor != null) {
+            ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        // Read location type from cursor in order to set the icon
-        String locationType = cursor.getString(MainFragment.COL_LOCATION_TYPE);
+            // Set the correct icon using an helper method.
+            viewHolder.iconView.setImageResource(R.drawable.ic_history_white_24dp);
 
-        // Set the correct icon using an helper method.
-        viewHolder.iconView.setImageResource(Utility
-                .getIconResourceIdForLocationType(context, locationType));
-
-        // Read location display string from cursor
-        String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);
-        viewHolder.textView.setText(locationName);
+            // Read location display string from cursor
+            String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);
+            viewHolder.textView.setText(locationName);
+        }
     }
 }

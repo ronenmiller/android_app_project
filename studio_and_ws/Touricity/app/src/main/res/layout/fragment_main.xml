@@ -9,6 +9,20 @@
     android:orientation="vertical"
     tools:context=".MainFragment">
 
+    <FrameLayout
+        android:id="@+id/framelayout_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:id="@+id/imageview_main"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_search_main_48dp"/>
+    </FrameLayout>
+
     <TextView
         android:id="@+id/textview_location_main"
         android:layout_width="match_parent"
@@ -16,7 +30,7 @@
         android:layout_gravity="left"
         android:fontFamily="sans-serif-condensed"
         android:textColor="@color/touricity_blue"
-        android:textAppearance="?android:textAppearanceLarge" />
+        android:textAppearance="?android:textAppearanceMedium" />
 
     <ListView
         android:id="@+id/listview_main"

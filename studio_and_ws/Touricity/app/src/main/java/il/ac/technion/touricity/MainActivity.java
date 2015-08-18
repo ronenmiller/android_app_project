@@ -3,7 +3,6 @@ package il.ac.technion.touricity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -25,16 +24,12 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void handleIntent(Intent intent) {
-        if (ACTION_NOT_FOUND.equals(intent.getAction())) {
-            Toast.makeText(this, "Location not found.", Toast.LENGTH_LONG).show();
-        }
-        else if (ACTION_FOUND.equals(intent.getAction())) {
+        if (ACTION_FOUND.equals(intent.getAction())) {
             long osmID = intent.getLongExtra(EXTRA_LOC_ID, -1);
             String locationName = intent.getStringExtra(EXTRA_LOC_NAME);
-
             MainFragment mf = (MainFragment)getSupportFragmentManager()
                     .findFragmentById(R.id.fragment_main);
-            mf.onLocationChanged(osmID, locationName);
+            mf.updateLocation(osmID, locationName);
         }
     }
 }

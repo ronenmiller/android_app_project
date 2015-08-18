@@ -61,7 +61,7 @@ public class Utility {
         } else if (locationType.equals("town")) {
             return R.drawable.ic_town_24dp;
         } else if (locationType.equals("village")) {
-            return R.drawable.ic_town_24dp;
+            return R.drawable.ic_village_24dp;
         } else if (locationType.equals("hamlet")) {
             return R.drawable.ic_hamlet_24dp;
         }

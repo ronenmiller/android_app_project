@@ -12,9 +12,10 @@
     <string name="title_activity_search">Did you mean?</string>
     <string name="title_activity_settings">Settings</string>
 
-    <!-- Main activity's action bar search field -->
+    <!-- Search-location-related strings -->
     <string name="search_title">Search</string>
     <string name="search_hint">Search location</string>
+    <string name="search_not_found">Location not found</string>
 
     <!-- Location setting -->
     <string name="pref_location_id_key" translatable="false">location_id</string>

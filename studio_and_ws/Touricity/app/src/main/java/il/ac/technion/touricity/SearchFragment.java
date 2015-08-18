@@ -1,10 +1,7 @@
 package il.ac.technion.touricity;
 
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,42 +16,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import il.ac.technion.touricity.data.ToursContract;
-import il.ac.technion.touricity.service.LocationService;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class SearchFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-
-    public static final int LOCATIONS_LOADER = 0;
-
-    public static final String BROADCAST_SERVICE_DONE = "broadcast_service_done";
+public class SearchFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private LocationAdapter mLocationAdapter;
-
-    private static final String[] OSM_COLUMNS = {
-            // Used for projection.
-            // _ID must be used in every projection
-            ToursContract.OSMEntry._ID,
-            ToursContract.OSMEntry.COLUMN_OSM_ID,
-            ToursContract.OSMEntry.COLUMN_LOCATION_NAME,
-            ToursContract.OSMEntry.COLUMN_LOCATION_TYPE,
-            ToursContract.OSMEntry.COLUMN_COORD_LAT,
-            ToursContract.OSMEntry.COLUMN_COORD_LONG
-    };
-
-    // These indices are tied to OSM_COLUMNS.  If OSM_COLUMNS changes, these
-    // must change.
-    // The following variables are package-private.
-    // Package-private is stricter than protected and public scopes, but more permissive
-    // than private scope.
-    static final int COL_ID = 0;
-    static final int COL_OSM_ID = 1;
-    static final int COL_LOCATION_NAME = 2;
-    static final int COL_LOCATION_TYPE = 3;
-    static final int COL_COORD_LAT = 4;
-    static final int COL_COORD_LONG = 5;
-
 
     public SearchFragment() {
     }
@@ -82,7 +50,7 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
 
                 // CursorAdapter returns a cursor at the correct position for getItem(), or null
                 // if it cannot seek to that position.
-                Cursor cursor = (Cursor)adapterView.getItemAtPosition(position);
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     addLocation(cursor);
                 }
@@ -94,11 +62,11 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
 
     private void addLocation(Cursor cursor) {
         // read contents from cursor
-        long osmID = cursor.getLong(COL_OSM_ID);
-        String locationName = cursor.getString(COL_LOCATION_NAME);
-        String locationType = cursor.getString(COL_LOCATION_TYPE);
-        double latitude = cursor.getDouble(COL_COORD_LAT);
-        double longitude = cursor.getDouble(COL_COORD_LONG);
+        long osmID = cursor.getLong(MainFragment.COL_OSM_ID);
+        String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);
+        String locationType = cursor.getString(MainFragment.COL_LOCATION_TYPE);
+        double latitude = cursor.getDouble(MainFragment.COL_COORD_LAT);
+        double longitude = cursor.getDouble(MainFragment.COL_COORD_LONG);
 
         // insert contents into location table
         ContentValues cv = new ContentValues();
@@ -123,20 +91,21 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
     private void locationSelected(long id, String name) {
         Intent intent = new Intent(getActivity(), MainActivity.class);
         intent.setAction(MainActivity.ACTION_FOUND);
+        // TODO: check if can use shared preferences instead
         intent.putExtra(MainActivity.EXTRA_LOC_ID, id);
         intent.putExtra(MainActivity.EXTRA_LOC_NAME, name);
         getActivity().startActivity(intent);
     }
 
-    // package-shared
-    void onLocationChanged(String requestedLocation) {
-        updateLocation(requestedLocation);
+    void onLocationChanged() {
+        getLoaderManager().initLoader(MainFragment.LOCATIONS_LOADER, null, this);
     }
 
-    private void updateLocation(String requestedLocation) {
-        Intent intent = new Intent(getActivity(), LocationService.class);
-        intent.putExtra(Intent.EXTRA_TEXT, requestedLocation);
-        getActivity().startService(intent);
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        getLoaderManager().initLoader(MainFragment.LOCATIONS_LOADER, null, this);
     }
 
     @Override
@@ -148,7 +117,7 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
         return new CursorLoader(
                 getActivity(),
                 queryOSMUri,
-                OSM_COLUMNS,
+                MainFragment.OSM_COLUMNS,
                 null,
                 null,
                 sortOrder
@@ -159,26 +128,7 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        // returns false if the cursor is empty
-        if (cursor.moveToFirst() == false) {
-            // Release resources.
-            cursor.close();
-            Intent intent = new Intent(getActivity(), MainActivity.class);
-            intent.setAction(MainActivity.ACTION_NOT_FOUND);
-            getActivity().startActivity(intent);
-        }
-        // returns false if the cursor move failed, i.e. there is no second row
-        else if (cursor.moveToNext() == false) {
-            cursor.moveToFirst();
-            addLocation(cursor);
-        }
-        // there are at least two rows in the cursor
-        else {
-            cursor.moveToFirst();
-            // move before the first row
-            cursor.moveToPrevious();
-            mLocationAdapter.changeCursor(cursor);
-        }
+        mLocationAdapter.changeCursor(cursor);
     }
 
     @Override
@@ -189,30 +139,4 @@ public class SearchFragment extends Fragment implements LoaderManager.LoaderCall
         mLocationAdapter.swapCursor(null);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Register mMessageReceiver to receive messages.
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
-                new IntentFilter(BROADCAST_SERVICE_DONE));
-    }
-
-    // handler for received Intents for the "my-event" event
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Extract data included in the Intent
-            SearchFragment sf = (SearchFragment)getActivity().getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_search);
-            getLoaderManager().restartLoader(LOCATIONS_LOADER, null, sf);
-        }
-    };
-
-    @Override
-    public void onPause() {
-        // Unregister since the activity is not visible
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
-        super.onPause();
-    }
 }
