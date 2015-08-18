@@ -5,9 +5,4 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="EditTextTouricityAppTheme" parent="android:Widget.EditText">
-        <item name="android:background">@drawable/touricity_edit_text_holo_light</item>
-        <item name="android:textColor">#000000</item>
-    </style>
-
 </resources>
