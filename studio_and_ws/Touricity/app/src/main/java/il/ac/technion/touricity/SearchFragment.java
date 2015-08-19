@@ -1,7 +1,9 @@
 package il.ac.technion.touricity;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,8 +34,6 @@ public class SearchFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_search, container, false);
-
-//        onLocationChanged(requestedLocation);
 
         // The LocationAdapter will take data from a source and
         // use it to populate the ListView it's attached to.
@@ -68,7 +68,20 @@ public class SearchFragment extends Fragment
         double latitude = cursor.getDouble(MainFragment.COL_COORD_LAT);
         double longitude = cursor.getDouble(MainFragment.COL_COORD_LONG);
 
-        // insert contents into location table
+        // Save values to preferences file to be used later on.
+        // Type is used just to display the correct icon in the list view
+        // and therefore doesn't need to be saved.
+        Context context = getActivity().getApplicationContext();
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong(getString(R.string.pref_location_id_key), osmID);
+        editor.putString(getString(R.string.pref_location_name_key), locationName);
+        editor.putFloat(getString(R.string.pref_location_lat_key), (float)latitude);
+        editor.putFloat(getString(R.string.pref_location_long_key), (float)longitude);
+        editor.commit();
+
+        // Insert contents into the location table.
         ContentValues cv = new ContentValues();
         cv.put(ToursContract.LocationEntry.COLUMN_OSM_ID, osmID);
         cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_NAME, locationName);
@@ -85,16 +98,13 @@ public class SearchFragment extends Fragment
         cursor.close();
 
         // Return to main activity.
-        locationSelected(osmID, locationName);
+        locationSelected();
     }
 
-    private void locationSelected(long id, String name) {
-        Intent intent = new Intent(getActivity(), MainActivity.class);
-        intent.setAction(MainActivity.ACTION_FOUND);
-        // TODO: check if can use shared preferences instead
-        intent.putExtra(MainActivity.EXTRA_LOC_ID, id);
-        intent.putExtra(MainActivity.EXTRA_LOC_NAME, name);
-        getActivity().startActivity(intent);
+    private void locationSelected() {
+        Intent returnIntent = new Intent();
+        getActivity().setResult(MainFragment.RESULT_OK, returnIntent);
+        getActivity().finish();
     }
 
     void onLocationChanged() {
@@ -128,7 +138,7 @@ public class SearchFragment extends Fragment
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        mLocationAdapter.changeCursor(cursor);
+        mLocationAdapter.swapCursor(cursor);
     }
 
     @Override

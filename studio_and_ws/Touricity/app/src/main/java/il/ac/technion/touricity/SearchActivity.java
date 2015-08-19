@@ -1,5 +1,6 @@
 package il.ac.technion.touricity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +18,6 @@ public class SearchActivity extends AppCompatActivity {
         handleIntent(getIntent());
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -34,6 +34,9 @@ public class SearchActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Context context = this;
+            Intent settingsIntent = new Intent(context, SettingsActivity.class);
+            startActivity(settingsIntent);
             return true;
         }
 

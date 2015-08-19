@@ -1,6 +1,7 @@
 package il.ac.technion.touricity;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 
 /**
@@ -8,25 +9,29 @@ import android.graphics.drawable.Drawable;
  */
 public class Utility {
 
-//    public static Long getPreferredLocationId(Context context) {
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//        return prefs.getLong(context.getString(R.string.pref_location_id_key), -1);
-//    }
-//
-//    public static void setPreferredLocationId(Context context, long id) {
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//        prefs.edit().putLong(context.getString(R.string.pref_location_id_key), id).commit();
-//    }
-//
-//    public static String getPreferredLocationName(Context context) {
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//        return prefs.getString(context.getString(R.string.pref_location_name_key), "");
-//    }
-//
-//    public static void setPreferredLocationName(Context context, String locationName) {
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-//        prefs.edit().putString(context.getString(R.string.pref_location_id_key), locationName).commit();
-//    }
+    public static Long getPreferredLocationId(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return sharedPref.getLong(context.getString(R.string.pref_location_id_key), -1);
+    }
+
+    public static String getPreferredLocationName(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return sharedPref.getString(context.getString(R.string.pref_location_name_key), "");
+    }
+
+    public static double getPreferredLocationLatitude(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return (double)sharedPref.getFloat(context.getString(R.string.pref_location_lat_key), 0);
+    }
+
+    public static double getPreferredLocationLongitude(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return (double)sharedPref.getFloat(context.getString(R.string.pref_location_long_key), 0);
+    }
 
     /**
      * Helper method to tell if the location returned by Open Street Map service is a city, town,

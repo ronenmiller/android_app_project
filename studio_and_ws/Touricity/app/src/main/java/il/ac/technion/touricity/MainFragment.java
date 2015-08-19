@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -17,6 +18,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,6 +42,8 @@ import il.ac.technion.touricity.service.LocationService;
  */
 public class MainFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final String LOG_TAG = MainFragment.class.getSimpleName();
 
     // package-shared
     static final int LOCATIONS_LOADER = 0;
@@ -72,18 +76,21 @@ public class MainFragment extends Fragment
     static final int COL_COORD_LAT = 4;
     static final int COL_COORD_LONG = 5;
 
-    private long mLocationId = -1;
-    private String mLocationName = null;
+    static final int LOCATIONS_REQUEST = 0;
+    static final int RESULT_OK = 0;
+    static final int RESULT_CANCELED = 1;
 
     private String mLastSearch = "";
 
     private RecentLocationAdapter mRecentLocationAdapter;
-    private String mQuery = "";
+    private String mHistoryQuery = "";
 
-    TextView mTextView;
-    ListView mListView;
-    FrameLayout mFrameLayout;
-    ImageView mImageView;
+    private TextView mTextView;
+    private ListView mListView;
+    private FrameLayout mFrameLayout;
+    private ImageView mImageView;
+    private Menu mOptionsMenu;
+    private MenuItem mMapMenuItem;
 
     public MainFragment() {
     }
@@ -92,7 +99,7 @@ public class MainFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        mQuery = "";
+        mHistoryQuery = "";
     }
 
     @Override
@@ -119,7 +126,12 @@ public class MainFragment extends Fragment
         super.onCreateOptionsMenu(menu, inflater);
 
         // Inflate the menu; this adds items to the action bar if it is present.
-        inflater.inflate(R.menu.menu_main, menu);
+        inflater.inflate(R.menu.menu_fragment_main, menu);
+
+        mOptionsMenu = menu;
+
+        mMapMenuItem = (MenuItem)menu.findItem(R.id.map_menuitem);
+        mMapMenuItem.setVisible(false);
 
         // Associate searchable configuration with the SearchView
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -132,6 +144,7 @@ public class MainFragment extends Fragment
                         getSearchableInfo(getActivity().getComponentName()));
                 searchView.setIconifiedByDefault(true);
                 searchView.setQueryHint(getResources().getString(R.string.search_hint));
+                searchView.setSuggestionsAdapter(mRecentLocationAdapter);
 
                 searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
@@ -148,7 +161,13 @@ public class MainFragment extends Fragment
 
                     @Override
                     public boolean onQueryTextChange(String s) {
-                        loadHistory(searchView, s);
+                        if (!s.equals("")) {
+                            mHistoryQuery = s;
+                            MainFragment mf = (MainFragment) getActivity().getSupportFragmentManager()
+                                    .findFragmentById(R.id.fragment_main);
+                            getLoaderManager().restartLoader(RECENT_LOC_LOADER, null, mf);
+//                            loadHistory(s);
+                        }
                         // return true if the action was handled by the listener
                         return true;
                     }
@@ -189,26 +208,46 @@ public class MainFragment extends Fragment
             getActivity().onSearchRequested();
             return true;
         }
-        if (id == R.id.action_settings) {
-            Context context = getActivity();
-            Intent settingsIntent = new Intent(context, SettingsActivity.class);
-            startActivity(settingsIntent);
+        if (id == R.id.map_menuitem) {
+            openPreferredLocationInMap();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void loadHistory(SearchView searchView, String query) {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            mQuery = query;
-            searchView.setSuggestionsAdapter(mRecentLocationAdapter);
-            MainFragment mf = (MainFragment) getActivity().getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_main);
-            getLoaderManager().restartLoader(RECENT_LOC_LOADER, null, mf);
+//    private void updateOptionsMenu() {
+//        if (mOptionsMenu != null) {
+//            onPrepareOptionsMenu(mOptionsMenu);
+//            mMapMenuItem = mOptionsMenu.findItem(R.id.map_menuitem);
+//        }
+//    }
+
+    private void openPreferredLocationInMap() {
+        // Using the URI scheme for showing a location found on a map.  This super-handy
+        // intent can is detailed in the "Common Intents" page of Android's developer site:
+        // http://developer.android.com/guide/components/intents-common.html#Maps
+        double posLat = Utility.getPreferredLocationLatitude(getActivity().getApplicationContext());
+        double posLong = Utility.getPreferredLocationLongitude(getActivity().getApplicationContext());
+
+        // Safety procedure. Location not found - bail out.
+        if (posLat == 0 && posLong == 0) {
+            String msg = getString(R.string.search_not_found);
+            Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
+            mMapMenuItem.setVisible(false);
+            return;
         }
 
+        Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
+        }
     }
 
     private void performLocationSearch(String query) {
@@ -226,7 +265,6 @@ public class MainFragment extends Fragment
         // Set animation while loading results
         RotateAnimation animation = new RotateAnimation
                 (0f, 350f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-//                        RotateAnimation animation = new RotateAnimation(0f, 350f, 15f, 15f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setRepeatCount(Animation.INFINITE);
         animation.setDuration(1500);
@@ -243,17 +281,25 @@ public class MainFragment extends Fragment
     }
 
     // package-shared to be called from main activity
-    void updateLocation(long id, String name) {
-        // TODO: save important values to preferences
-        mLocationId = id;
-        mLocationName = name;
-        mTextView.setText(mLocationName);
+    void updateLocationViews(boolean locationFound) {
+        String locationDisplay;
+        if (locationFound) {
+            locationDisplay = Utility.getPreferredLocationName(getActivity().getApplicationContext());
+        }
+        else {
+            locationDisplay = getString(R.string.search_not_found);
+            Toast.makeText(getActivity(), locationDisplay, Toast.LENGTH_LONG).show();
+        }
+
+        mTextView.setText(locationDisplay);
 
         // Stop the rotating animation and set visibility attribute
         mImageView.setAnimation(null);
         mFrameLayout.setVisibility(View.GONE);
         mTextView.setVisibility(View.VISIBLE);
         mListView.setVisibility(View.VISIBLE);
+//        updateOptionsMenu();
+        mMapMenuItem.setVisible(true);
     }
 
     private void addLocation(Cursor cursor) {
@@ -263,6 +309,19 @@ public class MainFragment extends Fragment
         String locationType = cursor.getString(COL_LOCATION_TYPE);
         double latitude = cursor.getDouble(COL_COORD_LAT);
         double longitude = cursor.getDouble(COL_COORD_LONG);
+
+        // Save values to preferences file to be used later on.
+        // Type is used just to display the correct icon in the list view
+        // and therefore doesn't need to be saved.
+        Context context = getActivity().getApplicationContext();
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong(getString(R.string.pref_location_id_key), osmID);
+        editor.putString(getString(R.string.pref_location_name_key), locationName);
+        editor.putFloat(getString(R.string.pref_location_lat_key), (float)latitude);
+        editor.putFloat(getString(R.string.pref_location_long_key), (float)longitude);
+        editor.commit();
 
         // Insert contents into location table.
         ContentValues cv = new ContentValues();
@@ -280,21 +339,34 @@ public class MainFragment extends Fragment
         // Release resources.
         cursor.close();
 
-        // TODO: also update preferences
         // Update views.
-        updateLocation(osmID, locationName);
+        updateLocationViews(true);
     }
 
     private void launchSearchFragment() {
         Intent intent = new Intent(getActivity(), SearchActivity.class);
         intent.setAction(Intent.ACTION_SEARCH);
-        getActivity().startActivity(intent);
+        startActivityForResult(intent, LOCATIONS_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == LOCATIONS_REQUEST) {
+            if(resultCode == RESULT_OK) {
+                updateLocationViews(true);
+            }
+            if (resultCode == RESULT_CANCELED) {
+                updateLocationViews(false);
+            }
+        }
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // The only loader that has a visible list view in this activity.
         getLoaderManager().initLoader(SLOTS_LOADER, null, this);
     }
 
@@ -317,10 +389,10 @@ public class MainFragment extends Fragment
             String sortOrder = ToursContract.LocationEntry._ID + " DESC";
             Uri queryLocationUri = ToursContract.LocationEntry.CONTENT_URI;
             String selection = null;
-            if (!mQuery.equals("")) {
+            if (!mHistoryQuery.equals("")) {
                 selection = ToursContract.LocationEntry.TABLE_NAME +
                         "." + ToursContract.LocationEntry.COLUMN_LOCATION_NAME +
-                        " LIKE '%" + mQuery + "%'";
+                        " LIKE '%" + mHistoryQuery + "%'";
                 return new CursorLoader(
                         getActivity(),
                         queryLocationUri,
@@ -344,9 +416,7 @@ public class MainFragment extends Fragment
             if (!cursor.moveToFirst()) {
                 // Release resources.
                 cursor.close();
-                String msg = getString(R.string.search_not_found);
-                Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
-                updateLocation(-1, msg);
+                updateLocationViews(false);
             }
             // returns false if the cursor move failed, i.e. there is no second row -
             // a single result was found
@@ -357,15 +427,11 @@ public class MainFragment extends Fragment
             // there are at least two rows in the cursor, show results in search fragment
             else {
                 cursor.close();
-                // TODO: might need to delete
-//                cursor.moveToFirst();
-//                // move before the first row
-//                cursor.moveToPrevious();
                 launchSearchFragment();
             }
         }
         else if (cursorLoader.getId() == RECENT_LOC_LOADER) {
-            mRecentLocationAdapter.changeCursor(cursor);
+            mRecentLocationAdapter.swapCursor(cursor);
         }
     }
 
@@ -377,13 +443,21 @@ public class MainFragment extends Fragment
         if (loader.getId() == RECENT_LOC_LOADER) {
             mRecentLocationAdapter.swapCursor(null);
         }
+        else if (loader.getId() == SLOTS_LOADER) {
+            // TODO: complete using adapter
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        // Reset views.
+        mImageView.setAnimation(null);
+        mFrameLayout.setVisibility(View.GONE);
+        mTextView.setVisibility(View.VISIBLE);
+        mListView.setVisibility(View.VISIBLE);
         // Reset history settings.
-        mQuery = "";
+        mHistoryQuery = "";
         // Register mMessageReceiver to receive messages.
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
                 new IntentFilter(BROADCAST_SERVICE_DONE));
