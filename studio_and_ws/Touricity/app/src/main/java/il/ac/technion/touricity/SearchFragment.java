@@ -40,7 +40,6 @@ public class SearchFragment extends Fragment
         mLocationAdapter = new LocationAdapter(getActivity(), null, 0);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_search);
-        // TODO: later decide between the LocationAdapter and the SlotsAdapter using a boolean
         listView.setAdapter(mLocationAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

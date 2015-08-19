@@ -48,7 +48,6 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
 
                 // To assure the application have just one location per OSM ID.
-                // TODO: checks if it really helps with the history management
                 // Replacing the old entry will help manage history suggestions.
                 " UNIQUE (" + LocationEntry.COLUMN_OSM_ID +  ", " +
                 LocationEntry.COLUMN_LOCATION_NAME + ") ON CONFLICT REPLACE);";

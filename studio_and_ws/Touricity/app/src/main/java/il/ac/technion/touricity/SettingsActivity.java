@@ -11,6 +11,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatDelegate;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 
@@ -47,6 +48,7 @@ public class SettingsActivity extends PreferenceActivity
         getDelegate().installViewFactory();
         getDelegate().onCreate(savedInstanceState);
         getDelegate().getSupportActionBar().show();
+        getDelegate().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.pref_general);
@@ -54,6 +56,19 @@ public class SettingsActivity extends PreferenceActivity
         // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
         // updated when the preference changes.
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_interval_key)));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        // Activate when pressing the action bar's back button.
+        if (id == android.R.id.home) {
+            this.finish();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**

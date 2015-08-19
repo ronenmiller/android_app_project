@@ -433,10 +433,24 @@ public class MainFragment extends Fragment
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-//        if (loader.getId() == RECENT_LOC_LOADER) {
-//            mRecentLocationAdapter.swapCursor(null);
-//        }
-//        else
+        if (loader.getId() == RECENT_LOC_LOADER) {
+
+            // Create delay so the app won't crash.
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        sleep(1000);
+                        mRecentLocationAdapter.swapCursor(null);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+            thread.start();
+        }
+        else
         if (loader.getId() == SLOTS_LOADER) {
             // TODO: complete using adapter
         }
