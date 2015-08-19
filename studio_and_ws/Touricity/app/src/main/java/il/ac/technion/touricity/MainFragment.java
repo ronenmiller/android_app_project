@@ -143,7 +143,8 @@ public class MainFragment extends Fragment
                 searchView.setSearchableInfo(searchManager.
                         getSearchableInfo(getActivity().getComponentName()));
                 searchView.setIconifiedByDefault(true);
-                searchView.setQueryHint(getResources().getString(R.string.search_hint));
+                searchView.setSubmitButtonEnabled(true);
+//                searchView.setQueryHint(getResources().getString(R.string.search_hint));
                 searchView.setSuggestionsAdapter(mRecentLocationAdapter);
 
                 searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -215,13 +216,6 @@ public class MainFragment extends Fragment
 
         return super.onOptionsItemSelected(item);
     }
-
-//    private void updateOptionsMenu() {
-//        if (mOptionsMenu != null) {
-//            onPrepareOptionsMenu(mOptionsMenu);
-//            mMapMenuItem = mOptionsMenu.findItem(R.id.map_menuitem);
-//        }
-//    }
 
     private void openPreferredLocationInMap() {
         // Using the URI scheme for showing a location found on a map.  This super-handy
@@ -298,7 +292,6 @@ public class MainFragment extends Fragment
         mFrameLayout.setVisibility(View.GONE);
         mTextView.setVisibility(View.VISIBLE);
         mListView.setVisibility(View.VISIBLE);
-//        updateOptionsMenu();
         mMapMenuItem.setVisible(true);
     }
 
@@ -440,10 +433,11 @@ public class MainFragment extends Fragment
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        if (loader.getId() == RECENT_LOC_LOADER) {
-            mRecentLocationAdapter.swapCursor(null);
-        }
-        else if (loader.getId() == SLOTS_LOADER) {
+//        if (loader.getId() == RECENT_LOC_LOADER) {
+//            mRecentLocationAdapter.swapCursor(null);
+//        }
+//        else
+        if (loader.getId() == SLOTS_LOADER) {
             // TODO: complete using adapter
         }
     }

@@ -45,6 +45,7 @@ public class SearchActivity extends AppCompatActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        setIntent(intent);
         handleIntent(intent);
     }
 
