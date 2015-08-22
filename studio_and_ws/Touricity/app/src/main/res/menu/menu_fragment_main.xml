@@ -3,17 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
 
-    <item android:id="@+id/search_location"
-        android:title="@string/search_title"
+    <item android:id="@+id/action_search"
+        android:title="@string/action_search"
         android:icon="@drawable/ic_search_white_24dp"
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView"
         android:orderInCategory="1" />
 
-    <item android:id="@+id/map_menuitem"
-        android:title="@string/map_title"
+    <item android:id="@+id/action_map"
+        android:title="@string/action_map"
         android:icon="@drawable/ic_location_white_24dp"
         app:showAsAction="collapseActionView|ifRoom"
         android:orderInCategory="2" />
+
+    <item android:id="@+id/action_signup"
+        android:title="@string/action_signup"
+        app:showAsAction="never"
+        android:orderInCategory="3" />
 
 </menu>

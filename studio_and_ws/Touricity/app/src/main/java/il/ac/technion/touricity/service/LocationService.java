@@ -20,15 +20,12 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import il.ac.technion.touricity.MainFragment;
-import il.ac.technion.touricity.SearchFragment;
 import il.ac.technion.touricity.Utility;
 import il.ac.technion.touricity.data.ToursContract;
 
 public class LocationService extends IntentService {
 
     private final String LOG_TAG = LocationService.class.getSimpleName();
-
-    public static final String BROADCAST_EVENT = "location_service";
 
     public LocationService() {
         super("LocationService");
@@ -206,7 +203,7 @@ public class LocationService extends IntentService {
                 );
             }
 
-            sendMessage(inserted);
+            sendMessage();
 
             Log.d(LOG_TAG, "Location service complete. " + inserted + " rows inserted to OSM table.");
 
@@ -216,60 +213,9 @@ public class LocationService extends IntentService {
         }
     }
 
-    /**
-     * Helper method to handle insertion of a new location in the weather database.
-     *
-     * @param locationSetting The location string used to request updates from the server.
-     * @param cityName A human-readable city name, e.g "Mountain View"
-     * @param lat the latitude of the city
-     * @param lon the longitude of the city
-     * @return the row ID of the added location.
-     */
-    // TODO: fix this function
-//    long addLocation(String locationSetting, String cityName, double lat, double lon) {
-//        // Students: First, check if the location with this city name exists in the db
-//        // If it exists, return the current ID
-//        // Otherwise, insert it using the content resolver and the base URI
-//        final String locationSettingSelection =
-//                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? ";
-//        final String[] locationSelectionArgs = {locationSetting};
-//        long locationId;
-//
-//        ContentResolver resolver = this.getContentResolver();
-//        Cursor cursor = null;
-//        try {
-//            cursor = resolver.query(
-//                    WeatherContract.LocationEntry.CONTENT_URI,
-//                    null,
-//                    locationSettingSelection,
-//                    locationSelectionArgs,
-//                    null);
-//
-//            if (cursor.moveToFirst()) {
-//                // the location already exists in the database
-//                locationId = cursor.getLong(cursor.getColumnIndex(WeatherContract.LocationEntry._ID));
-//            } else {
-//                ContentValues values = new ContentValues();
-//                values.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
-//                values.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
-//                values.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
-//                values.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
-//                Uri returnUri = resolver.insert(WeatherContract.LocationEntry.CONTENT_URI, values);
-//                locationId = Long.valueOf
-//                        (WeatherContract.WeatherEntry.getLocationSettingFromUri(returnUri));
-//            }
-//        }
-//        finally {
-//            cursor.close();
-//        }
-//
-//        return locationId;
-//    }
-
-    // Send an Intent with an action named "my-event".
-    private void sendMessage(int numResults) {
+    // Send an Intent with an action named BROADCAST_SERVICE_DONE.
+    private void sendMessage() {
         Intent intent = new Intent(MainFragment.BROADCAST_SERVICE_DONE);
-        intent.putExtra(Intent.EXTRA_RETURN_RESULT, numResults);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

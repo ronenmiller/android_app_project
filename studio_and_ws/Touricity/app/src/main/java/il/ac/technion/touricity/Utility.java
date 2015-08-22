@@ -33,6 +33,18 @@ public class Utility {
         return (double)sharedPref.getFloat(context.getString(R.string.pref_location_long_key), 0);
     }
 
+    public static void saveLocationToPreferences(Context context, long id, String name,
+                                                   float latitude, float longitude) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong(context.getString(R.string.pref_location_id_key), id);
+        editor.putString(context.getString(R.string.pref_location_name_key), name);
+        editor.putFloat(context.getString(R.string.pref_location_lat_key), latitude);
+        editor.putFloat(context.getString(R.string.pref_location_long_key), longitude);
+        editor.commit();
+    }
+
     /**
      * Helper method to tell if the location returned by Open Street Map service is a city, town,
      * village or hamlet. Generally, places can be administrative boundaries, counties and even

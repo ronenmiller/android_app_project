@@ -3,7 +3,6 @@ package il.ac.technion.touricity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -71,14 +70,13 @@ public class SearchFragment extends Fragment
         // Type is used just to display the correct icon in the list view
         // and therefore doesn't need to be saved.
         Context context = getActivity().getApplicationContext();
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putLong(getString(R.string.pref_location_id_key), osmID);
-        editor.putString(getString(R.string.pref_location_name_key), locationName);
-        editor.putFloat(getString(R.string.pref_location_lat_key), (float)latitude);
-        editor.putFloat(getString(R.string.pref_location_long_key), (float)longitude);
-        editor.commit();
+        Utility.saveLocationToPreferences(
+                context,
+                osmID,
+                locationName,
+                (float) latitude,
+                (float) longitude
+                );
 
         // Insert contents into the location table.
         ContentValues cv = new ContentValues();

@@ -7,7 +7,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -95,6 +94,7 @@ public class MainFragment extends Fragment
     public MainFragment() {
     }
 
+    // TODO: add support for saving state (Bundle savedInstanceState) when the device is rotated
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,7 +130,7 @@ public class MainFragment extends Fragment
 
         mOptionsMenu = menu;
 
-        mMapMenuItem = (MenuItem)menu.findItem(R.id.map_menuitem);
+        mMapMenuItem = (MenuItem)menu.findItem(R.id.action_map);
         mMapMenuItem.setVisible(false);
 
         // Associate searchable configuration with the SearchView
@@ -138,13 +138,13 @@ public class MainFragment extends Fragment
             SearchManager searchManager = (SearchManager)getActivity()
                     .getSystemService(Context.SEARCH_SERVICE);
             final SearchView searchView = (SearchView)menu
-                    .findItem(R.id.search_location).getActionView();
+                    .findItem(R.id.action_search).getActionView();
             if (searchView != null) {
                 searchView.setSearchableInfo(searchManager.
                         getSearchableInfo(getActivity().getComponentName()));
                 searchView.setIconifiedByDefault(true);
                 searchView.setSubmitButtonEnabled(true);
-//                searchView.setQueryHint(getResources().getString(R.string.search_hint));
+                searchView.setQueryHint(getResources().getString(R.string.search_hint));
                 searchView.setSuggestionsAdapter(mRecentLocationAdapter);
 
                 searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -205,14 +205,19 @@ public class MainFragment extends Fragment
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        if (id == R.id.search_location) {
+        if (id == R.id.action_search) {
             getActivity().onSearchRequested();
             return true;
         }
-        if (id == R.id.map_menuitem) {
+        else if (id == R.id.action_map) {
             openPreferredLocationInMap();
             return true;
         }
+        else if (id == R.id.action_signup) {
+            Intent intent = new Intent(getActivity(), SignUpActivity.class);
+            getActivity().startActivity(intent);
+        }
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -307,14 +312,13 @@ public class MainFragment extends Fragment
         // Type is used just to display the correct icon in the list view
         // and therefore doesn't need to be saved.
         Context context = getActivity().getApplicationContext();
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putLong(getString(R.string.pref_location_id_key), osmID);
-        editor.putString(getString(R.string.pref_location_name_key), locationName);
-        editor.putFloat(getString(R.string.pref_location_lat_key), (float)latitude);
-        editor.putFloat(getString(R.string.pref_location_long_key), (float)longitude);
-        editor.commit();
+        Utility.saveLocationToPreferences(
+                context,
+                osmID,
+                locationName,
+                (float) latitude,
+                (float) longitude
+        );
 
         // Insert contents into location table.
         ContentValues cv = new ContentValues();
@@ -440,7 +444,8 @@ public class MainFragment extends Fragment
                 @Override
                 public void run() {
                     try {
-                        sleep(1000);
+                        // Close cursor after 2 seconds.
+                        sleep(2000);
                         mRecentLocationAdapter.swapCursor(null);
                     } catch (InterruptedException e) {
                         e.printStackTrace();

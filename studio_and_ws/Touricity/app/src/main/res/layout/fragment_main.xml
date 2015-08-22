@@ -19,8 +19,10 @@
             android:id="@+id/imageview_main"
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:layout_gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="48dp"
             android:src="@drawable/ic_search_main_24dp"/>
+
     </FrameLayout>
 
     <TextView

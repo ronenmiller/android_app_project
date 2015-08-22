@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="il.ac.technion.touricity" >
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="22" />
+
+    <uses-sdk
+        android:minSdkVersion="10"
+        android:targetSdkVersion="22" />
 
     <!-- This permission is necessary in order for Sunshine to perform network access. -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -11,8 +14,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <!-- this activity enables the search dialog to initiate searches
-        in the SearchableActivity -->
+
+        <!--
+        this activity enables the search dialog to initiate searches
+        in the SearchableActivity
+        -->
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -27,14 +33,14 @@
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".SearchableActivity" />
-                -->
+            -->
         </activity>
 
         <!-- this is the searchable activity; it performs searches -->
         <activity
             android:name=".SearchActivity"
-            android:launchMode="singleTop"
             android:label="@string/title_activity_search"
+            android:launchMode="singleTop"
             android:parentActivityName=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
@@ -47,7 +53,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -56,6 +61,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" >
             </meta-data>
+        </activity>
+
+        <activity
+            android:name=".SignUpActivity"
+            android:label="@string/title_activity_sign_up"
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="adjustResize|stateVisible" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
         </activity>
 
         <service android:name=".service.LocationService" />
@@ -71,7 +86,7 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
             if this integer is not showing, add latest google play services
-            -->
+        -->
     </application>
 
 </manifest>
