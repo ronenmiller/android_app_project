@@ -30,11 +30,11 @@ import il.ac.technion.touricity.service.SignUpService;
  */
 public class SignUpActivity extends Activity {
 
-    public static final String INTENT_EXTRA_EMAIL = "email";
-    public static final String INTENT_EXTRA_NICKNAME = "nickname";
-    public static final String INTENT_EXTRA_PHONE = "email";
-    public static final String INTENT_EXTRA_PASSWORD = "password";
-    public static final String INTENT_EXTRA_GUIDE = "guide";
+    public static final String INTENT_EXTRA_EMAIL = "extra_email";
+    public static final String INTENT_EXTRA_NICKNAME = "extra_nickname";
+    public static final String INTENT_EXTRA_PHONE = "extra_phone";
+    public static final String INTENT_EXTRA_PASSWORD = "extra_password";
+    public static final String INTENT_EXTRA_GUIDE = "extra_guide";
 
     public static final String BROADCAST_INTENT_CANCEL_EMAIL = "cancel_email";
     public static final String BROADCAST_INTENT_CANCEL_NICKNAME = "cancel_nickname";
@@ -174,9 +174,6 @@ public class SignUpActivity extends Activity {
             focusView = (focusView != null) ? focusView : mNicknameView;
             cancel = true;
         }
-        else {
-            // TODO: check if the nickname already exists in the sever db
-        }
 
         if (!password.equals(rePassword)) {
             mPasswordView.setError(getString(R.string.error_mismatch_password));
@@ -184,7 +181,6 @@ public class SignUpActivity extends Activity {
             cancel = true;
         }
 
-        // TODO: change SERVER password length restriction to 6
         // Check for a valid password.
         if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_field_required));
