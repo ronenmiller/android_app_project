@@ -101,6 +101,10 @@ public final class JDBCServer {
 					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
 					return isUniqueUsername(username);
 				}
+				case Message.MessageTypes.VALIDATE_UNIQUE_EMAIL: {
+					String email = requestJSON.getString(Message.MessageKeys.USER_EMAIL_KEY);
+					return isUniqueEmail(email);
+				}
 				default: {
 					throw new IllegalArgumentException("Illegal message ID!");
 				}
@@ -664,7 +668,7 @@ public final class JDBCServer {
 	/**
 	 * Validates that the desired user name is not already taken.
 	 * <p>
-	 * Invoke as soon as the user is done typing his requested user name.
+	 * Invoke when the user clicks on the sign up button.
 	 * <p>
 	 *  	
 	 * @param  username  the desired user name
@@ -710,6 +714,60 @@ public final class JDBCServer {
 		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.VALIDATE_UNIQUE_USERNAME, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	/**
+	 * Validates that the desired email is not already taken.
+	 * <p>
+	 * Invoke when the user clicks on the sign up button.
+	 * <p>
+	 *  	
+	 * @param  email  the desired email address
+	 * @return  		 {@link tours_app_server.Message} in JSON format which contains <code>true</code>
+     * 					 if the email address is unique (not found in the database), or <code>false</code> 
+     * 					 otherwise. If an error occurred, returns <code>null</code>.
+	 * @throws NullPointerException if the connection to the database failed.
+	 */
+	public static String isUniqueEmail(String email) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		boolean isUnique;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call validate_unique_email (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, email);
+			   resultSet = queryDB(cstmt);
+			   isUnique = !ResultSetConverter.convertResultSetIntoBoolean(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in validateUniqueEmail!");
+			}
+		} catch (SQLException se) {
+			//TODO: nothing we can do?
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_EXISTS, isUnique);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.VALIDATE_UNIQUE_EMAIL, messageJsonStr);
 		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);

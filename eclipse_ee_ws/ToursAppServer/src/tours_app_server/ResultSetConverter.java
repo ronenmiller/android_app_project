@@ -52,18 +52,12 @@ public class ResultSetConverter {
      * 									resultSet must include a single result (one row and one column)
      * @return							A <code>boolean</code> value contained in resultSet. 
      * @throws SQLException 			if a database access error occurs or this method is called on a closed resultSet
-     * @throws IllegalArgumentException if resultSet contains a value which is not a <code>boolean</code>
      */
     public static boolean convertResultSetIntoBoolean(ResultSet resultSet) throws SQLException {
     	final int FIRST_COLUMN = 1;
     	
     	resultSet.next();
-    	if (resultSet.getMetaData().getColumnType(FIRST_COLUMN) == java.sql.Types.BOOLEAN) {
-    		return resultSet.getBoolean(FIRST_COLUMN);
-    	}
-    	else {
-    		throw new IllegalArgumentException("IllegalArgumentExeception: value in ResultSet is not a boolean"); 
-    	}
+    	return resultSet.getBoolean(FIRST_COLUMN);
     }
     
     /**
@@ -73,18 +67,12 @@ public class ResultSetConverter {
      * 									resultSet must include a single result (one row and one column)
      * @return							A <code>String</code> value contained in resultSet. 
      * @throws SQLException 			if a database access error occurs or this method is called on a closed resultSet
-     * @throws IllegalArgumentException if resultSet contains a value which is not a <code>String</code>
      */
     public static String convertResultSetIntoString(ResultSet resultSet) throws SQLException {
     	final int FIRST_COLUMN = 1;
     	
     	resultSet.next();
-    	if (resultSet.getMetaData().getColumnType(FIRST_COLUMN) == java.sql.Types.VARCHAR) {
-    		return resultSet.getString(FIRST_COLUMN);
-    	}
-    	else {
-    		throw new IllegalArgumentException("IllegalArgumentExeception: value in ResultSet is not a string"); 
-    	}
+    	return resultSet.getString(FIRST_COLUMN);
     }
     
     /**

@@ -4,9 +4,13 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.os.AsyncTask;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -15,27 +19,30 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import il.ac.technion.touricity.service.SignUpService;
 
 /**
  * A login screen that offers login via email/password.
  */
 public class SignUpActivity extends Activity {
 
-    private AppCompatDelegate mDelegate;
+    public static final String INTENT_EXTRA_EMAIL = "email";
+    public static final String INTENT_EXTRA_NICKNAME = "nickname";
+    public static final String INTENT_EXTRA_PHONE = "email";
+    public static final String INTENT_EXTRA_PASSWORD = "password";
+    public static final String INTENT_EXTRA_GUIDE = "guide";
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
+    public static final String BROADCAST_INTENT_CANCEL_EMAIL = "cancel_email";
+    public static final String BROADCAST_INTENT_CANCEL_NICKNAME = "cancel_nickname";
+    public static final String BROADCAST_INTENT_RESULT_SUCCESS =  "result_success";
+
+    public static final String BROADCAST_SIGNUP_SERVICE_DONE = "broadcast_signup_service_done";
+
+    private AppCompatDelegate mDelegate;
 
     // UI references.
     private EditText mEmailView;
@@ -43,7 +50,7 @@ public class SignUpActivity extends Activity {
     private EditText mPhoneView;
     private EditText mPasswordView;
     private EditText mRePasswordView;
-    private Button mEmailSignInButton;
+    private CheckBox mGuideCheckboxView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -59,6 +66,7 @@ public class SignUpActivity extends Activity {
         mPhoneView = (EditText)findViewById(R.id.signup_phone);
         mPasswordView = (EditText)findViewById(R.id.signup_password);
         mRePasswordView = (EditText)findViewById(R.id.signup_re_password);
+        mGuideCheckboxView = (CheckBox)findViewById(R.id.signup_checkbox);
 
         mRePasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -72,8 +80,8 @@ public class SignUpActivity extends Activity {
             }
         });
 
-        mEmailSignInButton = (Button) findViewById(R.id.signup_submit_btn);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        Button emailSignInButton = (Button) findViewById(R.id.signup_submit_btn);
+        emailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -121,10 +129,6 @@ public class SignUpActivity extends Activity {
      * errors are presented and no actual login attempt is made.
      */
     public void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
-
         // Reset errors.
         mEmailView.setError(null);
         mNicknameView.setError(null);
@@ -138,6 +142,7 @@ public class SignUpActivity extends Activity {
         String phone = mPhoneView.getText().toString();
         String password = mPasswordView.getText().toString();
         String rePassword = mRePasswordView.getText().toString();
+        boolean isGuide = mGuideCheckboxView.isChecked();
 
         boolean cancel = false;
         View focusView = null;
@@ -222,8 +227,14 @@ public class SignUpActivity extends Activity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            Intent intent = new Intent(this, SignUpService.class);
+            intent.putExtra(INTENT_EXTRA_EMAIL, email);
+            intent.putExtra(INTENT_EXTRA_NICKNAME, nickname);
+            intent.putExtra(INTENT_EXTRA_PHONE, phone);
+            intent.putExtra(INTENT_EXTRA_PASSWORD, password);
+            intent.putExtra(INTENT_EXTRA_GUIDE, isGuide);
+
+            startService(intent);
         }
     }
 
@@ -290,61 +301,55 @@ public class SignUpActivity extends Activity {
         }
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Register mMessageReceiver to receive messages.
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(BROADCAST_SIGNUP_SERVICE_DONE));
+    }
 
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-        }
-
+    // handler for received Intents for the "my-event" event
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+        public void onReceive(Context context, Intent intent) {
+            boolean cancelEmail = intent.getBooleanExtra(BROADCAST_INTENT_CANCEL_EMAIL, false);
+            boolean cancelNickname = intent.getBooleanExtra(BROADCAST_INTENT_CANCEL_NICKNAME, false);
+            // This variable determines if the user insertion itself completed successfully, after
+            // all the constraints have been checked.
+            boolean success = intent.getBooleanExtra(BROADCAST_INTENT_RESULT_SUCCESS, false);
 
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
+            boolean cancel = false;
+            View focusView = null;
+
+            if (cancelEmail) {
+                mEmailView.setError((getString(R.string.error_taken_email)));
+                focusView = mEmailView;
+                cancel = true;
+            }
+            if (cancelNickname) {
+                mNicknameView.setError(getString(R.string.error_taken_nickname));
+                focusView = (focusView != null) ? focusView : mNicknameView;
+                cancel = true;
             }
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
+            if (cancel) {
+                // There was an error; user should choose a different email/nickname, according to
+                // the given instructions.
+                focusView.requestFocus();
+                showProgress(false);
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                // TODO: add email confirmation logic
+                finish();
             }
         }
+    };
 
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
+    @Override
+    public void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onPause();
     }
 }
 

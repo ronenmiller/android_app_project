@@ -32,8 +32,10 @@
 
     <string name="error_field_required">This field is required</string>
     <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_taken_email">This email is already taken</string>
     <string name="error_short_nickname">Minimum nickname length is 2 characters</string>
     <string name="error_invalid_nickname">Nickname must begin with a letter</string>
+    <string name="error_taken_nickname">This nickname is already taken</string>
     <string name="error_short_password">Minimum password length is 6 characters</string>
     <string name="error_invalid_password">Password must contain at least one digit and one character</string>
     <string name="error_mismatch_password">This Password doesn\'t match the re-entered password</string>

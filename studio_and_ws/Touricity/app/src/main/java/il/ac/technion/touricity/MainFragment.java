@@ -49,7 +49,7 @@ public class MainFragment extends Fragment
     static final int RECENT_LOC_LOADER = 1;
     static final int SLOTS_LOADER = 2;
 
-    public static final String BROADCAST_SERVICE_DONE = "broadcast_service_done";
+    public static final String BROADCAST_LOCATION_SERVICE_DONE = "broadcast_location_service_done";
 
     // package-shared
     static final String[] OSM_COLUMNS = {
@@ -130,7 +130,7 @@ public class MainFragment extends Fragment
 
         mOptionsMenu = menu;
 
-        mMapMenuItem = (MenuItem)menu.findItem(R.id.action_map);
+        mMapMenuItem = menu.findItem(R.id.action_map);
         mMapMenuItem.setVisible(false);
 
         // Associate searchable configuration with the SearchView
@@ -473,7 +473,7 @@ public class MainFragment extends Fragment
         mHistoryQuery = "";
         // Register mMessageReceiver to receive messages.
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
-                new IntentFilter(BROADCAST_SERVICE_DONE));
+                new IntentFilter(BROADCAST_LOCATION_SERVICE_DONE));
     }
 
     // handler for received Intents for the "my-event" event

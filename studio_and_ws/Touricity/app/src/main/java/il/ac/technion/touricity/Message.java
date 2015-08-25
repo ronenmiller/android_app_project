@@ -1,6 +1,6 @@
-package tours_app_server;
+package il.ac.technion.touricity;
 
-//Basic container class for server-client messages-based communication.
+// Basic container class for server-client messages-based communication.
 public class Message {
 	
 	private final int mMessageID;

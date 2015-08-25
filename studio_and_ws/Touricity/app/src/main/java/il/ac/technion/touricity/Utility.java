@@ -4,10 +4,45 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
+
 /**
  * Created by Liron on 14/08/2015.
  */
 public class Utility {
+
+    public class ServerConfig {
+
+        public static final String PROTOCOL = "http://";
+        // TODO: change to server final IP
+        public static final String SERVER_IP = "10.0.0.3";
+        public static final String SERVER_PORT = "8080";
+        public static final String SERVER_APP = "ToursAppServer";
+        public static final String SERVER_SERVLET = "tours_slet";
+
+        public static final String SERVER_BASE_URL = PROTOCOL + SERVER_IP + ":" + SERVER_PORT +
+                "/" + SERVER_APP + "/" + SERVER_SERVLET;
+
+        private static final int READ_TIMEOUT = 10000;
+        private static final int CONNECTION_TIMEOUT = 15000;
+
+    }
+
+    public static void setupHttpUrlConnection(HttpURLConnection urlConnection) {
+        try {
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Accept", "application/json");
+            urlConnection.setRequestProperty("Content-type", "application/json");
+            urlConnection.setReadTimeout(ServerConfig.READ_TIMEOUT);
+            urlConnection.setConnectTimeout(ServerConfig.CONNECTION_TIMEOUT);
+            urlConnection.setDoInput(true);
+            urlConnection.setDoOutput(true);
+        }
+        catch (ProtocolException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static Long getPreferredLocationId(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(

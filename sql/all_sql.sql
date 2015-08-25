@@ -65,15 +65,15 @@ CREATE TABLE users (
 	u_name	 	 VARCHAR(80) UNIQUE NOT NULL,
 	u_pass	 	 VARCHAR(16) NOT NULL,
 	email		 VARCHAR(80) UNIQUE NOT NULL,
-	phone_number VARCHAR(80) UNIQUE NOT NULL, -- must be entered and unique for SMS confirmation
+	phone_number VARCHAR(80) UNIQUE /*NOT NULL*/, -- must be entered and unique for SMS confirmation
 	u_type		 BIT	     REFERENCES types_tbl(type_id) ON DELETE RESTRICT,
-	u_last_login TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	u_last_login TIMESTAMP WITHOUT TIME ZONE/* NOT NULL*/, 
 	u_rating	 REAL,
 	CONSTRAINT chk_u_name_len   CHECK (char_length(u_name) >= 2), 
 	CONSTRAINT chk_u_name_valid CHECK (u_name ~ '^([A-Za-z])+'), -- username must begin with a character
-	CONSTRAINT chk_pass_len     CHECK (char_length(u_pass) >= 8),
+	CONSTRAINT chk_pass_len     CHECK (char_length(u_pass) >= 6),
 	CONSTRAINT chk_pass_valid   CHECK (u_pass ~ '[0-9]+' AND u_pass ~ '([A-Za-z])+'), -- password must have at least one digit and one character
-	CONSTRAINT chk_email_valid  CHECK (email ~ '^\w+(\w|\.)*@{1}(\w+\.+\w+)+$'),
+	/*CONSTRAINT chk_email_valid  CHECK (email ~ '^\w+(\w|\.)*@{1}(\w+\.+\w+)+$'),*/
 	CONSTRAINT chk_rating_valid CHECK (u_rating >= 0 AND u_rating <= 10)
 )
 WITH (
@@ -105,8 +105,8 @@ CREATE TABLE people (
 	city_str	VARCHAR(255),
 	state_str	VARCHAR(255),
 	country_str	VARCHAR(255),
-	languages	INTEGER    REFERENCES languages(lang_id) ON DELETE RESTRICT, -- should be integer[], how to apply more than one language?
-	CONSTRAINT chk_email_valid CHECK (email ~ '^\w+(\w|\.)*@{1}(\w+\.+\w+)+$')
+	languages	INTEGER    REFERENCES languages(lang_id) ON DELETE RESTRICT -- should be integer[], how to apply more than one language?
+	/*CONSTRAINT chk_email_valid CHECK (email ~ '^\w+(\w|\.)*@{1}(\w+\.+\w+)+$')*/
 )
 WITH (
   OIDS = FALSE
@@ -815,6 +815,42 @@ BEGIN
     
     RETURN _city_id;
 
+END;
+$$ 
+LANGUAGE 'plpgsql';
+
+DROP FUNCTION IF EXISTS validate_unique_username(CHARACTER VARYING);
+CREATE OR REPLACE FUNCTION validate_unique_username(_u_name VARCHAR(80))
+	RETURNS BOOLEAN AS 
+$$
+DECLARE
+	temp users;
+BEGIN
+	SELECT * 
+	INTO temp
+	FROM users 
+	WHERE users.u_name = _u_name; 
+	
+	-- FOUND is set on a SELECT INTO statement, SELECT is not enough
+	RETURN FOUND;
+END;
+$$ 
+LANGUAGE 'plpgsql';
+
+DROP FUNCTION IF EXISTS validate_unique_email(CHARACTER VARYING);
+CREATE OR REPLACE FUNCTION validate_unique_email(_email VARCHAR(80))
+	RETURNS BOOLEAN AS 
+$$
+DECLARE
+	temp users;
+BEGIN
+	SELECT * 
+	INTO temp
+	FROM users 
+	WHERE users.email = _email; 
+	
+	-- FOUND is set on a SELECT INTO statement, SELECT is not enough
+	RETURN FOUND;
 END;
 $$ 
 LANGUAGE 'plpgsql';

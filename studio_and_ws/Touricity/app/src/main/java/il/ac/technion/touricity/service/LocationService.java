@@ -25,7 +25,7 @@ import il.ac.technion.touricity.data.ToursContract;
 
 public class LocationService extends IntentService {
 
-    private final String LOG_TAG = LocationService.class.getSimpleName();
+    private static final String LOG_TAG = LocationService.class.getSimpleName();
 
     public LocationService() {
         super("LocationService");
@@ -57,7 +57,7 @@ public class LocationService extends IntentService {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
-            final String FORECAST_BASE_URL =
+            final String LOCATION_BASE_URL =
                     "http://nominatim.openstreetmap.org/search?";
             final String QUERY_PARAM = "q";
             final String FORMAT_PARAM = "format";
@@ -65,7 +65,7 @@ public class LocationService extends IntentService {
             final String LANGUAGE_PARAM = "accept-language";
             final String EMAIL_PARAM = "email";
 
-            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+            Uri builtUri = Uri.parse(LOCATION_BASE_URL).buildUpon()
                     .appendQueryParameter(QUERY_PARAM, locationQuery)
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(LIMIT_PARAM, Integer.toString(resultsLimit))
@@ -203,7 +203,7 @@ public class LocationService extends IntentService {
                 );
             }
 
-            sendMessage();
+            sendBroadcast();
 
             Log.d(LOG_TAG, "Location service complete. " + inserted + " rows inserted to OSM table.");
 
@@ -213,9 +213,9 @@ public class LocationService extends IntentService {
         }
     }
 
-    // Send an Intent with an action named BROADCAST_SERVICE_DONE.
-    private void sendMessage() {
-        Intent intent = new Intent(MainFragment.BROADCAST_SERVICE_DONE);
+    // Send an Intent with an action named BROADCAST_LOCATION_SERVICE_DONE.
+    private void sendBroadcast() {
+        Intent intent = new Intent(MainFragment.BROADCAST_LOCATION_SERVICE_DONE);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
