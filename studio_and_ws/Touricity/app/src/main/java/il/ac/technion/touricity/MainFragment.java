@@ -217,6 +217,10 @@ public class MainFragment extends Fragment
             Intent intent = new Intent(getActivity(), SignUpActivity.class);
             getActivity().startActivity(intent);
         }
+        else if (id == R.id.action_login) {
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            getActivity().startActivity(intent);
+        }
 
 
         return super.onOptionsItemSelected(item);

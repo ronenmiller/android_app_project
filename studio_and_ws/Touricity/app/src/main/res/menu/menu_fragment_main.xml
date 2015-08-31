@@ -21,4 +21,9 @@
         app:showAsAction="never"
         android:orderInCategory="3" />
 
+    <item android:id="@+id/action_login"
+        android:title="@string/action_login"
+        app:showAsAction="never"
+        android:orderInCategory="3" />
+
 </menu>

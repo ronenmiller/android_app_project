@@ -282,7 +282,7 @@ public class SignUpService extends IntentService {
         Intent broadcastIntent = new Intent(SignUpActivity.BROADCAST_SIGNUP_SERVICE_DONE);
         broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_CANCEL_EMAIL, cancelEmail);
         broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_CANCEL_NICKNAME, cancelNickname);
-        broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_RESULT_SUCCESS, success);
+        broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
 

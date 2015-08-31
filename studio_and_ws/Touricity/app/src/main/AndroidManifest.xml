@@ -62,7 +62,6 @@
                 android:value=".MainActivity" >
             </meta-data>
         </activity>
-
         <activity
             android:name=".SignUpActivity"
             android:label="@string/title_activity_sign_up"
@@ -75,6 +74,7 @@
 
         <service android:name=".service.LocationService" />
         <service android:name=".service.SignUpService" />
+        <service android:name=".service.LogInService" />
 
         <provider
             android:name=".data.ToursProvider"
@@ -88,6 +88,15 @@
             android:value="@integer/google_play_services_version" />
             if this integer is not showing, add latest google play services
         -->
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/title_activity_login"
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="adjustResize|stateVisible">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="il.ac.technion.touricity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

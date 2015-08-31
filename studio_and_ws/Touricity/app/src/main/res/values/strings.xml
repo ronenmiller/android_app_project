@@ -51,6 +51,9 @@
     <string name="pref_location_name_key" translatable="false">location_name</string>
     <string name="pref_location_lat_key" translatable="false">location_lat</string>
     <string name="pref_location_long_key" translatable="false">location_long</string>
+    <string name="pref_user_is_logged_in_key" translatable="false">user_is_logged_in</string>
+    <string name="pref_user_name_key" translatable="false">user_name</string>
+    <string name="pref_user_password_key" translatable="false">user_password</string>
 
     <!-- Notifications setting -->
     <string name="pref_notifications_label">Notifications</string>
@@ -69,4 +72,9 @@
     <string name="pref_sync_interval_key">sync_interval</string>
     <string name="pref_sync_interval_default">180</string>
     <string name="pref_sync_interval_summary">Every <xliff:g id="temp">%s</xliff:g> minutes</string>
+    <string name="title_activity_login">Login</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_login_button">Sign In!</string>
+    <string name="action_login">Sign In</string>
 </resources>

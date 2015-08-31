@@ -38,7 +38,7 @@ public class SignUpActivity extends Activity {
 
     public static final String BROADCAST_INTENT_CANCEL_EMAIL = "cancel_email";
     public static final String BROADCAST_INTENT_CANCEL_NICKNAME = "cancel_nickname";
-    public static final String BROADCAST_INTENT_RESULT_SUCCESS =  "result_success";
+    public static final String BROADCAST_INTENT_RESULT =  "result";
 
     public static final String BROADCAST_SIGNUP_SERVICE_DONE = "broadcast_signup_service_done";
 
@@ -313,7 +313,7 @@ public class SignUpActivity extends Activity {
             boolean cancelNickname = intent.getBooleanExtra(BROADCAST_INTENT_CANCEL_NICKNAME, false);
             // This variable determines if the user insertion itself completed successfully, after
             // all the constraints have been checked.
-            boolean success = intent.getBooleanExtra(BROADCAST_INTENT_RESULT_SUCCESS, false);
+            boolean success = intent.getBooleanExtra(BROADCAST_INTENT_RESULT, false);
 
             boolean cancel = false;
             View focusView = null;

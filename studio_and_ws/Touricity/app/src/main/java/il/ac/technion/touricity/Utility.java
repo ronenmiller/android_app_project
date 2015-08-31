@@ -16,7 +16,8 @@ public class Utility {
 
         public static final String PROTOCOL = "http://";
         // TODO: change to server final IP
-        public static final String SERVER_IP = "10.0.0.3";
+//        public static final String SERVER_IP = "10.0.0.3";
+        public static final String SERVER_IP = "10.0.0.1";
         public static final String SERVER_PORT = "8080";
         public static final String SERVER_APP = "ToursAppServer";
         public static final String SERVER_SERVLET = "tours_slet";
@@ -26,7 +27,6 @@ public class Utility {
 
         private static final int READ_TIMEOUT = 10000;
         private static final int CONNECTION_TIMEOUT = 15000;
-
     }
 
     public static void setupHttpUrlConnection(HttpURLConnection urlConnection) {
@@ -77,6 +77,44 @@ public class Utility {
         editor.putString(context.getString(R.string.pref_location_name_key), name);
         editor.putFloat(context.getString(R.string.pref_location_lat_key), latitude);
         editor.putFloat(context.getString(R.string.pref_location_long_key), longitude);
+        editor.commit();
+    }
+
+    public static boolean getIsLoggedIn(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(context.getString(R.string.pref_user_is_logged_in_key), false);
+    }
+
+    public static String getLoggedInUsername(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return sharedPref.getString(context.getString(R.string.pref_user_name_key), "");
+    }
+
+    public static String getLoggedInUserPassword(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return sharedPref.getString(context.getString(R.string.pref_user_password_key), "");
+    }
+
+    public static void saveLoginSession(Context context, String username, String password) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(context.getString(R.string.pref_user_is_logged_in_key), true);
+        editor.putString(context.getString(R.string.pref_user_name_key), username);
+        editor.putString(context.getString(R.string.pref_user_password_key), password);
+        editor.commit();
+    }
+
+    public static void saveLogoutState(Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(context.getString(R.string.pref_user_is_logged_in_key), false);
+        editor.remove(context.getString(R.string.pref_user_name_key));
+        editor.remove(context.getString(R.string.pref_user_password_key));
         editor.commit();
     }
 
