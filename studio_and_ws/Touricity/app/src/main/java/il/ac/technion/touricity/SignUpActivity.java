@@ -8,11 +8,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatDelegate;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,18 +29,18 @@ import android.widget.TextView;
 import il.ac.technion.touricity.service.SignUpService;
 
 /**
- * A login screen that offers login via email/password.
+ * A sign up screen.
  */
 public class SignUpActivity extends Activity {
 
     public static final String INTENT_EXTRA_EMAIL = "extra_email";
-    public static final String INTENT_EXTRA_NICKNAME = "extra_nickname";
+    public static final String INTENT_EXTRA_USERNAME = "extra_username";
     public static final String INTENT_EXTRA_PHONE = "extra_phone";
     public static final String INTENT_EXTRA_PASSWORD = "extra_password";
     public static final String INTENT_EXTRA_GUIDE = "extra_guide";
 
     public static final String BROADCAST_INTENT_CANCEL_EMAIL = "cancel_email";
-    public static final String BROADCAST_INTENT_CANCEL_NICKNAME = "cancel_nickname";
+    public static final String BROADCAST_INTENT_CANCEL_USERNAME = "cancel_username";
     public static final String BROADCAST_INTENT_RESULT =  "result";
 
     public static final String BROADCAST_SIGNUP_SERVICE_DONE = "broadcast_signup_service_done";
@@ -46,13 +49,13 @@ public class SignUpActivity extends Activity {
 
     // UI references.
     private EditText mEmailView;
-    private EditText mNicknameView;
+    private EditText mUsernameView;
     private EditText mPhoneView;
-    private EditText mPasswordView;
-    private EditText mRePasswordView;
+    private IconifiedEditText mPasswordView;
+    private IconifiedEditText mRePasswordView;
     private CheckBox mGuideCheckboxView;
     private View mProgressView;
-    private View mLoginFormView;
+    private View mSignupFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,19 +63,67 @@ public class SignUpActivity extends Activity {
         setContentView(R.layout.activity_signup);
         setupActionBar(savedInstanceState);
 
-        // Set up the login form.
+        // Set up the sign up form.
         mEmailView = (EditText)findViewById(R.id.signup_email);
-        mNicknameView = (EditText)findViewById(R.id.signup_nickname);
+        mUsernameView = (EditText)findViewById(R.id.signup_username);
         mPhoneView = (EditText)findViewById(R.id.signup_phone);
-        mPasswordView = (EditText)findViewById(R.id.signup_password);
-        mRePasswordView = (EditText)findViewById(R.id.signup_re_password);
+        mPasswordView = (IconifiedEditText)findViewById(R.id.signup_password);
+        mRePasswordView = (IconifiedEditText)findViewById(R.id.signup_re_password);
         mGuideCheckboxView = (CheckBox)findViewById(R.id.signup_checkbox);
+
+        // TODO: when edit text loses focus, popup error if needed
+
+        mPasswordView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().matches(mRePasswordView.getText().toString()) &&
+                        !s.toString().isEmpty()) {
+                    Drawable checkMark = getResources()
+                            .getDrawable(R.drawable.ic_check_circle_green_24dp);
+                    mPasswordView.displayIconWithoutErrorMsg(checkMark);
+                    mRePasswordView.displayIconWithoutErrorMsg(checkMark);
+                }
+                else {
+                    mPasswordView.clearIcon();
+                    mRePasswordView.clearIcon();
+                }
+            }
+        });
+
+        mRePasswordView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().matches(mPasswordView.getText().toString()) &&
+                        !s.toString().isEmpty()) {
+                    Drawable checkMark = getResources()
+                            .getDrawable(R.drawable.ic_check_circle_green_24dp);
+                    mPasswordView.displayIconWithoutErrorMsg(checkMark);
+                    mRePasswordView.displayIconWithoutErrorMsg(checkMark);
+                }
+                else {
+                    mPasswordView.clearIcon();
+                    mRePasswordView.clearIcon();
+                }
+            }
+        });
 
         mRePasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.action_login_id || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
+                if (id == R.id.signup_submit_btn || id == EditorInfo.IME_NULL) {
+                    attemptSignup();
                     // Return true if action was consumed, false otherwise.
                     return true;
                 }
@@ -84,11 +135,11 @@ public class SignUpActivity extends Activity {
         emailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                attemptSignup();
             }
         });
 
-        mLoginFormView = findViewById(R.id.signup_scrollview_form);
+        mSignupFormView = findViewById(R.id.signup_scrollview_form);
         mProgressView = findViewById(R.id.signup_progressbar);
     }
 
@@ -124,21 +175,21 @@ public class SignUpActivity extends Activity {
     }
 
     /**
-     * Attempts to sign in or register the account specified by the login form.
+     * Attempts to sign in or register the account specified by the sign up form.
      * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
+     * errors are presented and no actual sign up attempt is made.
      */
-    public void attemptLogin() {
+    public void attemptSignup() {
         // Reset errors.
         mEmailView.setError(null);
-        mNicknameView.setError(null);
+        mUsernameView.setError(null);
         mPhoneView.setError(null);
         mPasswordView.setError(null);
         mRePasswordView.setError(null);
 
-        // Store values at the time of the login attempt.
+        // Store values at the time of the sign up attempt.
         String email = mEmailView.getText().toString();
-        String nickname = mNicknameView.getText().toString();
+        String username = mUsernameView.getText().toString();
         String phone = mPhoneView.getText().toString();
         String password = mPasswordView.getText().toString();
         String rePassword = mRePasswordView.getText().toString();
@@ -158,20 +209,20 @@ public class SignUpActivity extends Activity {
             cancel = true;
         }
 
-        // Check for a valid nickname.
-        if (TextUtils.isEmpty(nickname)) {
-            mNicknameView.setError(getString(R.string.error_field_required));
-            focusView = (focusView != null) ? focusView : mNicknameView;
+        // Check for a valid username.
+        if (TextUtils.isEmpty(username)) {
+            mUsernameView.setError(getString(R.string.error_field_required));
+            focusView = (focusView != null) ? focusView : mUsernameView;
             cancel = true;
         }
-        else if (!isNicknameLengthValid(nickname)) {
-            mNicknameView.setError((getString(R.string.error_short_nickname)));
-            focusView = (focusView != null) ? focusView : mNicknameView;
+        else if (!isUsernameLengthValid(username)) {
+            mUsernameView.setError((getString(R.string.error_short_username)));
+            focusView = (focusView != null) ? focusView : mUsernameView;
             cancel = true;
         }
-        else if (!isNicknameValid(nickname)) {
-            mNicknameView.setError(getString(R.string.error_invalid_nickname));
-            focusView = (focusView != null) ? focusView : mNicknameView;
+        else if (!isUsernameValid(username)) {
+            mUsernameView.setError(getString(R.string.error_invalid_username));
+            focusView = (focusView != null) ? focusView : mUsernameView;
             cancel = true;
         }
 
@@ -214,18 +265,17 @@ public class SignUpActivity extends Activity {
             cancel = true;
         }
 
-
         if (cancel) {
-            // There was an error; don't attempt login and focus the first
+            // There was an error; don't attempt to sign up and focus the first
             // form field with an error.
             focusView.requestFocus();
         } else {
             // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
+            // perform the user sign up attempt.
             showProgress(true);
             Intent intent = new Intent(this, SignUpService.class);
             intent.putExtra(INTENT_EXTRA_EMAIL, email);
-            intent.putExtra(INTENT_EXTRA_NICKNAME, nickname);
+            intent.putExtra(INTENT_EXTRA_USERNAME, username);
             intent.putExtra(INTENT_EXTRA_PHONE, phone);
             intent.putExtra(INTENT_EXTRA_PASSWORD, password);
             intent.putExtra(INTENT_EXTRA_GUIDE, isGuide);
@@ -245,12 +295,12 @@ public class SignUpActivity extends Activity {
         }
     }
 
-    private boolean isNicknameLengthValid(String nickname) {
-        return nickname.length() >= 2;
+    private boolean isUsernameLengthValid(String username) {
+        return username.length() >= 2;
     }
 
-    private boolean isNicknameValid(String nickname) {
-        return nickname.matches("^[[a-z][A-Z]]+.*$");
+    private boolean isUsernameValid(String username) {
+        return username.matches("^[[a-z][A-Z]]+.*$");
     }
 
     private boolean isPasswordLengthValid(String password) {
@@ -262,7 +312,7 @@ public class SignUpActivity extends Activity {
     }
 
     /**
-     * Shows the progress UI and hides the login form.
+     * Shows the progress UI and hides the sign up form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
@@ -272,12 +322,12 @@ public class SignUpActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+            mSignupFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mSignupFormView.animate().setDuration(shortAnimTime).alpha(
                     show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                    mSignupFormView.setVisibility(show ? View.GONE : View.VISIBLE);
                 }
             });
 
@@ -293,7 +343,7 @@ public class SignUpActivity extends Activity {
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mSignupFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -310,7 +360,7 @@ public class SignUpActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             boolean cancelEmail = intent.getBooleanExtra(BROADCAST_INTENT_CANCEL_EMAIL, false);
-            boolean cancelNickname = intent.getBooleanExtra(BROADCAST_INTENT_CANCEL_NICKNAME, false);
+            boolean cancelUsername = intent.getBooleanExtra(BROADCAST_INTENT_CANCEL_USERNAME, false);
             // This variable determines if the user insertion itself completed successfully, after
             // all the constraints have been checked.
             boolean success = intent.getBooleanExtra(BROADCAST_INTENT_RESULT, false);
@@ -323,16 +373,18 @@ public class SignUpActivity extends Activity {
                 focusView = mEmailView;
                 cancel = true;
             }
-            if (cancelNickname) {
-                mNicknameView.setError(getString(R.string.error_taken_nickname));
-                focusView = (focusView != null) ? focusView : mNicknameView;
+            if (cancelUsername) {
+                mUsernameView.setError(getString(R.string.error_taken_username));
+                focusView = (focusView != null) ? focusView : mUsernameView;
                 cancel = true;
             }
 
-            if (cancel) {
-                // There was an error; user should choose a different email/nickname, according to
+            if (cancel || !success) {
+                // There was an error; user should choose a different email/username, according to
                 // the given instructions.
-                focusView.requestFocus();
+                if (focusView != null) {
+                    focusView.requestFocus();
+                }
                 showProgress(false);
             } else {
                 // TODO: add email confirmation logic

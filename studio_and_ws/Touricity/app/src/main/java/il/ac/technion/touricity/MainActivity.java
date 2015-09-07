@@ -3,11 +3,14 @@ package il.ac.technion.touricity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity
+        implements LoginDialogFragment.LoginDialogListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,5 +41,17 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the NoticeDialogFragment.NoticeDialogListener interface
+    @Override
+    public void onLogin(DialogFragment dialog, String username, String password) {
+        // User touched the dialog's login button
+        String loginSuccess = getString(R.string.login_success);
+        Toast.makeText(this, loginSuccess, Toast.LENGTH_LONG).show();
+        Utility.saveLoginSession(this.getApplicationContext(), username, password);
+        dialog.dismiss();
     }
 }

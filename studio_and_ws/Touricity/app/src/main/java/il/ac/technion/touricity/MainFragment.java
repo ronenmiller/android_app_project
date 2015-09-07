@@ -167,7 +167,6 @@ public class MainFragment extends Fragment
                             MainFragment mf = (MainFragment) getActivity().getSupportFragmentManager()
                                     .findFragmentById(R.id.fragment_main);
                             getLoaderManager().restartLoader(RECENT_LOC_LOADER, null, mf);
-//                            loadHistory(s);
                         }
                         // return true if the action was handled by the listener
                         return true;
@@ -218,10 +217,8 @@ public class MainFragment extends Fragment
             getActivity().startActivity(intent);
         }
         else if (id == R.id.action_login) {
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            getActivity().startActivity(intent);
+            Utility.showLoginDialog(getActivity());
         }
-
 
         return super.onOptionsItemSelected(item);
     }

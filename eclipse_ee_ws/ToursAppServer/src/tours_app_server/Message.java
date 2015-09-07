@@ -1,6 +1,6 @@
 package tours_app_server;
 
-//Basic container class for server-client messages-based communication.
+// Basic container class for server-client messages-based communication.
 public class Message {
 	
 	private final int mMessageID;
@@ -33,6 +33,7 @@ public class Message {
         public static final int VALIDATE_UNIQUE_EMAIL = 10;
 		public static final int FIND_TOURS_BY_CITY_NAME = 11;
 		public static final int FIND_SLOTS_BY_CITY_NAME = 12;
+		public static final int VALIDATE_CREDENTIALS = 13;
 	}
 	
 	public class MessageKeys {

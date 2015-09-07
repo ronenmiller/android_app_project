@@ -10,7 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="il.ac.technion.touricity.SignUpActivity">
 
-    <!-- Login progress -->
+    <!-- Sign up progress -->
     <ProgressBar
         android:id="@+id/signup_progressbar"
         style="?android:attr/progressBarStyleLarge"
@@ -46,7 +46,7 @@
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <EditText
-                android:id="@+id/signup_nickname"
+                android:id="@+id/signup_username"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -74,7 +74,7 @@
                 android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
-            <EditText
+            <il.ac.technion.touricity.IconifiedEditText
                 android:id="@+id/signup_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -88,13 +88,13 @@
                 android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
-            <EditText
+            <il.ac.technion.touricity.IconifiedEditText
                 android:id="@+id/signup_re_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:hint="@string/prompt_re_password"
-                android:imeActionId="@+id/action_login_id"
+                android:imeActionId="@+id/action_signup_id"
                 android:imeActionLabel="@string/action_signup_short"
                 android:imeOptions="actionUnspecified"
                 android:inputType="textPassword"

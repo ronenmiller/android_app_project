@@ -23,16 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import il.ac.technion.touricity.Message;
-import il.ac.technion.touricity.LoginActivity;
+import il.ac.technion.touricity.LoginDialogFragment;
 import il.ac.technion.touricity.Utility;
 
-/**
- * Created by RONEN on 31/08/2015.
- */
-public class LogInService extends IntentService {
-    private static final String LOG_TAG = LogInService.class.getSimpleName();
+public class LoginService extends IntentService {
+    private static final String LOG_TAG = LoginService.class.getSimpleName();
 
-    public LogInService() { super("LogInService"); }
+    public LoginService() { super("LoginService"); }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -40,15 +37,11 @@ public class LogInService extends IntentService {
             return;
         }
 
-        boolean cancelEmail  = false;
-        boolean cancelNickname = false;
-
-        String nickname = intent.getStringExtra(LoginActivity.INTENT_EXTRA_NICKNAME);
-        String password = intent.getStringExtra(LoginActivity.INTENT_EXTRA_PASSWORD);
+        String nickname = intent.getStringExtra(LoginDialogFragment.INTENT_EXTRA_NAME);
+        String password = intent.getStringExtra(LoginDialogFragment.INTENT_EXTRA_PASSWORD);
 
         boolean success = validateCredentialsWithServerDb(nickname, password);
         sendBroadcast(success);
-
     }
 
     public boolean validateCredentialsWithServerDb(String nickname, String password) {
@@ -149,8 +142,8 @@ public class LogInService extends IntentService {
 
     // Send an Intent with an action named BROADCAST_LogIn_SERVICE_DONE.
     private void sendBroadcast(boolean success) {
-        Intent broadcastIntent = new Intent(LoginActivity.BROADCAST_LOGIN_SERVICE_DONE);
-        broadcastIntent.putExtra(LoginActivity.BROADCAST_INTENT_RESULT, success);
+        Intent broadcastIntent = new Intent(LoginDialogFragment.BROADCAST_LOGIN_SERVICE_DONE);
+        broadcastIntent.putExtra(LoginDialogFragment.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
 

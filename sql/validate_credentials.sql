@@ -1,5 +1,5 @@
 DROP FUNCTION IF EXISTS validate_credentials(CHARACTER VARYING, CHARACTER VARYING);
-CREATE OR REPLACE FUNCTION validate_credentials(_u_var VARCHAR(80), _u_pass VARCHAR(80))
+CREATE OR REPLACE FUNCTION validate_credentials(_u_name VARCHAR(80), _u_pass VARCHAR(80))
 	RETURNS BOOLEAN AS 
 $$
 DECLARE
@@ -8,7 +8,7 @@ BEGIN
 	SELECT * 
 	INTO temp
 	FROM users 
-	WHERE ((users.u_name = _u_name OR users.email = _u_var) AND users.u_pass = _u_pass); 
+	WHERE ((users.u_name = _u_name OR users.email = _u_name) AND users.u_pass = _u_pass); 
 	
 	-- FOUND is set on a SELECT INTO statement, SELECT is not enough
 	RETURN FOUND;

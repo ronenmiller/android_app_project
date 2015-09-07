@@ -3,21 +3,23 @@ package il.ac.technion.touricity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 
-/**
- * Created by Liron on 14/08/2015.
- */
 public class Utility {
+
+    private static final String LOGIN_TAG = "login_tag";
 
     public class ServerConfig {
 
         public static final String PROTOCOL = "http://";
         // TODO: change to server final IP
+        public static final String SERVER_IP = "192.168.1.145";
 //        public static final String SERVER_IP = "10.0.0.3";
-        public static final String SERVER_IP = "10.0.0.1";
+//        public static final String SERVER_IP = "10.0.0.1";
         public static final String SERVER_PORT = "8080";
         public static final String SERVER_APP = "ToursAppServer";
         public static final String SERVER_SERVLET = "tours_slet";
@@ -25,6 +27,7 @@ public class Utility {
         public static final String SERVER_BASE_URL = PROTOCOL + SERVER_IP + ":" + SERVER_PORT +
                 "/" + SERVER_APP + "/" + SERVER_SERVLET;
 
+        // TODO: implement what happens when there's a timeout
         private static final int READ_TIMEOUT = 10000;
         private static final int CONNECTION_TIMEOUT = 15000;
     }
@@ -157,5 +160,11 @@ public class Utility {
         }
 
         return -1;
+    }
+
+    public static void showLoginDialog(FragmentActivity context) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment loginDialogFragment = new LoginDialogFragment();
+        loginDialogFragment.show(context.getSupportFragmentManager(), LOGIN_TAG);
     }
 }

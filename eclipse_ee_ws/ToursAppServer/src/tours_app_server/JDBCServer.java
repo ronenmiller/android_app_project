@@ -105,6 +105,11 @@ public final class JDBCServer {
 					String email = requestJSON.getString(Message.MessageKeys.USER_EMAIL_KEY);
 					return isUniqueEmail(email);
 				}
+				case Message.MessageTypes.VALIDATE_CREDENTIALS: {
+					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
+					String password = requestJSON.getString(Message.MessageKeys.USER_PASSWORD_KEY);
+					return validateCredentials(username, password);
+				}
 				default: {
 					throw new IllegalArgumentException("Illegal message ID!");
 				}
@@ -768,6 +773,49 @@ public final class JDBCServer {
 		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.VALIDATE_UNIQUE_EMAIL, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	public static String validateCredentials(String username, String password) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		boolean isValid;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call validate_credentials (?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, username);
+			   cstmt.setString(2, password);
+			   resultSet = queryDB(cstmt);
+			   isValid = ResultSetConverter.convertResultSetIntoBoolean(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in validateCredentials!");
+			}
+		} catch (SQLException se) {
+			//TODO: nothing we can do?
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_EXISTS, isValid);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.VALIDATE_CREDENTIALS, messageJsonStr);
 		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);

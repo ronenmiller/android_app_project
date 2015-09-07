@@ -42,7 +42,7 @@ public class SignUpService extends IntentService {
         boolean cancelNickname = false;
 
         String email = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_EMAIL);
-        String nickname = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_NICKNAME);
+        String nickname = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_USERNAME);
         String phone = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_PHONE);
         String password = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_PASSWORD);
         boolean isGuide = intent.getBooleanExtra(SignUpActivity.INTENT_EXTRA_GUIDE, false);
@@ -147,7 +147,7 @@ public class SignUpService extends IntentService {
             responseMessageJsonStr = buffer.toString();
             Log.v(LOG_TAG, responseMessageJsonStr);
 
-            // We know the message type to be VALIDATE_UNIQUE_USERNAME.
+            // We know the message type to be VALIDATE_UNIQUE_"SOMETHING".
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
             String isUnique = responseJSON.getString(Message.MessageKeys.IS_EXISTS);
@@ -247,7 +247,7 @@ public class SignUpService extends IntentService {
             responseMessageJsonStr = buffer.toString();
             Log.v(LOG_TAG, responseMessageJsonStr);
 
-            // We know the message type to be VALIDATE_UNIQUE_USERNAME.
+            // We know the message type to be ADD_USER.
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
             String isModified = responseJSON.getString(Message.MessageKeys.IS_MODIFIED);
@@ -281,7 +281,7 @@ public class SignUpService extends IntentService {
     private void sendBroadcast(boolean cancelEmail, boolean cancelNickname, boolean success) {
         Intent broadcastIntent = new Intent(SignUpActivity.BROADCAST_SIGNUP_SERVICE_DONE);
         broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_CANCEL_EMAIL, cancelEmail);
-        broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_CANCEL_NICKNAME, cancelNickname);
+        broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_CANCEL_USERNAME, cancelNickname);
         broadcastIntent.putExtra(SignUpActivity.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
