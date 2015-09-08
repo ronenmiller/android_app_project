@@ -34,8 +34,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/dialog_login_title"
-                android:textColor="@color/touricity_blue"
-                android:textAppearance="?android:textAppearanceMedium" />
+                android:textColor="@color/touricity_teal"
+                android:textSize="28sp" />
 
             <EditText
                 android:id="@+id/login_name"
@@ -48,7 +48,6 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <EditText
@@ -64,7 +63,6 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <TextView
@@ -107,7 +105,7 @@
                 android:textSize="18sp"
                 android:textAppearance="?android:textAppearanceButton"
                 android:background="@android:color/transparent"
-                android:textColor="@color/touricity_blue" />
+                android:textColor="@color/touricity_teal" />
 
             <Button
                 android:id="@+id/login_cancel_btn"
@@ -116,12 +114,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_toLeftOf="@id/login_submit_btn"
+                android:layout_toStartOf="@id/login_submit_btn"
                 android:text="@string/action_cancel_button"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textAppearance="?android:textAppearanceButton"
                 android:background="@android:color/transparent"
-                android:textColor="@color/touricity_blue" />
+                android:textColor="@color/touricity_teal" />
 
             </RelativeLayout>
 

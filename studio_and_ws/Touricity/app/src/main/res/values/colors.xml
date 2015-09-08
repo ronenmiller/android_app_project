@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="white">#FFFFFF</color>
+    <!-- Color pallets can be found at:
+        https://www.google.com/design/spec/style/color.html#color-color-palette -->
     <color name="grey">#cccccc</color>
-    <color name="grey_700">#646464</color>
+    <color name="grey_100">#F5F5F5</color>
+    <color name="grey_500">#9E9E9E</color>
+    <color name="grey_700">#616161</color>
+
+    <color name="teal_500">#009688</color>
+
     <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
     <color name="red">#FF0000</color>
 
-    <color name="touricity_light_blue">#ff64c2f4</color>
-    <color name="touricity_blue">#ff1ca8f4</color>
-    <color name="touricity_dark_blue">#0288D1</color>
-
-    <color name="touricity_theme_color">#33b5e5</color>
+    <color name="touricity_light_grey">@color/grey_100</color>
+    <color name="touricity_grey">@color/grey_500</color>
+    <color name="touricity_dark_grey">@color/grey_700</color>
+    <color name="touricity_teal">@color/teal_500</color>
 
 </resources>

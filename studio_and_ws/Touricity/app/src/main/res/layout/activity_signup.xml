@@ -30,19 +30,27 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/sign_up_header"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textColor="@color/touricity_teal" />
+
             <!-- The actionNext key performs a "next" operation, taking the user to the
             next field that will accept text. Corresponds to IME_ACTION_NEXT. -->
             <EditText
                 android:id="@+id/signup_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:hint="@string/prompt_email"
                 android:imeOptions="actionNext"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <EditText
@@ -56,7 +64,6 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
 
@@ -71,7 +78,6 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <il.ac.technion.touricity.IconifiedEditText
@@ -85,7 +91,6 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <il.ac.technion.touricity.IconifiedEditText
@@ -101,21 +106,34 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
                 android:textAppearance="?android:textAppearanceMedium" />
 
-            <CheckBox
-                android:id="@+id/signup_checkbox"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="@string/prompt_checkbox"
-                android:layout_gravity="center_horizontal|left"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/touricity_blue"
-                android:textAppearance="?android:textAppearanceMedium" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical|start"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/prompt_checkbox"
+                    android:fontFamily="sans-serif"
+                    android:textAppearance="?android:textAppearanceMedium" />
+
+                <CheckBox
+                    android:id="@+id/signup_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp" />
+
+            </LinearLayout>
 
             <Button
                 android:id="@+id/signup_submit_btn"
@@ -127,6 +145,7 @@
                 android:text="@string/action_signup_btn"
                 android:textStyle="bold"
                 android:textSize="18sp"
+                android:textColor="@color/white"
                 android:textAppearance="?android:textAppearanceButton"
                 android:background="@drawable/btn_touricity" />
 

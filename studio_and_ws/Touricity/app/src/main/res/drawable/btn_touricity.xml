@@ -10,8 +10,6 @@
         android:right="1dp"
         android:bottom="1dp" />
     <solid
-        android:color="@color/button_material_light" />
-    <stroke
-        android:width="2dp"
-        android:color="@color/material_blue_grey_800" />
-    </shape>
+        android:color="@color/touricity_teal" />
+
+</shape>
