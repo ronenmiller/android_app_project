@@ -147,10 +147,8 @@ public class ToursProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         int rowsDeleted = 0;
 
-        // this makes delete all rows return the number of rows deleted
+        // This makes delete all rows return the number of rows deleted
         if (selection == null) selection = "1";
-        // Student: Use the uriMatcher to match the WEATHER and LOCATION URI's we are going to
-        // handle.  If it doesn't match these, throw an UnsupportedOperationException.
         switch (match) {
             case LOCATION: {
                 rowsDeleted = db.delete(

@@ -1,15 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <corners
-        android:radius="10dp" />
-    <padding
-        android:left="1dp"
-        android:top="1dp"
-        android:right="1dp"
-        android:bottom="1dp" />
-    <solid
-        android:color="@color/touricity_teal" />
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-</shape>
+    <!-- State when a row is being pressed, but hasn't yet been activated (finger down) -->
+    <item android:state_pressed="true">
+        <shape
+            android:shape="rectangle">
+            <corners
+                android:radius="10dp" />
+            <padding
+                android:left="1dp"
+                android:top="1dp"
+                android:right="1dp"
+                android:bottom="1dp" />
+            <solid
+                android:color="@color/grey" />
+        </shape>
+    </item>
+
+    <item android:state_focused="true">
+        <shape
+            android:shape="rectangle">
+            <corners
+                android:radius="10dp" />
+            <padding
+                android:left="1dp"
+                android:top="1dp"
+                android:right="1dp"
+                android:bottom="1dp" />
+            <solid
+                android:color="@color/grey" />
+        </shape>
+    </item>
+
+    <!-- Default, "just hangin' out" state. -->
+    <item>
+        <shape
+            android:shape="rectangle">
+            <corners
+                android:radius="10dp" />
+            <padding
+                android:left="1dp"
+                android:top="1dp"
+                android:right="1dp"
+                android:bottom="1dp" />
+            <solid
+                android:color="@color/touricity_teal" />
+        </shape>
+    </item>
+
+</selector>

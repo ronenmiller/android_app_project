@@ -17,7 +17,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,7 +29,6 @@ import android.view.animation.RotateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
@@ -42,12 +40,12 @@ import il.ac.technion.touricity.service.LocationService;
 public class MainFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String LOG_TAG = MainFragment.class.getSimpleName();
-
     // package-shared
     static final int LOCATIONS_LOADER = 0;
     static final int RECENT_LOC_LOADER = 1;
     static final int SLOTS_LOADER = 2;
+
+    private static final int HISTORY_ADAPTER_RESET_IN_SECONDS = 2;
 
     public static final String BROADCAST_LOCATION_SERVICE_DONE = "broadcast_location_service_done";
 
@@ -79,17 +77,12 @@ public class MainFragment extends Fragment
     static final int RESULT_OK = 0;
     static final int RESULT_CANCELED = 1;
 
-    private String mLastSearch = "";
-
     private RecentLocationAdapter mRecentLocationAdapter;
     private String mHistoryQuery = "";
 
-    private TextView mTextView;
-    private ListView mListView;
-    private FrameLayout mFrameLayout;
-    private ImageView mImageView;
-    private Menu mOptionsMenu;
-    private MenuItem mMapMenuItem;
+    private ListView mToursListView;
+    private FrameLayout mProgressBarLayout;
+    private ImageView mProgressBarView;
 
     public MainFragment() {
     }
@@ -109,13 +102,12 @@ public class MainFragment extends Fragment
 
         mRecentLocationAdapter = new RecentLocationAdapter(getActivity(), null, 0);
 
-        mTextView = (TextView)rootView.findViewById(R.id.textview_location_main);
         // TODO: add touch selectors to all the lists views in the app
-        mListView = (ListView)rootView.findViewById(R.id.listview_main);
-        mFrameLayout = (FrameLayout) rootView.findViewById(R.id.framelayout_main);
-        mImageView = (ImageView)rootView.findViewById(R.id.imageview_main);
+        mToursListView = (ListView)rootView.findViewById(R.id.listview_main);
+        mProgressBarLayout = (FrameLayout) rootView.findViewById(R.id.framelayout_main);
+        mProgressBarView = (ImageView)rootView.findViewById(R.id.imageview_main);
 
-        mFrameLayout.setVisibility(View.GONE);
+        mProgressBarLayout.setVisibility(View.GONE);
 
         return rootView;
     }
@@ -128,11 +120,6 @@ public class MainFragment extends Fragment
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.menu_fragment_main, menu);
 
-        mOptionsMenu = menu;
-
-        mMapMenuItem = menu.findItem(R.id.action_map);
-        mMapMenuItem.setVisible(false);
-
         // Associate searchable configuration with the SearchView
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             SearchManager searchManager = (SearchManager)getActivity()
@@ -143,7 +130,7 @@ public class MainFragment extends Fragment
                 searchView.setSearchableInfo(searchManager.
                         getSearchableInfo(getActivity().getComponentName()));
                 searchView.setIconifiedByDefault(true);
-                searchView.setSubmitButtonEnabled(true);
+                searchView.setSubmitButtonEnabled(false);
                 searchView.setQueryHint(getResources().getString(R.string.search_hint));
                 searchView.setSuggestionsAdapter(mRecentLocationAdapter);
 
@@ -151,11 +138,7 @@ public class MainFragment extends Fragment
                     @Override
                     public boolean onQueryTextSubmit(String s) {
                         // TODO: stop searching if internet connection is not available
-
-                        if (!s.equals(mLastSearch)) {
-                            mLastSearch = s;
-                            performLocationSearch(s);
-                        }
+                        performLocationSearch(s);
                         // return true if the query has been handled by the listener
                         return true;
                     }
@@ -181,12 +164,8 @@ public class MainFragment extends Fragment
 
                     @Override
                     public boolean onSuggestionClick(int position) {
-                        Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(position);
-                        String locationName = cursor.getString(COL_LOCATION_NAME);
-                        if (!locationName.equals(mLastSearch)) {
-                            mLastSearch = locationName;
-                            performLocationSearch(locationName);
-                        }
+                        Cursor cursor = (Cursor)searchView.getSuggestionsAdapter().getItem(position);
+                        addLocation(cursor);
                         // true if the listener handles the event and wants to override the default
                         // behavior of launching any intent or submitting a search query specified
                         // on that item.
@@ -208,46 +187,8 @@ public class MainFragment extends Fragment
             getActivity().onSearchRequested();
             return true;
         }
-        else if (id == R.id.action_map) {
-            openPreferredLocationInMap();
-            return true;
-        }
-        else if (id == R.id.action_signup) {
-            Intent intent = new Intent(getActivity(), SignUpActivity.class);
-            getActivity().startActivity(intent);
-        }
-        else if (id == R.id.action_login) {
-            Utility.showLoginDialog(getActivity());
-        }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void openPreferredLocationInMap() {
-        // Using the URI scheme for showing a location found on a map.  This super-handy
-        // intent can is detailed in the "Common Intents" page of Android's developer site:
-        // http://developer.android.com/guide/components/intents-common.html#Maps
-        double posLat = Utility.getPreferredLocationLatitude(getActivity().getApplicationContext());
-        double posLong = Utility.getPreferredLocationLongitude(getActivity().getApplicationContext());
-
-        // Safety procedure. Location not found - bail out.
-        if (posLat == 0 && posLong == 0) {
-            String msg = getString(R.string.search_not_found);
-            Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
-            mMapMenuItem.setVisible(false);
-            return;
-        }
-
-        Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
-
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(geoLocation);
-
-        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivity(intent);
-        } else {
-            Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
-        }
     }
 
     private void performLocationSearch(String query) {
@@ -258,9 +199,10 @@ public class MainFragment extends Fragment
                 null
         );
         // Arrange visibility of views.
-        mTextView.setVisibility(View.GONE);
-        mListView.setVisibility(View.GONE);
-        mFrameLayout.setVisibility(View.VISIBLE);
+        MainActivity mainActivity = (MainActivity)getActivity();
+        mainActivity.showLocationRelativeLayout(false);
+        mToursListView.setVisibility(View.GONE);
+        mProgressBarLayout.setVisibility(View.VISIBLE);
 
         // Set animation while loading results
         RotateAnimation animation = new RotateAnimation
@@ -268,7 +210,7 @@ public class MainFragment extends Fragment
         animation.setInterpolator(new LinearInterpolator());
         animation.setRepeatCount(Animation.INFINITE);
         animation.setDuration(1500);
-        mImageView.startAnimation(animation);
+        mProgressBarView.startAnimation(animation);
 
         // do something with s, the entered string
         onLocationChanged(query);
@@ -291,14 +233,12 @@ public class MainFragment extends Fragment
             Toast.makeText(getActivity(), locationDisplay, Toast.LENGTH_LONG).show();
         }
 
-        mTextView.setText(locationDisplay);
-
         // Stop the rotating animation and set visibility attribute
-        mImageView.setAnimation(null);
-        mFrameLayout.setVisibility(View.GONE);
-        mTextView.setVisibility(View.VISIBLE);
-        mListView.setVisibility(View.VISIBLE);
-        mMapMenuItem.setVisible(true);
+        mProgressBarView.setAnimation(null);
+        mProgressBarLayout.setVisibility(View.GONE);
+        MainActivity mainActivity = (MainActivity)getActivity();
+        mainActivity.showLocationRelativeLayout(true);
+        mToursListView.setVisibility(View.VISIBLE);
     }
 
     private void addLocation(Cursor cursor) {
@@ -446,7 +386,7 @@ public class MainFragment extends Fragment
                 public void run() {
                     try {
                         // Close cursor after 2 seconds.
-                        sleep(2000);
+                        sleep(HISTORY_ADAPTER_RESET_IN_SECONDS * 1000);
                         mRecentLocationAdapter.swapCursor(null);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -465,13 +405,7 @@ public class MainFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        // Reset views.
-        mImageView.setAnimation(null);
-        mFrameLayout.setVisibility(View.GONE);
-        mTextView.setVisibility(View.VISIBLE);
-        mListView.setVisibility(View.VISIBLE);
-        // Reset history settings.
-        mHistoryQuery = "";
+
         // Register mMessageReceiver to receive messages.
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
                 new IntentFilter(BROADCAST_LOCATION_SERVICE_DONE));
@@ -481,7 +415,7 @@ public class MainFragment extends Fragment
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            MainFragment mf = (MainFragment) getActivity().getSupportFragmentManager()
+            MainFragment mf = (MainFragment)getActivity().getSupportFragmentManager()
                     .findFragmentById(R.id.fragment_main);
             getLoaderManager().restartLoader(LOCATIONS_LOADER, null, mf);
         }

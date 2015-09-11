@@ -3,20 +3,23 @@
 
     <!-- Color pallets can be found at:
         https://www.google.com/design/spec/style/color.html#color-color-palette -->
-    <color name="grey">#cccccc</color>
-    <color name="grey_100">#F5F5F5</color>
-    <color name="grey_500">#9E9E9E</color>
-    <color name="grey_700">#616161</color>
+    <color name="grey">#CCCCCC</color>
+    <color name="grey_300">#E0E0E0</color>
+    <color name="blue_grey_700">#455A64</color>
+    <color name="blue_grey_900">#263238</color>
+    <color name="dark_grey">#1B2327</color>
 
+    <color name="teal_200">#80CBC4</color>
     <color name="teal_500">#009688</color>
 
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="red">#FF0000</color>
 
-    <color name="touricity_light_grey">@color/grey_100</color>
-    <color name="touricity_grey">@color/grey_500</color>
-    <color name="touricity_dark_grey">@color/grey_700</color>
+    <color name="touricity_light_grey">@color/grey_300</color>
+    <color name="touricity_grey">@color/blue_grey_900</color>
+    <color name="touricity_dark_grey">@color/dark_grey</color>
+    <color name="touricity_light_teal">@color/teal_200</color>
     <color name="touricity_teal">@color/teal_500</color>
 
 </resources>

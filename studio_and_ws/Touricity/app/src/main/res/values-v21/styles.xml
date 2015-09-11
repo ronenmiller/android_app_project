@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Search activity theme. -->
+    <style name="SearchTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/touricity_grey</item>
+        <item name="android:colorPrimaryDark">@color/touricity_dark_grey</item>
+    </style>
+
+    <!-- Sign up activity theme. -->
+    <style name="SignUpTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/touricity_grey</item>
+        <item name="android:colorPrimaryDark">@color/touricity_dark_grey</item>
+    </style>
+
+</resources>

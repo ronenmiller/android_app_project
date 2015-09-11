@@ -25,15 +25,6 @@
 
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/textview_location_main"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left"
-        android:fontFamily="sans-serif-condensed"
-        android:textColor="@color/touricity_teal"
-        android:textAppearance="?android:textAppearanceMedium" />
-
     <ListView
         android:id="@+id/listview_main"
         android:layout_width="match_parent"

@@ -9,4 +9,14 @@
         android:orderInCategory="100"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_login"
+        android:title="@string/action_login"
+        app:showAsAction="never"
+        android:orderInCategory="3" />
+
+    <item android:id="@+id/action_signup"
+        android:title="@string/action_signup"
+        app:showAsAction="never"
+        android:orderInCategory="4" />
+
 </menu>

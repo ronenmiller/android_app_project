@@ -61,7 +61,6 @@ public class SignUpActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
-        setupActionBar(savedInstanceState);
 
         // Set up the sign up form.
         mEmailView = (EditText)findViewById(R.id.signup_email);
@@ -154,17 +153,6 @@ public class SignUpActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Set up the {@link android.support.v7.app.ActionBar}.
-     */
-    private void setupActionBar(Bundle savedInstanceState) {
-        // Show the Up button in the action bar.
-        getDelegate().installViewFactory();
-        getDelegate().onCreate(savedInstanceState);
-        getDelegate().getSupportActionBar().show();
-        getDelegate().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private AppCompatDelegate getDelegate() {

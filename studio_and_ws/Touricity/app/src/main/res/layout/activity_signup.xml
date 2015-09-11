@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="@string/sign_up_header"
+                android:text="@string/signup_header"
                 android:textAppearance="?android:textAppearanceLarge"
                 android:textColor="@color/touricity_teal" />
 
@@ -119,8 +119,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_gravity="center_vertical|start"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginStart="8dp"
                     android:text="@string/prompt_checkbox"
                     android:fontFamily="sans-serif"
                     android:textAppearance="?android:textAppearanceMedium" />
@@ -129,15 +127,12 @@
                     android:id="@+id/signup_checkbox"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp" />
+                    android:layout_gravity="center_vertical" />
 
             </LinearLayout>
 
             <Button
                 android:id="@+id/signup_submit_btn"
-                style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"

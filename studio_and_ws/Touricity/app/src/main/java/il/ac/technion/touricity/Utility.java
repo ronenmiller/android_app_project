@@ -17,8 +17,11 @@ public class Utility {
 
         public static final String PROTOCOL = "http://";
         // TODO: change to server final IP
-        public static final String SERVER_IP = "192.168.1.145";
-//        public static final String SERVER_IP = "10.0.0.3";
+        // Liron's parents home
+//        public static final String SERVER_IP = "192.168.1.145";
+        // Liron's apartment
+        public static final String SERVER_IP = "10.0.0.3";
+        // Ronen's Apartment
 //        public static final String SERVER_IP = "10.0.0.1";
         public static final String SERVER_PORT = "8080";
         public static final String SERVER_APP = "ToursAppServer";

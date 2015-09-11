@@ -45,10 +45,7 @@ public class SettingsActivity extends PreferenceActivity
         mContext = this;
 
         // Inflate action bar
-        getDelegate().installViewFactory();
-        getDelegate().onCreate(savedInstanceState);
-        getDelegate().getSupportActionBar().show();
-        getDelegate().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setupActionBar(savedInstanceState);
 
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.pref_general);
@@ -69,6 +66,17 @@ public class SettingsActivity extends PreferenceActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Set up the {@link android.support.v7.app.ActionBar}.
+     */
+    private void setupActionBar(Bundle savedInstanceState) {
+        // Show the Up button in the action bar.
+        getDelegate().installViewFactory();
+        getDelegate().onCreate(savedInstanceState);
+        getDelegate().getSupportActionBar().show();
+        getDelegate().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     /**

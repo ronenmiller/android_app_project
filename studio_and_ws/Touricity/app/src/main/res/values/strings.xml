@@ -8,8 +8,8 @@
     <!-- Activity titles -->
     <string name="title_activity_search">Location results</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="title_activity_sign_up">Sign Up</string>
-    <string name="dialog_login_title"><b>Login</b></string>
+    <string name="title_activity_signup">Sign up</string>
+    <string name="dialog_login_title">Login</string>
 
     <!-- Menu-related strings -->
     <string name="action_search">Search</string>
@@ -23,7 +23,7 @@
     <string name="search_not_found">Location not found</string>
 
     <!-- Strings related to sign up activity -->
-    <string name="sign_up_header">Create your profile</string>
+    <string name="signup_header">Create your profile</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_username">Username</string>
     <string name="prompt_username_email">Username or email</string>

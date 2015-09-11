@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Generated with http://android-holo-colors.com -->
+    <style name="TouricityTealTheme.V14" parent="@style/_TouricityTealTheme.V14"/>
+
+    <style name="_TouricityTealTheme.V14" parent="@android:style/Theme.Holo.Light.DarkActionBar">
+        <item name="android:editTextBackground">@drawable/teal_edit_text_holo_light</item>
+        <item name="android:textColorHighlight">#99009688</item>
+        <item name="android:textSelectHandleLeft">@drawable/teal_text_select_handle_left</item>
+        <item name="android:textSelectHandleRight">@drawable/teal_text_select_handle_right</item>
+        <item name="android:textSelectHandle">@drawable/teal_text_select_handle_middle</item>
+        <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextViewTouricityTealTheme</item>
+        <item name="android:listChoiceIndicatorMultiple">@drawable/teal_btn_check_holo_light</item>
+        <item name="android:listChoiceIndicatorSingle">@drawable/teal_btn_radio_holo_light</item>
+        <item name="android:buttonStyle">@style/ButtonTouricityTealTheme</item>
+        <item name="android:imageButtonStyle">@style/ImageButtonTouricityTealTheme</item>
+        <item name="android:dropDownSpinnerStyle">@style/SpinnerTouricityTealTheme</item>
+        <item name="android:progressBarStyleHorizontal">@style/ProgressBarTouricityTealTheme</item>
+        <item name="android:seekBarStyle">@style/SeekBarTouricityTealTheme</item>
+        <item name="android:ratingBarStyle">@style/RatingBarTouricityTealTheme</item>
+        <item name="android:ratingBarStyleIndicator">@style/RatingBarBigTouricityTealTheme</item>
+        <item name="android:ratingBarStyleSmall">@style/RatingBarSmallTouricityTealTheme</item>
+        <item name="android:buttonStyleToggle">@style/ToggleTouricityTealTheme</item>
+        <item name="android:listChoiceBackgroundIndicator">@drawable/teal_list_selector_holo_light</item>
+        <item name="android:activatedBackgroundIndicator">@drawable/teal_activated_background_holo_light</item>
+        <item name="android:fastScrollThumbDrawable">@drawable/teal_fastscroll_thumb_holo</item>
+    </style>
+
+    <style name="AutoCompleteTextViewTouricityTealTheme" parent="android:Widget.Holo.Light.AutoCompleteTextView">
+        <item name="android:dropDownSelector">@drawable/teal_list_selector_holo_light</item>
+        <item name="android:background">@drawable/teal_edit_text_holo_light</item>
+    </style>
+
+    <style name="ButtonTouricityTealTheme" parent="android:Widget.Holo.Light.Button">
+        <item name="android:background">@drawable/teal_btn_default_holo_light</item>
+    </style>
+
+    <style name="ImageButtonTouricityTealTheme" parent="android:Widget.Holo.Light.ImageButton">
+        <item name="android:background">@drawable/teal_btn_default_holo_light</item>
+    </style>
+
+    <style name="SpinnerTouricityTealTheme" parent="android:Widget.Holo.Light.Spinner">
+        <item name="android:background">@drawable/teal_spinner_background_holo_light</item>
+        <item name="android:dropDownSelector">@drawable/teal_list_selector_holo_light</item>
+    </style>
+
+    <style name="ProgressBarTouricityTealTheme" parent="android:Widget.Holo.Light.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/teal_progress_horizontal_holo_light</item>
+        <item name="android:indeterminateDrawable">@drawable/teal_progress_indeterminate_horizontal_holo_light</item>
+    </style>
+
+    <style name="SeekBarTouricityTealTheme" parent="android:Widget.Holo.Light.SeekBar">
+        <item name="android:progressDrawable">@drawable/teal_scrubber_progress_horizontal_holo_light</item>
+        <item name="android:indeterminateDrawable">@drawable/teal_scrubber_progress_horizontal_holo_light</item>
+        <item name="android:thumb">@drawable/teal_scrubber_control_selector_holo_light</item>
+    </style>
+
+    <style name="RatingBarTouricityTealTheme" parent="android:Widget.Holo.Light.RatingBar">
+        <item name="android:progressDrawable">@drawable/teal_ratingbar_full_holo_light</item>
+        <item name="android:indeterminateDrawable">@drawable/teal_ratingbar_full_holo_light</item>
+    </style>
+
+    <style name="RatingBarBigTouricityTealTheme" parent="android:Widget.Holo.Light.RatingBar.Indicator">
+        <item name="android:progressDrawable">@drawable/teal_ratingbar_holo_light</item>
+        <item name="android:indeterminateDrawable">@drawable/teal_ratingbar_holo_light</item>
+    </style>
+
+    <style name="RatingBarSmallTouricityTealTheme" parent="android:Widget.Holo.Light.RatingBar.Small">
+        <item name="android:progressDrawable">@drawable/teal_ratingbar_small_holo_light</item>
+        <item name="android:indeterminateDrawable">@drawable/teal_ratingbar_small_holo_light</item>
+    </style>
+
+    <style name="ToggleTouricityTealTheme" parent="android:Widget.Holo.Light.Button.Toggle">
+        <item name="android:background">@drawable/teal_btn_toggle_holo_light</item>
+    </style>
+
+
+    <!-- Search activity theme. -->
+    <style name="SearchTheme" parent="TouricityTealTheme.V14">
+        <item name="android:actionBarStyle">@style/ActionBar.V14.Touricity.Search.NoTitle</item>
+    </style>
+
+    <!-- Settings activity action bar styles -->
+    <style name="ActionBar.V14.Touricity.Search.NoTitle" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/touricity_grey</item>
+        <item name="android:height">56dp</item>
+    </style>
+
+    <!-- Sign up activity theme. -->
+    <style name="SignUpTheme" parent="TouricityTealTheme.V14">
+        <item name="android:actionBarStyle">@style/ActionBar.V14.Touricity.SignUp.NoTitle</item>
+    </style>
+
+    <!-- Settings activity action bar styles -->
+    <style name="ActionBar.V14.Touricity.SignUp.NoTitle" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/touricity_grey</item>
+        <item name="android:height">56dp</item>
+    </style>
+
+
+</resources>
