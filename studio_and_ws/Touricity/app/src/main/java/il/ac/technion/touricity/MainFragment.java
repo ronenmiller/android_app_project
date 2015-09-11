@@ -102,7 +102,6 @@ public class MainFragment extends Fragment
 
         mRecentLocationAdapter = new RecentLocationAdapter(getActivity(), null, 0);
 
-        // TODO: add touch selectors to all the lists views in the app
         mToursListView = (ListView)rootView.findViewById(R.id.listview_main);
         mProgressBarLayout = (FrameLayout) rootView.findViewById(R.id.framelayout_main);
         mProgressBarView = (ImageView)rootView.findViewById(R.id.imageview_main);

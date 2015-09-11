@@ -16,12 +16,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity
-        implements LoginDialogFragment.LoginDialogListener {
+        implements LoginDialogFragment.LoginDialogListener,
+        LogoutDialogFragment.LogoutDialogListener {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private LinearLayout mLocationLinearLayout;
     private TextView mLocationNameTextView;
+
+    private MenuItem mLoginMenuItem;
+    private MenuItem mSignupMenuItem;
+    private MenuItem mLogoutMenuItem;
+    private MenuItem mMyToursMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +52,12 @@ public class MainActivity extends ActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        mLoginMenuItem = (MenuItem)menu.findItem(R.id.action_login);
+        mSignupMenuItem = (MenuItem)menu.findItem(R.id.action_signup);
+        mLogoutMenuItem = (MenuItem)menu.findItem(R.id.action_logout);
+        mMyToursMenuItem = (MenuItem)menu.findItem(R.id.action_my_tours);
+
         return true;
     }
 
@@ -69,6 +81,12 @@ public class MainActivity extends ActionBarActivity
         }
         else if (id == R.id.action_login) {
             Utility.showLoginDialog(this);
+        }
+        else if (id == R.id.action_logout) {
+            Utility.showLogoutDialog(this);
+        }
+        else if (id == R.id.action_my_tours) {
+            // TODO: complete code
         }
 
         return super.onOptionsItemSelected(item);
@@ -119,5 +137,39 @@ public class MainActivity extends ActionBarActivity
         // LoginDialogActivity, because here one can call getApplicationContext().
         Utility.saveLoginSession(this.getApplicationContext(), username, password);
         dialog.dismiss();
+
+        showSignInMenuItems(false);
     }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the LogoutDialogFragment.LogoutDialogListener interface
+    @Override
+    public void onLogout(DialogFragment dialog) {
+        // User touched the dialog's login button
+        String logoutSuccess = getString(R.string.logout_success);
+        Toast.makeText(this, logoutSuccess, Toast.LENGTH_LONG).show();
+        // We need to implement this function in this activity, and not in the
+        // LogoutDialogActivity, because here one can call getApplicationContext().
+        Utility.saveLogoutState(this.getApplicationContext());
+        dialog.dismiss();
+
+        showSignInMenuItems(true);
+    }
+
+    private void showSignInMenuItems(boolean show) {
+        if (mLoginMenuItem != null) {
+            mLoginMenuItem.setVisible(show);
+        }
+        if (mSignupMenuItem != null) {
+            mSignupMenuItem.setVisible(show);
+        }
+        if (mLogoutMenuItem != null) {
+            mLogoutMenuItem.setVisible(!show);
+        }
+        if (mMyToursMenuItem != null) {
+            mMyToursMenuItem.setVisible(!show);
+        }
+    }
+
 }

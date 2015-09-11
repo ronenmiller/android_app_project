@@ -116,6 +116,8 @@ public class LoginService extends IntentService {
             String isExists = responseJSON.getString(Message.MessageKeys.IS_EXISTS);
             return Boolean.valueOf(isExists);
 
+            // TODO: add isGuide on login
+
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the data, there's no point in attempting

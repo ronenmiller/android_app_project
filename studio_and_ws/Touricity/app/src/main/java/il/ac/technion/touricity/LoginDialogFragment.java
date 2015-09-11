@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatDelegate;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -29,7 +28,6 @@ import il.ac.technion.touricity.service.LoginService;
 
 public class LoginDialogFragment extends DialogFragment {
 
-    private AppCompatDelegate mDelegate;
     private EditText mNameView;
     private EditText mPasswordView;
     private TextView mLoginFailureText;
@@ -51,7 +49,7 @@ public class LoginDialogFragment extends DialogFragment {
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
     public interface LoginDialogListener {
-        public void onLogin(DialogFragment dialog, String username, String password);
+        void onLogin(DialogFragment dialog, String username, String password);
     }
 
     // Use this instance of the interface to deliver action events

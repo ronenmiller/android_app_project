@@ -70,8 +70,6 @@ public class SignUpActivity extends Activity {
         mRePasswordView = (IconifiedEditText)findViewById(R.id.signup_re_password);
         mGuideCheckboxView = (CheckBox)findViewById(R.id.signup_checkbox);
 
-        // TODO: when edit text loses focus, popup error if needed
-
         mPasswordView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }

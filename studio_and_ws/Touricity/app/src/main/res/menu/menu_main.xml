@@ -12,11 +12,23 @@
     <item android:id="@+id/action_login"
         android:title="@string/action_login"
         app:showAsAction="never"
-        android:orderInCategory="3" />
+        android:orderInCategory="2" />
 
     <item android:id="@+id/action_signup"
         android:title="@string/action_signup"
         app:showAsAction="never"
-        android:orderInCategory="4" />
+        android:orderInCategory="3" />
+
+    <item android:id="@+id/action_my_tours"
+        android:title="@string/action_my_tours"
+        app:showAsAction="never"
+        android:orderInCategory="4"
+        android:visible="false" />
+
+    <item android:id="@+id/action_logout"
+        android:title="@string/action_logout"
+        app:showAsAction="never"
+        android:orderInCategory="5"
+        android:visible="false" />
 
 </menu>

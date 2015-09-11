@@ -12,6 +12,7 @@ import java.net.ProtocolException;
 public class Utility {
 
     private static final String LOGIN_TAG = "login_tag";
+    private static final String LOGOUT_TAG = "logout_tag";
 
     public class ServerConfig {
 
@@ -169,5 +170,11 @@ public class Utility {
         // Create an instance of the dialog fragment and show it
         DialogFragment loginDialogFragment = new LoginDialogFragment();
         loginDialogFragment.show(context.getSupportFragmentManager(), LOGIN_TAG);
+    }
+
+    public static void showLogoutDialog(FragmentActivity context) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment logoutDialogFragment = new LogoutDialogFragment();
+        logoutDialogFragment.show(context.getSupportFragmentManager(), LOGOUT_TAG);
     }
 }
