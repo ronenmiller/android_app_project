@@ -17,8 +17,10 @@ import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -126,6 +128,18 @@ public class LoginDialogFragment extends DialogFragment {
                     mLoginButton.setEnabled(true);
                 }
 
+            }
+        });
+
+        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == R.id.action_login_id || id == EditorInfo.IME_NULL) {
+                    attemptLogin();
+                    // Return true if action was consumed, false otherwise.
+                    return true;
+                }
+                return false;
             }
         });
 
