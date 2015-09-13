@@ -66,12 +66,33 @@
 
     </LinearLayout>
 
-    <fragment
-        android:id="@+id/fragment_main"
-        android:name="il.ac.technion.touricity.MainFragment"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@android:layout/list_content"
-        tools:context="il.ac.technion.touricity.MainActivity" />
+        android:baselineAligned="false"
+        android:divider="?android:attr/dividerHorizontal"
+        android:orientation="horizontal"
+        tools:context="com.example.android.sunshine.app.MainActivity">
+
+        <!--
+        This layout is a two-pane layout for the Items master/detail flow.
+        -->
+
+        <fragment
+            android:id="@+id/fragment_main"
+            android:name="il.ac.technion.touricity.MainFragment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            tools:layout="@android:layout/list_content"
+            tools:context="il.ac.technion.touricity.MainActivity" />
+
+        <FrameLayout
+            android:id="@+id/tours_slots_detail_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="4" />
+
+    </LinearLayout>
 
 </LinearLayout>

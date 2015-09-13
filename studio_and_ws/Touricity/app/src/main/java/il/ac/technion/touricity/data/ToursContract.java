@@ -38,10 +38,10 @@ public class ToursContract {
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
     public static final String PATH_LOCATION = "location";
     public static final String PATH_OSM = "osm";
-    public static final String PATH_USERS = "users";
-    public static final String PATH_PEOPLE = "people";
     public static final String PATH_TOURS = "tours";
+    public static final String PATH_USERS = "users";
     public static final String PATH_SLOTS = "slots";
+    public static final String PATH_PEOPLE = "people";
     public static final String PATH_REQUESTS = "requests";
     public static final String PATH_RATE_TOUR = "rate2tour";
     public static final String PATH_RATE_GUIDE = "rate2guide";
@@ -60,7 +60,7 @@ public class ToursContract {
     /* Inner class that defines basic characteristics of locations */
     public static class BasicLocationEntry implements BaseColumns {
 
-        // This is the Open Street Map ID returned by the API
+        // This is the Open Street Map ID returned by the API.
         public static final String COLUMN_OSM_ID = "location_id";
 
         // Human readable location string, provided by the API.
@@ -74,7 +74,6 @@ public class ToursContract {
         // map intent, we store the latitude and longitude as returned by open street map.
         public static final String COLUMN_COORD_LAT = "coord_lat";
         public static final String COLUMN_COORD_LONG = "coord_long";
-
     }
 
     /* Inner class that defines the contents of the location table */
@@ -99,6 +98,7 @@ public class ToursContract {
 
     /* Inner class that defines the contents of the OSM table which holds location queries */
     public static final class OSMEntry extends BasicLocationEntry {
+
         public static final String TABLE_NAME = "osm";
 
         public static final Uri CONTENT_URI =
@@ -112,6 +112,67 @@ public class ToursContract {
         // This URI is returned when inserting a row to the table.
         // The returned id is the row number of the inserted row.
         public static Uri buildOSMUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+    }
+
+    /* Inner class that defines basic characteristics of locations */
+    public static class TourEntry implements BaseColumns {
+
+        public static final String TABLE_NAME = "tours";
+
+        // _ID serves as a unique tour id.
+
+        // This is the Open Street Map ID returned by the API.
+        public static final String COLUMN_OSM_ID = "location_id";
+
+        // The tour name to appear in the list of tours.
+        public static final String COLUMN_TOUR_TITLE = "tour_title";
+
+        // Approximate tour duration in minutes.
+        public static final String COLUMN_TOUR_DURATION = "tour_duration";
+
+        // The name of the gathering place, where the tour departs.
+        public static final String COLUMN_TOUR_LOCATION = "tour_location";
+
+        // The tour rating, as given by users who actually took the tour.
+        public static final String COLUMN_TOUR_RATING = "tour_rating";
+
+        // This parameter defines whether there are active slots available for this tour.
+        // Stored as an integer. 1 = Tour is available, 0 = otherwise.
+        public static final String COLUMN_TOUR_AVAILABLE = "tour_available";
+
+        // The tour's description appears in the tour's detail page.
+        public static final String COLUMN_TOUR_DESCRIPTION = "tour_description";
+
+        // This icon appears has a thumbnail in the list of tours.
+        public static final String COLUMN_TOUR_THUMBNAIL = "tour_thumbnail";
+
+        // Photos of key locations along the tour's route.
+        // These photos will appear in the tour's detail page.
+        public static final String COLUMN_TOUR_PHOTOS = "tour_photos";
+
+        // The tour is instructed in these languages.
+        // Note: each slot does not have to include all the languages listed here.
+        // This parameter merges all the languages from all the slots of this tour.
+        // NOTE: NOT IMPLEMENTED IN THE INITIAL RELEASE.
+        public static final String COLUMN_TOUR_LANGUAGES = "tour_languages";
+
+        // Comments of users on this tour.
+        // NOTE: NOT IMPLEMENTED IN THE INITIAL RELEASE.
+        public static final String COLUMN_TOUR_COMMENTS = "tour_comments";
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_TOURS).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_TOURS;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_TOURS;
+
+        // This URI is returned when inserting a row to the table.
+        // The returned id is the row number of the inserted row.
+        public static Uri buildTourUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }

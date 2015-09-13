@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- Layout for weather forecast list item for future day (not today) -->
+<!-- Layout for location list item in the search activity -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,16 +14,16 @@
         android:layout_height="wrap_content">
 
         <ImageView
-            android:id="@+id/list_item_icon"
-            android:layout_gravity="center"
+            android:id="@+id/list_item_location_icon"
+            android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_gravity="center" />
 
     </FrameLayout>
 
     <LinearLayout
-        android:layout_height="wrap_content"
         android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginRight="16dp"
         android:layout_marginEnd="16dp">
@@ -33,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-condensed"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textColor="@color/black" />
 
     </LinearLayout>

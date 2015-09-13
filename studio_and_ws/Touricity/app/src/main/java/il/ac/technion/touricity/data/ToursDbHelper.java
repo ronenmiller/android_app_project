@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import il.ac.technion.touricity.data.ToursContract.LocationEntry;
 import il.ac.technion.touricity.data.ToursContract.OSMEntry;
+import il.ac.technion.touricity.data.ToursContract.TourEntry;
 
 /**
  * Manages a local database for weather data.
@@ -38,10 +39,12 @@ public class ToursDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
+        // For available data types in SQLite, please see:
+        // https://www.sqlite.org/datatype3.html
         final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + LocationEntry.TABLE_NAME + " (" +
                 LocationEntry._ID + " INTEGER PRIMARY KEY," +
 
-                LocationEntry.COLUMN_OSM_ID + " INTEGER NOT NULL, " +
+                LocationEntry.COLUMN_OSM_ID + " INTEGER UNIQUE NOT NULL, " +
                 LocationEntry.COLUMN_LOCATION_NAME + " TEXT NOT NULL, " +
                 LocationEntry.COLUMN_LOCATION_TYPE + " TEXT NOT NULL, " +
                 LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
@@ -58,12 +61,39 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 OSMEntry._ID + " INTEGER PRIMARY KEY," +
 
                 OSMEntry.COLUMN_OSM_ID + " INTEGER UNIQUE NOT NULL, " +
-                OSMEntry.COLUMN_LOCATION_NAME + " TEXT UNIQUE NOT NULL, " +
+                OSMEntry.COLUMN_LOCATION_NAME + " TEXT NOT NULL, " +
                 OSMEntry.COLUMN_LOCATION_TYPE + " TEXT NOT NULL, " +
                 OSMEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
                 OSMEntry.COLUMN_COORD_LONG + " REAL NOT NULL)";
 
         sqLiteDatabase.execSQL(SQL_CREATE_OSM_TABLE);
+
+        final String SQL_CREATE_TOURS_TABLE = "CREATE TABLE " + TourEntry.TABLE_NAME + " (" +
+                TourEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+
+                TourEntry.COLUMN_OSM_ID + " INTEGER NOT NULL, " +
+                TourEntry.COLUMN_TOUR_TITLE + " TEXT NOT NULL, " +
+                TourEntry.COLUMN_TOUR_DURATION + " INTEGER NOT NULL CHECK (" +
+                        TourEntry.COLUMN_TOUR_DURATION + " > 0), " +
+                TourEntry.COLUMN_TOUR_LOCATION + " TEXT NOT NULL, " +
+                TourEntry.COLUMN_TOUR_RATING + " REAL CHECK (" +
+                        TourEntry.COLUMN_TOUR_RATING + " >= 0 AND " +
+                        TourEntry.COLUMN_TOUR_RATING + " <= 5 )," +
+                // 1 = Tour is available, 0 = otherwise.
+                TourEntry.COLUMN_TOUR_AVAILABLE + " INTEGER NOT NULL," +
+                TourEntry.COLUMN_TOUR_DESCRIPTION + " TEXT," +
+                TourEntry.COLUMN_TOUR_THUMBNAIL + " BLOB," +
+                // TODO: figure out the next fields in later releases.
+                // SQLite does not support arrays. Load photos directly from internet?
+                TourEntry.COLUMN_TOUR_PHOTOS + " BLOB," +
+                TourEntry.COLUMN_TOUR_LANGUAGES + " INTEGER," +
+                TourEntry.COLUMN_TOUR_COMMENTS + " TEXT," +
+
+                // Set up the OSM ID column as a foreign key to location table.
+                " FOREIGN KEY (" + TourEntry.COLUMN_OSM_ID + ") REFERENCES " +
+                LocationEntry.TABLE_NAME + " (" + LocationEntry.COLUMN_OSM_ID + ");";
+
+        sqLiteDatabase.execSQL(SQL_CREATE_TOURS_TABLE);
     }
 
     @Override
@@ -76,6 +106,7 @@ public class ToursDbHelper extends SQLiteOpenHelper {
         // should be your top priority before modifying this method.
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LocationEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + OSMEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TourEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

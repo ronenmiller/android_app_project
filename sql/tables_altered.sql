@@ -132,19 +132,20 @@ TABLE:		u_id - a unique user ID of the tour's guide,
 */
 DROP TABLE IF EXISTS tours CASCADE;
 CREATE TABLE tours (
-	u_id 		uuid 	     NOT NULL REFERENCES users(u_id) ON DELETE RESTRICT,
 	t_id		INTEGER      PRIMARY KEY,
 	t_cityid	VARCHAR(255) NOT NULL REFERENCES cities(cityid) ON DELETE RESTRICT,
+	t_title     VARCHAR(255) NOT NULL,
 	t_duration	NUMERIC	     NOT NULL,
 	t_location	VARCHAR(255) NOT NULL,
+	t_rating	REAL, -- how to make sure the user participated in the tour? from the slots table once the date of the tour had passed?
+	t_available BIT,
 	t_description	TEXT,
+	t_thumbnail bytea,
 	t_photos	bytea[], -- what data type?
 	t_languages	INTEGER      NOT NULL REFERENCES languages(lang_id) ON DELETE RESTRICT, -- should be integer[], how to apply more than one language?
-	t_rating	REAL, -- how to make sure the user participated in the tour? from the slots table once the date of the tour had passed?
 	t_comments	VARCHAR(255)[], -- how to relate a comment to a certian user?
-	t_available BIT,
 	CONSTRAINT chk_duration_positive CHECK (t_duration > 0),
-	CONSTRAINT chk_rating_valid CHECK (t_rating >= 0 AND t_rating <= 10)
+	CONSTRAINT chk_rating_valid CHECK (t_rating >= 0 AND t_rating <= 5)
 )
 WITH (
   OIDS = FALSE
@@ -163,6 +164,7 @@ TABLE:		t_id - a unique tour ID,
 */
 DROP TABLE IF EXISTS slots CASCADE;
 CREATE TABLE slots (
+	u_id 		uuid 	     NOT NULL REFERENCES users(u_id) ON DELETE RESTRICT,
 	t_id		INTEGER  REFERENCES tours (t_id) ON DELETE RESTRICT,
 	ts_id		INTEGER  PRIMARY KEY,
 	ts_date		DATE     NOT NULL,

@@ -31,6 +31,7 @@ public class ToursProvider extends ContentProvider {
 
     static final int LOCATION = 100;
     static final int OSM = 200;
+    static final int TOURS = 300;
 
     /*  The UriMatcher matches a URI to a constant number for the ease of using switch statements. */
     static UriMatcher buildUriMatcher() {
@@ -43,11 +44,12 @@ public class ToursProvider extends ContentProvider {
         // ToursContract to help define the types to the UriMatcher.
         uriMatcher.addURI(authority, ToursContract.PATH_LOCATION, LOCATION);
         uriMatcher.addURI(authority, ToursContract.PATH_OSM, OSM);
+        uriMatcher.addURI(authority, ToursContract.PATH_TOURS, TOURS);
         // 3) Return the new matcher!
         return uriMatcher;
     }
 
-    /* We just create a new WeatherDbHelper for later use here. */
+    /* We just create a new ToursDbHelper for later use here. */
     @Override
     public boolean onCreate() {
         mOpenHelper = new ToursDbHelper(getContext());
@@ -65,6 +67,8 @@ public class ToursProvider extends ContentProvider {
                 return ToursContract.LocationEntry.CONTENT_TYPE;
             case OSM:
                 return ToursContract.OSMEntry.CONTENT_TYPE;
+            case TOURS:
+                return ToursContract.TourEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -93,6 +97,18 @@ public class ToursProvider extends ContentProvider {
             case OSM: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         ToursContract.OSMEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case TOURS: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        ToursContract.TourEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -132,6 +148,14 @@ public class ToursProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case TOURS: {
+                long _id = db.insert(ToursContract.TourEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ToursContract.TourEntry.buildTourUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -161,6 +185,14 @@ public class ToursProvider extends ContentProvider {
             case OSM: {
                 rowsDeleted = db.delete(
                         ToursContract.OSMEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case TOURS: {
+                rowsDeleted = db.delete(
+                        ToursContract.TourEntry.TABLE_NAME,
                         selection,
                         selectionArgs
                 );
@@ -208,6 +240,15 @@ public class ToursProvider extends ContentProvider {
                 );
                 break;
             }
+            case TOURS: {
+                rowsUpdated = db.update(
+                        ToursContract.TourEntry.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -224,28 +265,35 @@ public class ToursProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
-        switch (match) {
-            case OSM: {
-                db.beginTransaction();
-                int returnCount = 0;
-                try {
-                    for (ContentValues value : values) {
-                        long _id = db.insert(ToursContract.OSMEntry.TABLE_NAME, null, value);
-                        if (_id != -1) {
-                            returnCount++;
-                        }
+
+        db.beginTransaction();
+        int returnCount = 0;
+        try {
+            for (ContentValues value : values) {
+                long _id = -1;
+                switch (match) {
+                    case OSM: {
+                        _id = db.insert(ToursContract.OSMEntry.TABLE_NAME, null, value);
+                        break;
                     }
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
+                    case TOURS: {
+                        _id = db.insert(ToursContract.TourEntry.TABLE_NAME, null, value);
+                        break;
+                    }
+                    default:
+                        return super.bulkInsert(uri, values);
                 }
-                // Notify the uri listeners (using the content resolver) about the insertion.
-                getContext().getContentResolver().notifyChange(uri, null);
-                return returnCount;
+                if (_id != -1) {
+                    returnCount++;
+                }
             }
-            default:
-                return super.bulkInsert(uri, values);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
+        // Notify the uri listeners (using the content resolver) about the insertion.
+        getContext().getContentResolver().notifyChange(uri, null);
+        return returnCount;
     }
 
     // You do not need to call this method. This is a method specifically to assist the testing

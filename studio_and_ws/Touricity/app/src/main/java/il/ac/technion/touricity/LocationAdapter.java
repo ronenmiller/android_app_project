@@ -23,7 +23,7 @@ public class LocationAdapter extends CursorAdapter {
         public final TextView textView;
 
         public ViewHolder(View view) {
-            iconView = (ImageView) view.findViewById(R.id.list_item_icon);
+            iconView = (ImageView) view.findViewById(R.id.list_item_location_icon);
             textView = (TextView) view.findViewById(R.id.list_item_location_textview);
         }
     }

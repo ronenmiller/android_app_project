@@ -54,10 +54,15 @@
 
     <string name="error_login_credentials">Wrong username or password</string>
 
-    <!-- Strings related to login dialog -->
+    <!-- Strings related to logout dialog -->
     <string name="action_logout_verify">Are you sure you want to logout?</string>
     <string name="action_logout_button">Logout</string>
     <string name="logout_success">Logged out</string>
+
+    <!-- Strings related to detail activity -->
+    <string name="action_view_slots">View Slots</string>
+    <string name="action_open_map">(Open map)</string>
+    <string name="tour_duration">Duration: <xliff:g id="duration">%s</xliff:g> minutes</string>
 
     <!-- Preferences keys -->
     <string name="preference_file_key" translatable="false">il.ac.technion.touricity.preference_file_key</string>
@@ -85,7 +90,7 @@
     <string name="pref_sync_interval_label">Sync interval</string>
     <string name="pref_sync_interval_key">sync_interval</string>
     <string name="pref_sync_interval_default">180</string>
-    <string name="pref_sync_interval_summary">Every <xliff:g id="temp">%s</xliff:g> minutes</string>
+    <string name="pref_sync_interval_summary">Every <xliff:g id="interval">%s</xliff:g> minutes</string>
     <string name="title_activity_login">Login</string>
 
 </resources>
