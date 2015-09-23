@@ -43,16 +43,10 @@ public class SignUpService extends IntentService {
 
         String email = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_EMAIL);
         String nickname = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_USERNAME);
-        String phone = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_PHONE);
         String password = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_PASSWORD);
         boolean isGuide = intent.getBooleanExtra(SignUpActivity.INTENT_EXTRA_GUIDE, false);
 
-        if (phone.equals("")) {
-            phone = null;
-        }
-
         try {
-            // TODO: in SQL, change constraints regarding the phone number in the 'users' and 'people' table
             if (!isUnique(Message.MessageTypes.VALIDATE_UNIQUE_EMAIL,
                     Message.MessageKeys.USER_EMAIL_KEY,
                     email)) {
@@ -70,7 +64,7 @@ public class SignUpService extends IntentService {
 
             boolean success = false;
             if (!cancel) {
-                success = addUserToServerDb(email, nickname, phone, password, isGuide);
+                success = addUserToServerDb(email, nickname, password, isGuide);
             }
 
             sendBroadcast(cancelEmail, cancelNickname, success);
@@ -150,7 +144,7 @@ public class SignUpService extends IntentService {
             // We know the message type to be VALIDATE_UNIQUE_"SOMETHING".
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
-            String isUnique = responseJSON.getString(Message.MessageKeys.IS_EXISTS);
+            String isUnique = responseJSON.getString(Message.MessageKeys.IS_UNIQUE);
             return Boolean.valueOf(isUnique);
 
         } catch (IOException e) {
@@ -177,8 +171,7 @@ public class SignUpService extends IntentService {
         return false;
     }
 
-    public boolean addUserToServerDb(String email, String nickname, String phone,
-                                  String password, boolean isGuide) {
+    public boolean addUserToServerDb(String email, String nickname, String password, boolean isGuide) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -199,7 +192,6 @@ public class SignUpService extends IntentService {
             Map<String, String> map = new HashMap<>();
             map.put(Message.MessageKeys.USER_EMAIL_KEY, email);
             map.put(Message.MessageKeys.USER_NAME_KEY, nickname);
-            map.put(Message.MessageKeys.USER_PHONE_KEY, phone);
             map.put(Message.MessageKeys.USER_PASSWORD_KEY, password);
             map.put(Message.MessageKeys.USER_TYPE_KEY, Boolean.toString(isGuide));
             JSONObject jsonObject = new JSONObject(map);

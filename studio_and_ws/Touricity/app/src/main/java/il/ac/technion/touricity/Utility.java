@@ -2,7 +2,6 @@ package il.ac.technion.touricity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 
@@ -20,9 +19,11 @@ public class Utility {
         // TODO: change to server final IP
         // Liron's parents home
 //        public static final String SERVER_IP = "192.168.1.145";
+        // Ori's home
+//        public static final String SERVER_IP = "10.100.102.8";
         // Liron's apartment
         public static final String SERVER_IP = "10.0.0.3";
-        // Ronen's Apartment
+        // Ronen's apartment
 //        public static final String SERVER_IP = "10.0.0.1";
         public static final String SERVER_PORT = "8080";
         public static final String SERVER_APP = "ToursAppServer";
@@ -51,7 +52,7 @@ public class Utility {
         }
     }
 
-    public static Long getPreferredLocationId(Context context) {
+    public static long getPreferredLocationId(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         return sharedPref.getLong(context.getString(R.string.pref_location_id_key), -1);
@@ -145,14 +146,11 @@ public class Utility {
     /**
      * Helper method to provide the icon resource drawable according to the location type returned
      * by the OpenStreetMap call.
-     * @param context Context to use for resource localization
      * @param locationType from OpenStreetMap API response
-     * @return Drawable for the corresponding icon. null if no relation is found.
+     * @return Drawable id for the corresponding icon. -1 if no relation is found.
      * @see <a href="https://www.google.com/design/icons/index.html">Material icons site</a>.
      */
-    public static int getIconResourceIdForLocationType(Context context, String locationType) {
-        Drawable drawable = null;
-
+    public static int getIconResourceIdForLocationType(String locationType) {
         if (locationType.equals("city")) {
             return R.drawable.ic_city_24dp;
         } else if (locationType.equals("town")) {
@@ -161,6 +159,28 @@ public class Utility {
             return R.drawable.ic_village_24dp;
         } else if (locationType.equals("hamlet")) {
             return R.drawable.ic_hamlet_24dp;
+        }
+
+        return -1;
+    }
+
+    public static int getLanguageIconIdForLanguageId(int languageId) {
+        if (languageId == 1) {
+            return R.drawable.flag_usa;
+        } else if (languageId == 2) {
+            return R.drawable.flag_spain;
+        } else if (languageId == 3) {
+            return R.drawable.flag_france;
+        } else if (languageId == 4) {
+            return R.drawable.flag_germany;
+        } else if (languageId == 5) {
+            return R.drawable.flag_italy;
+        } else if (languageId == 6) {
+            return R.drawable.flag_portugal;
+        } else if (languageId == 7) {
+            return R.drawable.flag_china;
+        } else if (languageId == 8) {
+            return R.drawable.flag_israel;
         }
 
         return -1;

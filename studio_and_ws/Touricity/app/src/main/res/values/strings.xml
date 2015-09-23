@@ -7,6 +7,7 @@
 
     <!-- Activity titles -->
     <string name="title_activity_search">Location results</string>
+    <string name="title_activity_detail">Details</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_signup">Sign up</string>
     <string name="dialog_login_title">Login</string>
@@ -28,12 +29,10 @@
     <string name="signup_header">Create your profile</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_username">Username</string>
-    <string name="prompt_username_email">Username or email</string>
-    <string name="prompt_phone">Phone (optional)</string>
     <string name="prompt_password">Password</string>
     <string name="prompt_re_password">Re-enter password</string>
     <string name="prompt_checkbox">Are you a tour guide?</string>
-    <string name="action_signup_short">Submit</string>
+    <string name="action_signup_short">Go</string>
     <string name="action_signup_btn">Create</string>
 
     <string name="error_field_required">This field is required</string>
@@ -47,9 +46,10 @@
     <string name="error_mismatch_password">This Password doesn\'t match the re-entered password</string>
 
     <!-- Strings related to login dialog -->
-    <string name="action_login_short">Login</string>
+    <string name="action_login_short">Go</string>
     <string name="action_login_button">Login</string>
     <string name="action_cancel_button">Cancel</string>
+    <string name="prompt_username_email">Username or email</string>
     <string name="login_success">Login success!</string>
 
     <string name="error_login_credentials">Wrong username or password</string>
@@ -61,8 +61,19 @@
 
     <!-- Strings related to detail activity -->
     <string name="action_view_slots">View Slots</string>
-    <string name="action_open_map">(Open map)</string>
     <string name="tour_duration">Duration: <xliff:g id="duration">%s</xliff:g> minutes</string>
+    <string name="tour_language">Language: <xliff:g id="language">%s</xliff:g></string>
+    <string name="tour_location">Tour starts from: <xliff:g id="location">%s</xliff:g></string>
+
+    <!-- List of available languages -->
+    <string name="language_english">English</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_french">French</string>
+    <string name="language_german">German</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_portuguese">Portuguese</string>
+    <string name="language_chinese">Chinese</string>
+    <string name="language_hebrew">Hebrew</string>
 
     <!-- Preferences keys -->
     <string name="preference_file_key" translatable="false">il.ac.technion.touricity.preference_file_key</string>
@@ -74,23 +85,32 @@
     <string name="pref_user_name_key" translatable="false">user_name</string>
     <string name="pref_user_password_key" translatable="false">user_password</string>
 
+    <!-- Notification Format -->
+    <string name="format_notification">
+    New tours are available in <xliff:g id="location">%s</xliff:g>!
+    </string>
+
     <!-- Notifications setting -->
     <string name="pref_notifications_label">Notifications</string>
-    <string name="pref_notifications_key">notifications</string>
+    <string name="pref_notifications_key" translatable="false">notifications</string>
     <string name="pref_notifications_off">Off</string>
     <string name="pref_notifications_on">On</string>
 
     <!-- Sync data setting -->
     <string name="pref_sync_data_label">Sync data</string>
-    <string name="pref_sync_data_key">sync_data</string>
+    <string name="pref_sync_data_key" translatable="false">sync_data</string>
     <string name="pref_sync_data_off">Off</string>
     <string name="pref_sync_data_on">On</string>
 
     <!-- Sync interval setting -->
     <string name="pref_sync_interval_label">Sync interval</string>
-    <string name="pref_sync_interval_key">sync_interval</string>
+    <string name="pref_sync_interval_key" translatable="false">sync_interval</string>
     <string name="pref_sync_interval_default">180</string>
     <string name="pref_sync_interval_summary">Every <xliff:g id="interval">%s</xliff:g> minutes</string>
     <string name="title_activity_login">Login</string>
+
+    <!-- Account type (for sync-adapter authenticator) -->
+    <!-- SyncAdapter related -->
+    <string name="sync_account_type">touricity.technion.ac.il</string>
 
 </resources>

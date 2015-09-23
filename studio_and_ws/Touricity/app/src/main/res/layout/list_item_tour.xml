@@ -37,7 +37,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-condensed"
-            android:text="Title"
             android:textSize="20sp"
             android:textColor="@color/black" />
 
@@ -47,7 +46,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:fontFamily="sans-serif-condensed"
-            android:text="Duration:"
             android:textAppearance="?android:textAppearanceSmall"
             android:textColor="@color/black" />
 
@@ -59,7 +57,7 @@
         android:layout_gravity="center_vertical">
 
         <RatingBar
-            android:id="@+id/detail_tour_rating_bar"
+            android:id="@+id/list_item_tour_rating_bar"
             style="?android:attr/ratingBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

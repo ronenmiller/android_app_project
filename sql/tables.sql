@@ -41,11 +41,13 @@ ALTER TABLE languages OWNER TO postgres;
 
 --- a few widely-used languages
 INSERT INTO languages (lang_name) VALUES ('English');
-INSERT INTO languages (lang_name) VALUES ('Espanol');
-INSERT INTO languages (lang_name) VALUES ('Francais');
-INSERT INTO languages (lang_name) VALUES ('Deutsch');
-INSERT INTO languages (lang_name) VALUES ('Hebrew');
+INSERT INTO languages (lang_name) VALUES ('Spanish');
+INSERT INTO languages (lang_name) VALUES ('French');
+INSERT INTO languages (lang_name) VALUES ('German');
+INSERT INTO languages (lang_name) VALUES ('Italian');
+INSERT INTO languages (lang_name) VALUES ('Portuguese');
 INSERT INTO languages (lang_name) VALUES ('Chinese');
+INSERT INTO languages (lang_name) VALUES ('Hebrew');
 
 /*
 SECTION: 	Build users table 
@@ -65,10 +67,9 @@ CREATE TABLE users (
 	u_name	 	 VARCHAR(80) UNIQUE NOT NULL,
 	u_pass	 	 VARCHAR(16) NOT NULL,
 	email		 VARCHAR(80) UNIQUE NOT NULL,
-	phone_number VARCHAR(80) UNIQUE /*NOT NULL*/, -- must be entered and unique for SMS confirmation
 	u_type		 BIT	     REFERENCES types_tbl(type_id) ON DELETE RESTRICT,
-	u_last_login TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
 	u_rating	 REAL,
+	u_last_login TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
 	CONSTRAINT chk_u_name_len   CHECK (char_length(u_name) >= 2), 
 	CONSTRAINT chk_u_name_valid CHECK (u_name ~ '^([A-Za-z])+'), -- username must begin with a character
 	CONSTRAINT chk_pass_len     CHECK (char_length(u_pass) >= 6),
@@ -100,13 +101,10 @@ CREATE TABLE people (
 	u_id 		uuid 	     REFERENCES users(u_id), 
 	p_first		VARCHAR(80)  NOT NULL,
 	p_last		VARCHAR(80),
-	email		VARCHAR(80)  PRIMARY KEY REFERENCES users(email) ON UPDATE CASCADE, -- email address must be unique
-	phone_number	VARCHAR(80) REFERENCES users(phone_number) ON UPDATE CASCADE,
+	phone_num	VARCHAR(80),
 	city_str	VARCHAR(255),
 	state_str	VARCHAR(255),
-	country_str	VARCHAR(255),
-	languages	INTEGER    REFERENCES languages(lang_id) ON DELETE RESTRICT -- should be integer[], how to apply more than one language?
-	/*CONSTRAINT chk_email_valid CHECK (email ~ '^\w+(\w|\.)*@{1}(\w+\.+\w+)+$')*/
+	country_str	VARCHAR(255)
 )
 WITH (
   OIDS = FALSE
@@ -133,16 +131,15 @@ TABLE:		u_id - a unique user ID of the tour's guide,
 DROP TABLE IF EXISTS tours CASCADE;
 CREATE TABLE tours (
 	t_id		INTEGER      PRIMARY KEY,
-	t_cityid	VARCHAR(255) NOT NULL REFERENCES cities(cityid) ON DELETE RESTRICT,
+	t_osm_id	BIGINT 		 NOT NULL,
 	t_title     VARCHAR(255) NOT NULL,
 	t_duration	NUMERIC	     NOT NULL,
+	t_language	INTEGER      NOT NULL REFERENCES languages(lang_id) ON DELETE RESTRICT,
 	t_location	VARCHAR(255) NOT NULL,
-	t_rating	REAL, -- how to make sure the user participated in the tour? from the slots table once the date of the tour had passed?
-	t_available BIT,
+	t_rating	REAL DEFAULT 0, -- how to make sure the user participated in the tour? from the slots table once the date of the tour had passed?
+	t_available BIT NOT NULL,
 	t_description	TEXT,
-	t_thumbnail bytea,
 	t_photos	bytea[], -- what data type?
-	t_languages	INTEGER      NOT NULL REFERENCES languages(lang_id) ON DELETE RESTRICT, -- should be integer[], how to apply more than one language?
 	t_comments	VARCHAR(255)[], -- how to relate a comment to a certian user?
 	CONSTRAINT chk_duration_positive CHECK (t_duration > 0),
 	CONSTRAINT chk_rating_valid CHECK (t_rating >= 0 AND t_rating <= 5)
@@ -164,14 +161,13 @@ TABLE:		t_id - a unique tour ID,
 */
 DROP TABLE IF EXISTS slots CASCADE;
 CREATE TABLE slots (
-	u_id 		uuid 	     NOT NULL REFERENCES users(u_id) ON DELETE RESTRICT,
+	u_id 		uuid 	 NOT NULL REFERENCES users(u_id) ON DELETE RESTRICT,
 	t_id		INTEGER  REFERENCES tours (t_id) ON DELETE RESTRICT,
 	ts_id		INTEGER  PRIMARY KEY,
-	ts_date		DATE     NOT NULL,
-	ts_time		TIME WITH TIME ZONE NOT NULL,
+	ts_date		INTEGER  NOT NULL,
+	ts_time		VARCHAR(5) NOT NULL,
 	ts_vacant 	INTEGER  NOT NULL,
 	ts_active	BIT 	 NOT NULL,
-/*CONSTRAINT chk_price_non_negative CHECK (ts_price >= 0), TODO: liron removed this parameter so constraint does not work*/
 	CONSTRAINT chk_vacant_non_negative CHECK (ts_vacant >= 0)
 )
 WITH (
@@ -251,12 +247,5 @@ WITH (
 ALTER TABLE rate2guide OWNER TO postgres;
 
 CREATE OR REPLACE VIEW view_tours AS
-SELECT users.u_name, tours.t_id, cities.city, states.region, country.country, tours.t_rating, languages.lang_name, tours.t_duration, tours.t_location, tours.t_description, tours.t_photos, tours.t_comments, tours.t_available
-FROM users, tours, languages, cities, states, country;
-
-CREATE OR REPLACE VIEW view_city_by_name AS
-SELECT cities.city, states.region, country.country
-FROM cities, states, country;
-
---create OR REPLACE VIEW view_slots AS
---SElECT 
+SELECT tours.t_id, tours.t_title, tours.t_duration, tours.t_language, tours.t_location, tours.t_rating, tours.t_description
+FROM tours;

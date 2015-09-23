@@ -47,30 +47,30 @@ public class LocationService extends IntentService {
         // Will contain the raw JSON response as a string.
         String locationsJsonStr = null;
 
+        // Liron's key. Limited to 15,000 transactions a month.
+        String key = "uhAfC4lns0tussoDZNMrdrGJaNp17WAR";
         String format = "json";
         int resultsLimit = 6;
         String language = "en";
-        // TODO: consider removing this parameter on production
-        String email = "sesami.open@gmail.com";
 
         try {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
             final String LOCATION_BASE_URL =
-                    "http://nominatim.openstreetmap.org/search?";
+                    "http://open.mapquestapi.com/nominatim/v1/search.php?";
+            final String KEY_PARAM = "key";
             final String QUERY_PARAM = "q";
             final String FORMAT_PARAM = "format";
             final String LIMIT_PARAM = "limit";
             final String LANGUAGE_PARAM = "accept-language";
-            final String EMAIL_PARAM = "email";
 
             Uri builtUri = Uri.parse(LOCATION_BASE_URL).buildUpon()
+                    .appendQueryParameter(KEY_PARAM, key)
                     .appendQueryParameter(QUERY_PARAM, locationQuery)
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(LIMIT_PARAM, Integer.toString(resultsLimit))
                     .appendQueryParameter(LANGUAGE_PARAM, language)
-                    .appendQueryParameter(EMAIL_PARAM, email)
                             .build();
 
             Log.v(LOG_TAG, "URL: " + builtUri.toString());
@@ -181,7 +181,7 @@ public class LocationService extends IntentService {
 
                     ContentValues locationValues = new ContentValues();
 
-                    locationValues.put(ToursContract.OSMEntry.COLUMN_OSM_ID, locationId);
+                    locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_ID, locationId);
                     locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_NAME, locationName);
                     locationValues.put(ToursContract.OSMEntry.COLUMN_LOCATION_TYPE, locationType);
                     locationValues.put(ToursContract.OSMEntry.COLUMN_COORD_LAT, locationLatitude);
@@ -194,7 +194,6 @@ public class LocationService extends IntentService {
             // Add to the database
             int inserted = 0;
             if ( cvArrayList.size() > 0 ) {
-                // Student: call bulkInsert to add the weatherEntries to the database here
                 ContentValues[] cvArray = new ContentValues[cvArrayList.size()];
                 cvArrayList.toArray(cvArray);
                 inserted = this.getContentResolver().bulkInsert(

@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS query_tour_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255));
 CREATE OR REPLACE FUNCTION query_tour_by_city(city_name VARCHAR(255), region_name VARCHAR (255), country_name VARCHAR(255))
-	RETURNS SETOF view_tours AS 
+	RETURNS SETOF tours AS 
 $$
 DECLARE
 	_city_id      VARCHAR(255);

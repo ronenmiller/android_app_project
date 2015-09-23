@@ -87,7 +87,25 @@
             android:layout_marginRight="8dp"
             android:layout_marginEnd="8dp">
 
-            <!-- Max width is calculated programmatically -->
+            <Button
+                android:id="@+id/login_signup_btn"
+                style="?android:textAppearanceSmall"
+                android:minWidth="64dp"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:text="@string/action_signup"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textAppearance="?android:textAppearanceButton"
+                android:background="@drawable/btn_dialog_touricity"
+                android:textColor="@color/touricity_teal" />
+
             <Button
                 android:id="@+id/login_submit_btn"
                 style="?android:textAppearanceSmall"
@@ -104,7 +122,7 @@
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textAppearance="?android:textAppearanceButton"
-                android:background="@android:color/transparent"
+                android:background="@drawable/btn_dialog_touricity"
                 android:textColor="@color/touricity_teal" />
 
             <Button
@@ -119,7 +137,7 @@
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textAppearance="?android:textAppearanceButton"
-                android:background="@android:color/transparent"
+                android:background="@drawable/btn_dialog_touricity"
                 android:textColor="@color/touricity_teal" />
 
             </RelativeLayout>

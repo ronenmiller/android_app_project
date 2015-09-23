@@ -33,6 +33,7 @@ public class LoginDialogFragment extends DialogFragment {
     private EditText mNameView;
     private EditText mPasswordView;
     private TextView mLoginFailureText;
+    private Button mSignupButton;
     private Button mCancelButton;
     private Button mLoginButton;
     private View mProgressView;
@@ -84,6 +85,7 @@ public class LoginDialogFragment extends DialogFragment {
         builder.setView(rootView);
         mNameView = (EditText)rootView.findViewById(R.id.login_name);
         mPasswordView = (EditText)rootView.findViewById(R.id.login_password);
+        mSignupButton = (Button)rootView.findViewById(R.id.login_signup_btn);
         mCancelButton = (Button)rootView.findViewById(R.id.login_cancel_btn);
         mLoginButton = (Button)rootView.findViewById(R.id.login_submit_btn);
         mLoginButton.setEnabled(false);
@@ -140,6 +142,15 @@ public class LoginDialogFragment extends DialogFragment {
                     return true;
                 }
                 return false;
+            }
+        });
+
+        mSignupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Activity parentActivity = (Activity)mListener;
+                Intent intent = new Intent(parentActivity, SignUpActivity.class);
+                parentActivity.startActivity(intent);
             }
         });
 

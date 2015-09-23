@@ -12,7 +12,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatDelegate;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -35,7 +34,6 @@ public class SignUpActivity extends Activity {
 
     public static final String INTENT_EXTRA_EMAIL = "extra_email";
     public static final String INTENT_EXTRA_USERNAME = "extra_username";
-    public static final String INTENT_EXTRA_PHONE = "extra_phone";
     public static final String INTENT_EXTRA_PASSWORD = "extra_password";
     public static final String INTENT_EXTRA_GUIDE = "extra_guide";
 
@@ -45,12 +43,9 @@ public class SignUpActivity extends Activity {
 
     public static final String BROADCAST_SIGNUP_SERVICE_DONE = "broadcast_signup_service_done";
 
-    private AppCompatDelegate mDelegate;
-
     // UI references.
     private EditText mEmailView;
     private EditText mUsernameView;
-    private EditText mPhoneView;
     private IconifiedEditText mPasswordView;
     private IconifiedEditText mRePasswordView;
     private CheckBox mGuideCheckboxView;
@@ -65,7 +60,6 @@ public class SignUpActivity extends Activity {
         // Set up the sign up form.
         mEmailView = (EditText)findViewById(R.id.signup_email);
         mUsernameView = (EditText)findViewById(R.id.signup_username);
-        mPhoneView = (EditText)findViewById(R.id.signup_phone);
         mPasswordView = (IconifiedEditText)findViewById(R.id.signup_password);
         mRePasswordView = (IconifiedEditText)findViewById(R.id.signup_re_password);
         mGuideCheckboxView = (CheckBox)findViewById(R.id.signup_checkbox);
@@ -153,13 +147,6 @@ public class SignUpActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private AppCompatDelegate getDelegate() {
-        if (mDelegate == null) {
-            mDelegate = AppCompatDelegate.create(this, null);
-        }
-        return mDelegate;
-    }
-
     /**
      * Attempts to sign in or register the account specified by the sign up form.
      * If there are form errors (invalid email, missing fields, etc.), the
@@ -169,14 +156,12 @@ public class SignUpActivity extends Activity {
         // Reset errors.
         mEmailView.setError(null);
         mUsernameView.setError(null);
-        mPhoneView.setError(null);
         mPasswordView.setError(null);
         mRePasswordView.setError(null);
 
         // Store values at the time of the sign up attempt.
         String email = mEmailView.getText().toString();
         String username = mUsernameView.getText().toString();
-        String phone = mPhoneView.getText().toString();
         String password = mPasswordView.getText().toString();
         String rePassword = mRePasswordView.getText().toString();
         boolean isGuide = mGuideCheckboxView.isChecked();
@@ -262,7 +247,6 @@ public class SignUpActivity extends Activity {
             Intent intent = new Intent(this, SignUpService.class);
             intent.putExtra(INTENT_EXTRA_EMAIL, email);
             intent.putExtra(INTENT_EXTRA_USERNAME, username);
-            intent.putExtra(INTENT_EXTRA_PHONE, phone);
             intent.putExtra(INTENT_EXTRA_PASSWORD, password);
             intent.putExtra(INTENT_EXTRA_GUIDE, isGuide);
 

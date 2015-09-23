@@ -58,7 +58,7 @@ public class RecentLocationAdapter extends CursorAdapter {
             viewHolder.iconView.setImageResource(R.drawable.ic_history_white_24dp);
 
             // Read location display string from cursor
-            String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);
+            String locationName = cursor.getString(MainFragment.COL_RECENT_LOCATION_NAME);
             viewHolder.textView.setText(locationName);
         }
     }

@@ -14,6 +14,8 @@ import android.support.v7.app.AppCompatDelegate;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import il.ac.technion.touricity.sync.TouricitySyncAdapter;
+
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -119,6 +121,8 @@ public class SettingsActivity extends PreferenceActivity
                 // Set the summary to reflect the new value.
                 int formatId = R.string.pref_sync_interval_summary;
                 preference.setSummary(mContext.getString(formatId, stringValue));
+                // Actually change the sync adapter.
+                TouricitySyncAdapter.initializeSyncAdapter(this);
             }
             else {
                 // For all other preferences, set the summary to the value's

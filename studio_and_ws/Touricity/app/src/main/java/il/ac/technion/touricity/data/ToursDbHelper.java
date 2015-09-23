@@ -19,8 +19,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import il.ac.technion.touricity.data.ToursContract.LanguageEntry;
 import il.ac.technion.touricity.data.ToursContract.LocationEntry;
 import il.ac.technion.touricity.data.ToursContract.OSMEntry;
+import il.ac.technion.touricity.data.ToursContract.SlotEntry;
 import il.ac.technion.touricity.data.ToursContract.TourEntry;
 
 /**
@@ -33,8 +35,13 @@ public class ToursDbHelper extends SQLiteOpenHelper {
 
     static final String DATABASE_NAME = "tours.db";
 
+    private static final String LOG_TAG = ToursDbHelper.class.getSimpleName();
+
+    private Context mContext;
+
     public ToursDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        mContext = context;
     }
 
     @Override
@@ -42,9 +49,9 @@ public class ToursDbHelper extends SQLiteOpenHelper {
         // For available data types in SQLite, please see:
         // https://www.sqlite.org/datatype3.html
         final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + LocationEntry.TABLE_NAME + " (" +
-                LocationEntry._ID + " INTEGER PRIMARY KEY," +
+                LocationEntry._ID + " INTEGER PRIMARY KEY, " +
 
-                LocationEntry.COLUMN_OSM_ID + " INTEGER UNIQUE NOT NULL, " +
+                LocationEntry.COLUMN_LOCATION_ID + " INTEGER NOT NULL, " +
                 LocationEntry.COLUMN_LOCATION_NAME + " TEXT NOT NULL, " +
                 LocationEntry.COLUMN_LOCATION_TYPE + " TEXT NOT NULL, " +
                 LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
@@ -52,15 +59,14 @@ public class ToursDbHelper extends SQLiteOpenHelper {
 
                 // To assure the application have just one location per OSM ID.
                 // Replacing the old entry will help manage history suggestions.
-                " UNIQUE (" + LocationEntry.COLUMN_OSM_ID +  ", " +
-                LocationEntry.COLUMN_LOCATION_NAME + ") ON CONFLICT REPLACE);";
+                " UNIQUE (" + LocationEntry.COLUMN_LOCATION_ID + ") ON CONFLICT REPLACE)";
 
         sqLiteDatabase.execSQL(SQL_CREATE_LOCATION_TABLE);
 
         final String SQL_CREATE_OSM_TABLE = "CREATE TABLE " + OSMEntry.TABLE_NAME + " (" +
-                OSMEntry._ID + " INTEGER PRIMARY KEY," +
+                OSMEntry._ID + " INTEGER PRIMARY KEY, " +
 
-                OSMEntry.COLUMN_OSM_ID + " INTEGER UNIQUE NOT NULL, " +
+                OSMEntry.COLUMN_LOCATION_ID + " INTEGER UNIQUE NOT NULL, " +
                 OSMEntry.COLUMN_LOCATION_NAME + " TEXT NOT NULL, " +
                 OSMEntry.COLUMN_LOCATION_TYPE + " TEXT NOT NULL, " +
                 OSMEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
@@ -69,31 +75,65 @@ public class ToursDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SQL_CREATE_OSM_TABLE);
 
         final String SQL_CREATE_TOURS_TABLE = "CREATE TABLE " + TourEntry.TABLE_NAME + " (" +
-                TourEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                TourEntry._ID + " INTEGER, " +
 
                 TourEntry.COLUMN_OSM_ID + " INTEGER NOT NULL, " +
                 TourEntry.COLUMN_TOUR_TITLE + " TEXT NOT NULL, " +
                 TourEntry.COLUMN_TOUR_DURATION + " INTEGER NOT NULL CHECK (" +
                         TourEntry.COLUMN_TOUR_DURATION + " > 0), " +
+                TourEntry.COLUMN_TOUR_LANGUAGE + " INTEGER NOT NULL, " +
                 TourEntry.COLUMN_TOUR_LOCATION + " TEXT NOT NULL, " +
                 TourEntry.COLUMN_TOUR_RATING + " REAL CHECK (" +
                         TourEntry.COLUMN_TOUR_RATING + " >= 0 AND " +
-                        TourEntry.COLUMN_TOUR_RATING + " <= 5 )," +
+                        TourEntry.COLUMN_TOUR_RATING + " <= 5 ), " +
                 // 1 = Tour is available, 0 = otherwise.
-                TourEntry.COLUMN_TOUR_AVAILABLE + " INTEGER NOT NULL," +
-                TourEntry.COLUMN_TOUR_DESCRIPTION + " TEXT," +
-                TourEntry.COLUMN_TOUR_THUMBNAIL + " BLOB," +
+                TourEntry.COLUMN_TOUR_AVAILABLE + " INTEGER NOT NULL, " +
+                TourEntry.COLUMN_TOUR_DESCRIPTION + " TEXT, " +
                 // TODO: figure out the next fields in later releases.
                 // SQLite does not support arrays. Load photos directly from internet?
-                TourEntry.COLUMN_TOUR_PHOTOS + " BLOB," +
-                TourEntry.COLUMN_TOUR_LANGUAGES + " INTEGER," +
-                TourEntry.COLUMN_TOUR_COMMENTS + " TEXT," +
+                TourEntry.COLUMN_TOUR_PHOTOS + " BLOB, " +
+                TourEntry.COLUMN_TOUR_COMMENTS + " TEXT, " +
 
+                " PRIMARY KEY (" + TourEntry._ID + ") ON CONFLICT REPLACE, " +
                 // Set up the OSM ID column as a foreign key to location table.
                 " FOREIGN KEY (" + TourEntry.COLUMN_OSM_ID + ") REFERENCES " +
-                LocationEntry.TABLE_NAME + " (" + LocationEntry.COLUMN_OSM_ID + ");";
+                LocationEntry.TABLE_NAME + " (" + LocationEntry._ID + ") ON DELETE CASCADE," +
+                // Set up the language column as a foreign key to languages table.
+                " FOREIGN KEY (" + TourEntry.COLUMN_TOUR_LANGUAGE + ") REFERENCES " +
+                LanguageEntry.TABLE_NAME + " (" + LanguageEntry._ID + ") ON DELETE RESTRICT)";
 
         sqLiteDatabase.execSQL(SQL_CREATE_TOURS_TABLE);
+
+        final String SQL_CREATE_LANGUAGES_TABLE = "CREATE TABLE " + LanguageEntry.TABLE_NAME + " (" +
+                LanguageEntry._ID + " INTEGER PRIMARY KEY, " +
+
+                LanguageEntry.COLUMN_LANGUAGE_NAME + " TEXT NOT NULL, " +
+
+                " UNIQUE (" + LanguageEntry.COLUMN_LANGUAGE_NAME + ") ON CONFLICT REPLACE)";
+
+        sqLiteDatabase.execSQL(SQL_CREATE_LANGUAGES_TABLE);
+
+        final String SQL_CREATE_SLOTS_TABLE = "CREATE TABLE " + SlotEntry.TABLE_NAME + " (" +
+                SlotEntry._ID + " INTEGER PRIMARY KEY, " +
+
+                SlotEntry.COLUMN_SLOT_GUIDE_ID + " TEXT NOT NULL, " +
+                SlotEntry.COLUMN_SLOT_TOUR_ID + " INTEGER NOT NULL, " +
+                SlotEntry.COLUMN_SLOT_DATE + " REAL NOT NULL, " +
+                SlotEntry.COLUMN_SLOT_TIME + " TEXT NOT NULL, " +
+                SlotEntry.COLUMN_SLOT_VACANT + " INTEGER NOT NULL CHECK (" +
+                SlotEntry.COLUMN_SLOT_VACANT + " >= 0), " +
+                // 1 = Slot is active, 0 = otherwise.
+                SlotEntry.COLUMN_SLOT_ACTIVE + " INTEGER NOT NULL, " +
+
+                // Set up the guide ID column as a foreign key to the users table.
+                // TODO: uncomment later (get inner join slots + user from server, and in the service add the user and then the slot
+//                " FOREIGN KEY (" + SlotEntry.COLUMN_SLOT_GUIDE_ID + ") REFERENCES " +
+//                UserEntry.TABLE_NAME + " (" + UserEntry.COLUMN_USER_RATING + ") ON DELETE RESTRICT, " +
+                // Set up the tour ID column as a foreign key to the tours table.
+                " FOREIGN KEY (" + SlotEntry.COLUMN_SLOT_TOUR_ID + ") REFERENCES " +
+                TourEntry.TABLE_NAME + " (" + TourEntry._ID + ") ON DELETE RESTRICT)";
+
+        sqLiteDatabase.execSQL(SQL_CREATE_SLOTS_TABLE);
     }
 
     @Override
@@ -107,6 +147,8 @@ public class ToursDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LocationEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + OSMEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TourEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LanguageEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + SlotEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

@@ -4,15 +4,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class DetailActivity extends FragmentActivity {
 
+    private AppCompatDelegate mDelegate;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        // Inflate action bar
+        setupActionBar(savedInstanceState);
 
         if (savedInstanceState == null) {
             DetailFragment fragment = DetailFragment.newInstance(getIntent().getData());
@@ -37,7 +43,11 @@ public class DetailActivity extends FragmentActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // Activate when pressing the action bar's back button.
+        if (id == android.R.id.home) {
+            this.finish();
+            return true;
+        }
         if (id == R.id.action_settings) {
             Context context = this;
             Intent settingsIntent = new Intent(context, SettingsActivity.class);
@@ -46,5 +56,23 @@ public class DetailActivity extends FragmentActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Set up the {@link android.support.v7.app.ActionBar}.
+     */
+    private void setupActionBar(Bundle savedInstanceState) {
+        // Show the Up button in the action bar.
+        getDelegate().installViewFactory();
+        getDelegate().onCreate(savedInstanceState);
+        getDelegate().getSupportActionBar().show();
+        getDelegate().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    private AppCompatDelegate getDelegate() {
+        if (mDelegate == null) {
+            mDelegate = AppCompatDelegate.create(this, null);
+        }
+        return mDelegate;
     }
 }

@@ -1,5 +1,6 @@
 package il.ac.technion.touricity;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -11,15 +12,27 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
+import il.ac.technion.touricity.data.ToursContract;
+import il.ac.technion.touricity.sync.TouricitySyncAdapter;
+
 public class MainActivity extends ActionBarActivity
         implements LoginDialogFragment.LoginDialogListener,
-        LogoutDialogFragment.LogoutDialogListener {
+        LogoutDialogFragment.LogoutDialogListener,
+        MainFragment.Callback {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
+
+    private boolean mTwoPane;
+
+    private FrameLayout mToursSlotsDetailContainer;
 
     private LinearLayout mLocationLinearLayout;
     private TextView mLocationNameTextView;
@@ -32,11 +45,14 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        initializeLanguageTable();
+
         setContentView(R.layout.activity_main);
 
         mLocationLinearLayout = (LinearLayout)findViewById(R.id.linearlayout_location_main);
         mLocationNameTextView = (TextView)findViewById(R.id.textview_location_main);
-        showLocationRelativeLayout(false);
+        showLocationLinearLayout(false);
         Button locationMapButton = (Button)findViewById(R.id.location_map_btn);
         // Avoid making the map button's text with capital letters.
         locationMapButton.setTransformationMethod(null);
@@ -46,6 +62,30 @@ public class MainActivity extends ActionBarActivity
                 openPreferredLocationInMap();
             }
         });
+
+        mToursSlotsDetailContainer = (FrameLayout)findViewById(R.id.tours_slots_detail_container);
+        if (mToursSlotsDetailContainer != null) {
+            // The detail container view will be present only in the large-screen layouts
+            // (res/layout-sw600dp). If this view is present, then the activity should be
+            // in two-pane mode.
+            mTwoPane = true;
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.tours_slots_detail_container, new DetailFragment(), DETAIL_FRAGMENT_TAG)
+                        .commit();
+                mToursSlotsDetailContainer.setVisibility(View.INVISIBLE);
+            }
+        } else {
+            mTwoPane = false;
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setElevation(0f);
+            }
+        }
+
+        TouricitySyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override
@@ -53,10 +93,10 @@ public class MainActivity extends ActionBarActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        mLoginMenuItem = (MenuItem)menu.findItem(R.id.action_login);
-        mSignupMenuItem = (MenuItem)menu.findItem(R.id.action_signup);
-        mLogoutMenuItem = (MenuItem)menu.findItem(R.id.action_logout);
-        mMyToursMenuItem = (MenuItem)menu.findItem(R.id.action_my_tours);
+        mLoginMenuItem = menu.findItem(R.id.action_login);
+        mSignupMenuItem = menu.findItem(R.id.action_signup);
+        mLogoutMenuItem = menu.findItem(R.id.action_logout);
+        mMyToursMenuItem = menu.findItem(R.id.action_my_tours);
 
         return true;
     }
@@ -92,6 +132,28 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onItemSelected(Uri tourUri) {
+        if (tourUri == null) {
+            return;
+        }
+
+        // two-pane mode
+        if (mTwoPane) {
+            mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
+            DetailFragment fragment = DetailFragment.newInstance(tourUri);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.tours_slots_detail_container, fragment, DETAIL_FRAGMENT_TAG)
+                    .commit();
+        }
+        // one-pane mode
+        else {
+            Intent intent = new Intent(this, DetailActivity.class).setData(tourUri);
+            startActivity(intent);
+        }
+
+    }
+
     private void openPreferredLocationInMap() {
         // Using the URI scheme for showing a location found on a map.  This super-handy
         // intent can is detailed in the "Common Intents" page of Android's developer site:
@@ -111,7 +173,7 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    public void showLocationRelativeLayout(boolean show) {
+    public void showLocationLinearLayout(boolean show) {
         if (mLocationLinearLayout != null) {
             if (show) {
                 mLocationLinearLayout.setVisibility(View.VISIBLE);
@@ -172,4 +234,35 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    private void initializeLanguageTable() {
+//         Delete previous contents.
+//        // TODO: add variable to preferences something like cleared DB
+//        getContentResolver().delete(ToursContract.LanguageEntry.CONTENT_URI, null, null);
+
+        String[] languages = new String[]
+                {getString(R.string.language_english),
+                        getString(R.string.language_spanish),
+                        getString(R.string.language_french),
+                        getString(R.string.language_german),
+                        getString(R.string.language_italian),
+                        getString(R.string.language_portuguese),
+                        getString(R.string.language_chinese),
+                        getString(R.string.language_hebrew)};
+
+        ArrayList<ContentValues> cvArrayList = new ArrayList<>();
+        for (int i = 0; i < languages.length; i++) {
+            ContentValues cv = new ContentValues();
+            cv.put(ToursContract.LanguageEntry.COLUMN_LANGUAGE_NAME, languages[i]);
+            cvArrayList.add(cv);
+        }
+
+        ContentValues[] cvArray = new ContentValues[cvArrayList.size()];
+        cvArrayList.toArray(cvArray);
+        int inserted = 0;
+        inserted = getContentResolver().bulkInsert(
+                ToursContract.LanguageEntry.CONTENT_URI,
+                cvArray
+        );
+        Log.d(LOG_TAG, "ToursDbHelper inserted " + inserted + " rows into the languages table.");
+    }
 }

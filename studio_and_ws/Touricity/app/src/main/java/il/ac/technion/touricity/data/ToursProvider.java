@@ -21,6 +21,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class ToursProvider extends ContentProvider {
@@ -32,6 +33,44 @@ public class ToursProvider extends ContentProvider {
     static final int LOCATION = 100;
     static final int OSM = 200;
     static final int TOURS = 300;
+    static final int TOURS_WITH_LOCATION = 301;
+    static final int LANGUAGES = 400;
+    static final int SLOTS = 500;
+
+    private static final SQLiteQueryBuilder sToursWithLanguageNameQueryBuilder;
+
+    static {
+        sToursWithLanguageNameQueryBuilder = new SQLiteQueryBuilder();
+
+        // This is an inner join which looks like
+        // tours INNER JOIN languages ON tours.t_language = language._id
+        sToursWithLanguageNameQueryBuilder.setTables(
+                ToursContract.TourEntry.TABLE_NAME + " INNER JOIN " +
+                        ToursContract.LanguageEntry.TABLE_NAME +
+                        " ON " + ToursContract.TourEntry.TABLE_NAME +
+                        "." + ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE +
+                        " = " + ToursContract.LanguageEntry.TABLE_NAME +
+                        "." + ToursContract.LanguageEntry._ID);
+    }
+
+    // Tour with a specific location (i.e. OSM ID)
+    private static final String sToursWithLocationSelection =
+            ToursContract.TourEntry.TABLE_NAME +
+                    "." + ToursContract.TourEntry.COLUMN_OSM_ID + " = ?";
+
+    private Cursor getToursWithLocation(Uri uri, String[] projection, String sortOrder) {
+        long locationId = ToursContract.TourEntry.getIdFromUri(uri);
+
+        return sToursWithLanguageNameQueryBuilder.query(
+                mOpenHelper.getReadableDatabase(),
+                projection,
+                sToursWithLocationSelection,
+                new String[]{Long.toString(locationId)},
+                null,
+                null,
+                sortOrder
+        );
+    }
 
     /*  The UriMatcher matches a URI to a constant number for the ease of using switch statements. */
     static UriMatcher buildUriMatcher() {
@@ -45,6 +84,9 @@ public class ToursProvider extends ContentProvider {
         uriMatcher.addURI(authority, ToursContract.PATH_LOCATION, LOCATION);
         uriMatcher.addURI(authority, ToursContract.PATH_OSM, OSM);
         uriMatcher.addURI(authority, ToursContract.PATH_TOURS, TOURS);
+        uriMatcher.addURI(authority, ToursContract.PATH_TOURS + "/#", TOURS_WITH_LOCATION);
+        uriMatcher.addURI(authority, ToursContract.PATH_LANGUAGES, LANGUAGES);
+        uriMatcher.addURI(authority, ToursContract.PATH_SLOTS, SLOTS);
         // 3) Return the new matcher!
         return uriMatcher;
     }
@@ -69,6 +111,13 @@ public class ToursProvider extends ContentProvider {
                 return ToursContract.OSMEntry.CONTENT_TYPE;
             case TOURS:
                 return ToursContract.TourEntry.CONTENT_TYPE;
+            case TOURS_WITH_LOCATION:
+                return ToursContract.TourEntry.CONTENT_TYPE;
+            case LANGUAGES:
+                // Always returns a single language.
+                return ToursContract.LanguageEntry.CONTENT_ITEM_TYPE;
+            case SLOTS:
+                return ToursContract.SlotEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -107,8 +156,36 @@ public class ToursProvider extends ContentProvider {
                 break;
             }
             case TOURS: {
+                retCursor = sToursWithLanguageNameQueryBuilder.query(
+                        mOpenHelper.getReadableDatabase(),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case TOURS_WITH_LOCATION: {
+                retCursor = getToursWithLocation(uri, projection, sortOrder);
+                break;
+            }
+            case LANGUAGES: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
-                        ToursContract.TourEntry.TABLE_NAME,
+                        ToursContract.LanguageEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case SLOTS: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        ToursContract.SlotEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -156,6 +233,22 @@ public class ToursProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case LANGUAGES: {
+                long _id = db.insert(ToursContract.LanguageEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ToursContract.LanguageEntry.buildLanguagesUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case SLOTS: {
+                long _id = db.insert(ToursContract.SlotEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ToursContract.SlotEntry.buildSlotUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -193,6 +286,22 @@ public class ToursProvider extends ContentProvider {
             case TOURS: {
                 rowsDeleted = db.delete(
                         ToursContract.TourEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case LANGUAGES: {
+                rowsDeleted = db.delete(
+                        ToursContract.LanguageEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case SLOTS: {
+                rowsDeleted = db.delete(
+                        ToursContract.SlotEntry.TABLE_NAME,
                         selection,
                         selectionArgs
                 );
@@ -249,6 +358,24 @@ public class ToursProvider extends ContentProvider {
                 );
                 break;
             }
+            case LANGUAGES: {
+                rowsUpdated = db.update(
+                        ToursContract.LanguageEntry.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case SLOTS: {
+                rowsUpdated = db.update(
+                        ToursContract.SlotEntry.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -270,14 +397,26 @@ public class ToursProvider extends ContentProvider {
         int returnCount = 0;
         try {
             for (ContentValues value : values) {
-                long _id = -1;
+                long _id;
                 switch (match) {
+                    case LOCATION: {
+                        _id = db.insert(ToursContract.LocationEntry.TABLE_NAME, null, value);
+                        break;
+                    }
                     case OSM: {
                         _id = db.insert(ToursContract.OSMEntry.TABLE_NAME, null, value);
                         break;
                     }
                     case TOURS: {
                         _id = db.insert(ToursContract.TourEntry.TABLE_NAME, null, value);
+                        break;
+                    }
+                    case LANGUAGES: {
+                        _id = db.insert(ToursContract.LanguageEntry.TABLE_NAME, null, value);
+                        break;
+                    }
+                    case SLOTS: {
+                        _id = db.insert(ToursContract.SlotEntry.TABLE_NAME, null, value);
                         break;
                     }
                     default:

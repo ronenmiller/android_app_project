@@ -44,7 +44,7 @@
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textAppearance="?android:textAppearanceButton"
-                android:background="@android:color/transparent"
+                android:background="@drawable/btn_dialog_touricity"
                 android:textColor="@color/touricity_teal" />
 
             <Button
@@ -59,7 +59,7 @@
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textAppearance="?android:textAppearanceButton"
-                android:background="@android:color/transparent"
+                android:background="@drawable/btn_dialog_touricity"
                 android:textColor="@color/touricity_teal" />
 
             </RelativeLayout>

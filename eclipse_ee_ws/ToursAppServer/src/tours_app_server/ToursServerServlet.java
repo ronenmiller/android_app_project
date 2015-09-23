@@ -64,7 +64,7 @@ public class ToursServerServlet extends HttpServlet {
 		// Instantiate Gson
 		Gson gson = new Gson();
 		Message responseMessage = gson.fromJson(responseJsonStr, Message.class);
-		if (responseMessage != null) {
+		/*if (responseMessage != null) {
 			System.out.println(responseMessage.getMessageID());
 			try {
 				JSONObject testJson = new JSONObject(responseMessage.getMessageJson());
@@ -74,7 +74,7 @@ public class ToursServerServlet extends HttpServlet {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
         
         response.getWriter().write(responseJsonStr);
 		response.setStatus(HttpServletResponse.SC_OK);

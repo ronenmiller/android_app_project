@@ -58,7 +58,7 @@ public class LocationAdapter extends CursorAdapter {
 
         // Set the correct icon using an helper method.
         viewHolder.iconView.setImageResource(Utility
-                .getIconResourceIdForLocationType(context, locationType));
+                .getIconResourceIdForLocationType(locationType));
 
         // Read location display string from cursor
         String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);

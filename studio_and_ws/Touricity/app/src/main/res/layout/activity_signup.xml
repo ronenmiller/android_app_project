@@ -66,20 +66,6 @@
                 android:fontFamily="sans-serif"
                 android:textAppearance="?android:textAppearanceMedium" />
 
-
-            <EditText
-                android:id="@+id/signup_phone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:hint="@string/prompt_phone"
-                android:imeOptions="actionNext"
-                android:inputType="phone"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:fontFamily="sans-serif"
-                android:textAppearance="?android:textAppearanceMedium" />
-
             <il.ac.technion.touricity.IconifiedEditText
                 android:id="@+id/signup_password"
                 android:layout_width="match_parent"

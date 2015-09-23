@@ -15,24 +15,49 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/detail_tour_title"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:fontFamily="sans-serif-light"
-                android:textStyle="bold"
-                android:textColor="@color/touricity_teal"
-                android:text="Title"
-                android:textSize="24sp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/detail_tour_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="bold"
+                    android:textColor="@color/touricity_teal"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/detail_tour_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/black"
+                    android:textAppearance="?android:textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/detail_tour_language"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/black"
+                    android:textAppearance="?android:textAppearanceMedium" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
+                android:gravity="center_vertical"
                 android:orientation="vertical">
 
                 <RatingBar
@@ -42,47 +67,27 @@
                     android:layout_height="wrap_content"
                     android:rating="2.5" />
 
-                <TextView
-                    android:id="@+id/detail_tour_duration"
+                <ImageView
+                    android:id="@+id/detail_language_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:fontFamily="sans-serif-condensed"
-                    android:textColor="@color/black"
-                    android:text="Duration: 90 min."
-                    android:textAppearance="?android:textAppearanceMedium" />
+                    android:layout_gravity="end"
+                    android:maxHeight="24dp"
+                    android:maxWidth="24dp" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/detail_tour_location"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/detail_tour_location"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/black"
-                android:text="Tour starts from some location "
-                android:textAppearance="?android:textAppearanceMedium" />
-
-            <TextView
-                android:id="@+id/detail_open_map_textview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:text="@string/action_open_map"
-                android:textStyle="bold"
-                android:textColor="@color/touricity_teal"
-                android:textAppearance="?android:textAppearanceMedium" />
-
-        </LinearLayout>
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif"
+            android:textColor="@color/black"
+            android:textAppearance="?android:textAppearanceMedium" />
 
         <TextView
             android:id="@+id/detail_tour_description"
@@ -91,7 +96,6 @@
             android:layout_marginTop="24dp"
             android:fontFamily="sans-serif-light"
             android:textColor="@color/black"
-            android:text="Tour description"
             android:textAppearance="?android:textAppearanceMedium" />
 
         <!-- Tour photos go inside the horizontal scrollview -->

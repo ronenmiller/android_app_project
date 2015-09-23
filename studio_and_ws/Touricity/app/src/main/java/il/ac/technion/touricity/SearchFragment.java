@@ -1,8 +1,8 @@
 package il.ac.technion.touricity;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -59,8 +59,8 @@ public class SearchFragment extends Fragment
     }
 
     private void addLocation(Cursor cursor) {
-        // read contents from cursor
-        long osmID = cursor.getLong(MainFragment.COL_OSM_ID);
+        // Read contents from cursor.
+        long osmID = cursor.getLong(MainFragment.COL_OSM_LOCATION_ID);
         String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);
         String locationType = cursor.getString(MainFragment.COL_LOCATION_TYPE);
         double latitude = cursor.getDouble(MainFragment.COL_COORD_LAT);
@@ -74,13 +74,13 @@ public class SearchFragment extends Fragment
                 context,
                 osmID,
                 locationName,
-                (float) latitude,
-                (float) longitude
+                (float)latitude,
+                (float)longitude
                 );
 
         // Insert contents into the location table.
         ContentValues cv = new ContentValues();
-        cv.put(ToursContract.LocationEntry.COLUMN_OSM_ID, osmID);
+        cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_ID, osmID);
         cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_NAME, locationName);
         cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_TYPE, locationType);
         cv.put(ToursContract.LocationEntry.COLUMN_COORD_LAT, latitude);
@@ -99,20 +99,19 @@ public class SearchFragment extends Fragment
     }
 
     private void locationSelected() {
-        Intent returnIntent = new Intent();
-        getActivity().setResult(MainFragment.RESULT_OK, returnIntent);
+        getActivity().setResult(Activity.RESULT_OK);
         getActivity().finish();
     }
 
     void onLocationChanged() {
-        getLoaderManager().initLoader(MainFragment.LOCATIONS_LOADER, null, this);
+        getLoaderManager().initLoader(MainFragment.OSM_LOADER, null, this);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        getLoaderManager().initLoader(MainFragment.LOCATIONS_LOADER, null, this);
+        getLoaderManager().initLoader(MainFragment.OSM_LOADER, null, this);
     }
 
     @Override
