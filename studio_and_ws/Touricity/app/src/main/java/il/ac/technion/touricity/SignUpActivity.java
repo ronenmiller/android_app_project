@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import il.ac.technion.touricity.service.SignUpService;
 
@@ -356,6 +357,10 @@ public class SignUpActivity extends Activity {
                     focusView.requestFocus();
                 }
                 showProgress(false);
+                if (!cancel) {
+                    String signUpFailed = getString(R.string.error_signup_failed);
+                    Toast.makeText(context, signUpFailed, Toast.LENGTH_LONG).show();
+                }
             } else {
                 // TODO: add email confirmation logic
                 finish();

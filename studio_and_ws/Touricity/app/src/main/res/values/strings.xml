@@ -43,7 +43,8 @@
     <string name="error_taken_username">This username is already taken</string>
     <string name="error_short_password">Minimum password length is 6 characters</string>
     <string name="error_invalid_password">Password must contain at least one digit and one character</string>
-    <string name="error_mismatch_password">This Password doesn\'t match the re-entered password</string>
+    <string name="error_mismatch_password">This password doesn\'t match the re-entered password</string>
+    <string name="error_signup_failed">Server error: sign up failed</string>
 
     <!-- Strings related to login dialog -->
     <string name="action_login_short">Go</string>
@@ -82,8 +83,8 @@
     <string name="pref_location_lat_key" translatable="false">location_lat</string>
     <string name="pref_location_long_key" translatable="false">location_long</string>
     <string name="pref_user_is_logged_in_key" translatable="false">user_is_logged_in</string>
-    <string name="pref_user_name_key" translatable="false">user_name</string>
-    <string name="pref_user_password_key" translatable="false">user_password</string>
+    <string name="pref_user_id_key" translatable="false">user_id</string>
+    <string name="pref_user_is_guide_key" translatable="false">user_is_guide</string>
 
     <!-- Notification Format -->
     <string name="format_notification">

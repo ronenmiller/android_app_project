@@ -100,7 +100,7 @@ public final class JDBCServer {
 					String username = requestJSON.getString(Message.MessageKeys.USER_NAME_KEY);
 					String password = requestJSON.getString(Message.MessageKeys.USER_PASSWORD_KEY);
 					String email    = requestJSON.getString(Message.MessageKeys.USER_EMAIL_KEY);
-					boolean isGuide = Boolean.getBoolean(requestJSON.
+					boolean isGuide = Boolean.parseBoolean(requestJSON.
 							getString(Message.MessageKeys.USER_TYPE_KEY));
 					return addUser(username, password, email, isGuide);
 				}
@@ -741,11 +741,12 @@ public final class JDBCServer {
 			
 			try {
 			   if (connection != null) {
-				   String sql = "{call add_user (?, ?, ?, ?, ?::INT::BIT)}";
+				   String sql = "{call add_user (?, ?, ?, ?::INT::BIT)}";
 				   cstmt = connection.prepareCall(sql);
 				   cstmt.setString(1, username);
 				   cstmt.setString(2, password);
 				   cstmt.setString(3, email);
+				   System.out.println("test is guide: " + isGuide);
 				   cstmt.setBoolean(4, isGuide);
 				   
 				   // modify database
@@ -779,11 +780,11 @@ public final class JDBCServer {
 			return gson.toJson(message);
 		}
 	
-	public static String validateCredentials(String username, String password) {
+	public static String validateCredentials(String username, String password) throws Exception {
 		Connection connection = initConnection();
 		CallableStatement cstmt = null;
 		ResultSet resultSet = null;
-		boolean isValid;
+		JSONArray userAttributes = null;
 		
 		try {
 			if (connection != null) {
@@ -792,7 +793,9 @@ public final class JDBCServer {
 			   cstmt.setString(1, username);
 			   cstmt.setString(2, password);
 			   resultSet = queryDB(cstmt);
-			   isValid = ResultSetConverter.convertResultSetIntoBoolean(resultSet);
+			   System.out.println("User attr1: " + resultSet.toString());
+			   userAttributes = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			   System.out.println("User attr2: " + userAttributes.toString());
 			}
 			else { 
 				throw new NullPointerException("Error: connection is null in validateCredentials!");
@@ -801,25 +804,26 @@ public final class JDBCServer {
 			//TODO: nothing we can do?
 			System.err.println("SQL exception: " + se);
 			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
 		} finally {
 			closeResultSet(resultSet);
 			closeStatement(cstmt);
 			closeConnection(connection);
 		}
-
-		// generate JSON message with the results
-		JSONObject jsonObject = new JSONObject();
-		try {
-			jsonObject.put(Message.MessageKeys.IS_EXISTS, isValid);
-		} catch (JSONException e) {
-			e.printStackTrace();
+		
+		if (userAttributes != null) {
+			// generate JSON message with the results
+			String messageJsonStr = userAttributes.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.VALIDATE_CREDENTIALS, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
 		}
-		String messageJsonStr = jsonObject.toString();
-		// put the message in an envelope
-		Message message = new Message(Message.MessageTypes.VALIDATE_CREDENTIALS, messageJsonStr);
-		// convert envelope to JSON format
-		Gson gson = new Gson();
-		return gson.toJson(message);
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
 	}
 	
 	public static String queryToursByOsmID(long osmID) throws Exception {

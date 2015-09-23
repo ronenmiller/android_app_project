@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,7 +28,11 @@ import il.ac.technion.touricity.LoginDialogFragment;
 import il.ac.technion.touricity.Utility;
 
 public class LoginService extends IntentService {
+
     private static final String LOG_TAG = LoginService.class.getSimpleName();
+
+    private String mUserId;
+    private boolean mIsGuide;
 
     public LoginService() { super("LoginService"); }
 
@@ -112,11 +117,23 @@ public class LoginService extends IntentService {
 
             // We know the message type to be VALIDATE_UNIQUE_USERNAME.
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
-            JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
-            String isExists = responseJSON.getString(Message.MessageKeys.IS_EXISTS);
-            return Boolean.valueOf(isExists);
+            JSONArray userAttributesArray = new JSONArray(responseMessage.getMessageJson());
 
-            // TODO: add isGuide on login
+            final String USER_ID = "u_id";
+            final String USER_TYPE = "u_type";
+
+            // A single row is returned with the (possibly null) user attributes.
+            if (userAttributesArray.isNull(0)) {
+                // Return failure.
+                return false;
+            }
+
+            JSONObject userAttributesObject = userAttributesArray.getJSONObject(0);
+            mUserId = userAttributesObject.getString(USER_ID);
+            mIsGuide = userAttributesObject.getBoolean(USER_TYPE);
+
+            // Return success.
+            return true;
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -142,9 +159,11 @@ public class LoginService extends IntentService {
         return false;
     }
 
-    // Send an Intent with an action named BROADCAST_LogIn_SERVICE_DONE.
+    // Send an Intent with an action named BROADCAST_LOGIN_SERVICE_DONE.
     private void sendBroadcast(boolean success) {
         Intent broadcastIntent = new Intent(LoginDialogFragment.BROADCAST_LOGIN_SERVICE_DONE);
+        broadcastIntent.putExtra(LoginDialogFragment.BROADCAST_INTENT_USER_ID, mUserId);
+        broadcastIntent.putExtra(LoginDialogFragment.BROADCAST_INTENT_USER_TYPE, mIsGuide);
         broadcastIntent.putExtra(LoginDialogFragment.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }

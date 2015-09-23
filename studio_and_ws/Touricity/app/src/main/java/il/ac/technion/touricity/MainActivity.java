@@ -191,13 +191,13 @@ public class MainActivity extends ActionBarActivity
     // Fragment.onAttach() callback, which it uses to call the following methods
     // defined by the LoginDialogFragment.LoginDialogListener interface
     @Override
-    public void onLogin(DialogFragment dialog, String username, String password) {
+    public void onLogin(DialogFragment dialog, String userId, boolean isGuide) {
         // User touched the dialog's login button
         String loginSuccess = getString(R.string.login_success);
         Toast.makeText(this, loginSuccess, Toast.LENGTH_LONG).show();
         // We need to implement this function in this activity, and not in the
         // LoginDialogActivity, because here one can call getApplicationContext().
-        Utility.saveLoginSession(this.getApplicationContext(), username, password);
+        Utility.saveLoginSession(this.getApplicationContext(), userId, isGuide);
         dialog.dismiss();
 
         showSignInMenuItems(false);

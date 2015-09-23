@@ -94,25 +94,25 @@ public class Utility {
         return sharedPref.getBoolean(context.getString(R.string.pref_user_is_logged_in_key), false);
     }
 
-    public static String getLoggedInUsername(Context context) {
+    public static String getLoggedInUserId(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return sharedPref.getString(context.getString(R.string.pref_user_name_key), "");
+        return sharedPref.getString(context.getString(R.string.pref_user_id_key), "");
     }
 
-    public static String getLoggedInUserPassword(Context context) {
+    public static boolean getLoggedInUserIsGuide(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return sharedPref.getString(context.getString(R.string.pref_user_password_key), "");
+        return sharedPref.getBoolean(context.getString(R.string.pref_user_is_guide_key), false);
     }
 
-    public static void saveLoginSession(Context context, String username, String password) {
+    public static void saveLoginSession(Context context, String userId, boolean isGuide) {
         SharedPreferences sharedPref = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean(context.getString(R.string.pref_user_is_logged_in_key), true);
-        editor.putString(context.getString(R.string.pref_user_name_key), username);
-        editor.putString(context.getString(R.string.pref_user_password_key), password);
+        editor.putString(context.getString(R.string.pref_user_id_key), userId);
+        editor.putBoolean(context.getString(R.string.pref_user_is_guide_key), isGuide);
         editor.commit();
     }
 
@@ -121,8 +121,8 @@ public class Utility {
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean(context.getString(R.string.pref_user_is_logged_in_key), false);
-        editor.remove(context.getString(R.string.pref_user_name_key));
-        editor.remove(context.getString(R.string.pref_user_password_key));
+        editor.remove(context.getString(R.string.pref_user_id_key));
+        editor.remove(context.getString(R.string.pref_user_is_guide_key));
         editor.commit();
     }
 

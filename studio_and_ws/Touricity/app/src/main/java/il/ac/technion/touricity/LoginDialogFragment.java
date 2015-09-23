@@ -45,14 +45,16 @@ public class LoginDialogFragment extends DialogFragment {
     public static final String INTENT_EXTRA_NAME = "extra_name";
     public static final String INTENT_EXTRA_PASSWORD = "extra_password";
 
-    public static final String BROADCAST_INTENT_RESULT =  "result";
     public static final String BROADCAST_LOGIN_SERVICE_DONE = "broadcast_login_service_done";
+    public static final String BROADCAST_INTENT_RESULT =  "result";
+    public static final String BROADCAST_INTENT_USER_ID = "user_id";
+    public static final String BROADCAST_INTENT_USER_TYPE = "user_type";
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
     public interface LoginDialogListener {
-        void onLogin(DialogFragment dialog, String username, String password);
+        void onLogin(DialogFragment dialog, String userId, boolean isGuide);
     }
 
     // Use this instance of the interface to deliver action events
@@ -268,7 +270,9 @@ public class LoginDialogFragment extends DialogFragment {
             // all the constraints have been checked.
             boolean success = intent.getBooleanExtra(BROADCAST_INTENT_RESULT, false);
             if (success) {
-                mListener.onLogin(LoginDialogFragment.this, mUsername, mPassword);
+                String userId = intent.getStringExtra(BROADCAST_INTENT_USER_ID);
+                boolean isGuide = intent.getBooleanExtra(BROADCAST_INTENT_USER_TYPE, false);
+                mListener.onLogin(LoginDialogFragment.this, userId, isGuide);
             }
             else {
                 showProgress(false);
