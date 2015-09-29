@@ -25,10 +25,12 @@ import il.ac.technion.touricity.sync.TouricitySyncAdapter;
 public class MainActivity extends ActionBarActivity
         implements LoginDialogFragment.LoginDialogListener,
         LogoutDialogFragment.LogoutDialogListener,
-        MainFragment.Callback {
+        MainFragment.Callback,
+        DetailFragment.Callback {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
+    private static final String SLOTS_FRAGMENT_TAG = "SFTAG";
 
     private boolean mTwoPane;
 
@@ -151,7 +153,21 @@ public class MainActivity extends ActionBarActivity
             Intent intent = new Intent(this, DetailActivity.class).setData(tourUri);
             startActivity(intent);
         }
+    }
 
+    @Override
+    public void onViewSlots(Uri tourUri) {
+        if (tourUri == null) {
+            return;
+        }
+
+        // always two-pane mode, otherwise pressing the view slots button will lead to
+        // detail activity.
+        mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
+        SlotsFragment fragment = SlotsFragment.newInstance(tourUri);
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.tours_slots_detail_container, fragment, SLOTS_FRAGMENT_TAG)
+                .commit();
     }
 
     private void openPreferredLocationInMap() {
@@ -235,9 +251,8 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void initializeLanguageTable() {
-//         Delete previous contents.
-//        // TODO: add variable to preferences something like cleared DB
-//        getContentResolver().delete(ToursContract.LanguageEntry.CONTENT_URI, null, null);
+        // Delete previous contents.
+        getContentResolver().delete(ToursContract.LanguageEntry.CONTENT_URI, null, null);
 
         String[] languages = new String[]
                 {getString(R.string.language_english),

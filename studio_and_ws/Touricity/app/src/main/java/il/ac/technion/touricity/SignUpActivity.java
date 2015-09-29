@@ -362,7 +362,8 @@ public class SignUpActivity extends Activity {
                     Toast.makeText(context, signUpFailed, Toast.LENGTH_LONG).show();
                 }
             } else {
-                // TODO: add email confirmation logic
+                // TODO: add email confirmation logic and delete following line
+                Toast.makeText(context, "Sign up complete.", Toast.LENGTH_LONG).show();
                 finish();
             }
         }

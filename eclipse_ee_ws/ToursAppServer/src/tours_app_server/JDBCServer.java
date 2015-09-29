@@ -110,8 +110,18 @@ public final class JDBCServer {
 					return validateCredentials(username, password);
 				}
 				case Message.MessageTypes.QUERY_TOURS_BY_OSM_ID: {
-					long osmID = requestJSON.getLong(Message.MessageKeys.LOCATION_OSM_ID_KEY);
-					return queryToursByOsmID(osmID);
+					long osmId = requestJSON.getLong(Message.MessageKeys.LOCATION_OSM_ID_KEY);
+					return queryToursByOsmId(osmId);
+				}
+				case Message.MessageTypes.QUERY_SLOTS_BY_TOUR_ID: {
+					int tourId = requestJSON.getInt(Message.MessageKeys.TOUR_ID_KEY);
+					return querySlotsByTourId(tourId);
+				}
+				case Message.MessageTypes.RESERVE_SLOT: {
+					long slotId = requestJSON.getLong(Message.MessageKeys.SLOT_ID_KEY);
+					String userId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+					int numOfPlacesRequested = requestJSON.getInt(Message.MessageKeys.RESERVATION_NUM_PARTICIPANTS_KEY);
+					return reserveSlot(slotId, userId, numOfPlacesRequested);
 				}
 				default: {
 					throw new IllegalArgumentException("Illegal message ID!");
@@ -723,62 +733,61 @@ public final class JDBCServer {
 	}
 	
 	/**
-	    * Add a new user to the database.
-	    * 
-	    * @param username 	the user's name in the application
-	    * @param password	the user's chosen password
-	    * @param email		the user's email address
-	    * @param isGuide	indicates whether the user is also a guide
-	    * @return 			{@link tours_app_server.Message} in JSON format which contains <code>true</code>
-	    * 					if the operation succeeded, or <code>false</code> otherwise.
-		* 					If an error occurred, returns <code>null</code>.
-		* @throws NullPointerException if the connection to the database failed.
-	    */
-		public static String addUser(String username, String password, String email, boolean isGuide) {
-			Connection connection = initConnection();
-			CallableStatement cstmt = null;
-			boolean isModified;
-			
-			try {
-			   if (connection != null) {
-				   String sql = "{call add_user (?, ?, ?, ?::INT::BIT)}";
-				   cstmt = connection.prepareCall(sql);
-				   cstmt.setString(1, username);
-				   cstmt.setString(2, password);
-				   cstmt.setString(3, email);
-				   System.out.println("test is guide: " + isGuide);
-				   cstmt.setBoolean(4, isGuide);
-				   
-				   // modify database
-				   System.out.println("Adding the user to the database...");
-				   isModified = modifyServerDB(cstmt);
-			   }
-			   else { 
-				   throw new NullPointerException("Error: connection is null in addUser!");
-			   }
-			} catch (SQLException se) {
-				System.err.println("SQL exception: " + se);
-				return null;
-			} finally {
-				// release resources
-				closeStatement(cstmt);
-				closeConnection(connection);
-			}
-			
-			// generate JSON message with the results
-			JSONObject jsonObject = new JSONObject();
-			try {
-				jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			String messageJsonStr = jsonObject.toString();
-			// put the message in an envelope
-			Message message = new Message(Message.MessageTypes.ADD_USER, messageJsonStr);
-			// convert envelope to JSON format
-			Gson gson = new Gson();
-			return gson.toJson(message);
+    * Add a new user to the database.
+    * 
+    * @param username 	the user's name in the application
+    * @param password	the user's chosen password
+    * @param email		the user's email address
+    * @param isGuide	indicates whether the user is also a guide
+    * @return 			{@link tours_app_server.Message} in JSON format which contains <code>true</code>
+    * 					if the operation succeeded, or <code>false</code> otherwise.
+	* 					If an error occurred, returns <code>null</code>.
+	* @throws NullPointerException if the connection to the database failed.
+    */
+	public static String addUser(String username, String password, String email, boolean isGuide) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call add_user (?, ?, ?, ?::INT::BIT)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, username);
+			   cstmt.setString(2, password);
+			   cstmt.setString(3, email);
+			   cstmt.setBoolean(4, isGuide);
+			   
+			   // modify database
+			   System.out.println("Adding the user to the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in addUser!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
 		}
+		
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.ADD_USER, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
 	
 	public static String validateCredentials(String username, String password) throws Exception {
 		Connection connection = initConnection();
@@ -826,7 +835,7 @@ public final class JDBCServer {
 		}
 	}
 	
-	public static String queryToursByOsmID(long osmID) throws Exception {
+	public static String queryToursByOsmId(long osmId) throws Exception {
 		Connection connection = initConnection();
 		CallableStatement cstmt = null;
 		ResultSet resultSet = null;
@@ -836,12 +845,12 @@ public final class JDBCServer {
 			if (connection != null) {
 			   String sql = "{call query_tours_by_osm_id (?)}";
 			   cstmt = connection.prepareCall(sql);
-			   cstmt.setLong(1, osmID);
+			   cstmt.setLong(1, osmId);
 			   resultSet = queryDB(cstmt);
 			   tours = ResultSetConverter.convertResultSetIntoJSON(resultSet);
 			}
 			else { 
-				throw new NullPointerException("Error: connection is null in queryToursByOsmID!");
+				throw new NullPointerException("Error: connection is null in queryToursByOsmId!");
 			}
 		} catch (SQLException se) {
 			System.err.println("SQL exception: " + se);
@@ -866,6 +875,89 @@ public final class JDBCServer {
 		else {
 			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
 		}
+	}
+	
+	public static String querySlotsByTourId(int tourId) throws Exception {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray slots = null;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call query_slots_by_tour_id (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setInt(1, tourId);
+			   resultSet = queryDB(cstmt);
+			   slots = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in querySlotsByTourId!");
+			}
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		if (slots != null) {
+			// generate JSON message with the results
+			String messageJsonStr = slots.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.QUERY_SLOTS_BY_TOUR_ID, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
+		}
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
+	}
+	
+	public static String reserveSlot(long slotId, String userId, int numOfPlacesRequested) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call reserve_slot (?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setLong(1, slotId);
+			   cstmt.setString(2, userId);
+			   cstmt.setInt(3, numOfPlacesRequested);
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in reserveSlot!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.RESERVE_SLOT, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
 	}
 	
 }

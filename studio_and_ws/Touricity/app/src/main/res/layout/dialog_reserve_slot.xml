@@ -7,7 +7,7 @@
 
     <!-- Login progress -->
     <ProgressBar
-        android:id="@+id/login_progressbar"
+        android:id="@+id/reserve_slot_progressbar"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,7 +19,7 @@
         android:visibility="gone" />
 
     <LinearLayout
-        android:id="@+id/login_linear_form"
+        android:id="@+id/reserve_slot_linear_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -31,51 +31,39 @@
             android:layout_margin="24dp">
 
             <TextView
+                android:id="@+id/reserve_slot_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/dialog_login_title"
+                android:text="@string/dialog_create_reservation_title"
                 android:fontFamily="sans-serif"
                 android:textColor="@color/touricity_teal"
-                android:textSize="28sp" />
+                android:textSize="26sp" />
 
-            <EditText
-                android:id="@+id/login_name"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:hint="@string/prompt_username_email"
-                android:imeOptions="actionNext"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:fontFamily="sans-serif"
-                android:textAppearance="?android:textAppearanceMedium" />
-
-            <EditText
-                android:id="@+id/login_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:hint="@string/prompt_password"
-                android:imeActionId="@+id/action_login_id"
-                android:imeActionLabel="@string/action_login_short"
-                android:imeOptions="actionUnspecified"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:singleLine="true"
+                android:text="@string/reserve_slot_msg"
                 android:fontFamily="sans-serif"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <TextView
-                android:id="@+id/login_wrong_credentials"
+                android:id="@+id/reserve_slot_seekBar_progress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:gravity="center_horizontal"
-                android:visibility="gone"
-                android:layout_gravity="center"
-                android:text="@string/error_login_credentials"
-                android:textColor="@color/red"/>
+                android:fontFamily="sans-serif"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textColor="@color/touricity_teal" />
+
+            <SeekBar
+                android:id="@+id/reserve_slot_seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_gravity="center_horizontal"
+                android:progress="1" />
 
         </LinearLayout>
 
@@ -89,26 +77,7 @@
             android:layout_marginEnd="8dp">
 
             <Button
-                android:id="@+id/login_signup_btn"
-                style="?android:textAppearanceSmall"
-                android:minWidth="64dp"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:text="@string/action_signup"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textAppearance="?android:textAppearanceButton"
-                android:background="@drawable/btn_dialog_touricity"
-                android:textColor="@color/touricity_teal" />
-
-            <Button
-                android:id="@+id/login_submit_btn"
+                android:id="@+id/reserve_slot_btn"
                 style="?android:textAppearanceSmall"
                 android:minWidth="64dp"
                 android:layout_width="wrap_content"
@@ -119,7 +88,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:text="@string/action_login_button"
+                android:text="@string/action_reserve_slot_button"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textAppearance="?android:textAppearanceButton"
@@ -127,13 +96,13 @@
                 android:textColor="@color/touricity_teal" />
 
             <Button
-                android:id="@+id/login_cancel_btn"
+                android:id="@+id/reserve_slot_cancel_btn"
                 style="?android:textAppearanceSmall"
                 android:minWidth="64dp"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:layout_toLeftOf="@id/login_submit_btn"
-                android:layout_toStartOf="@id/login_submit_btn"
+                android:layout_toLeftOf="@id/reserve_slot_btn"
+                android:layout_toStartOf="@id/reserve_slot_btn"
                 android:text="@string/action_cancel_button"
                 android:textStyle="bold"
                 android:textSize="18sp"

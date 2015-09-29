@@ -11,10 +11,10 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 /**
- * {@link TourAdapter} exposes a list of tours
+ * {@link ToursAdapter} exposes a list of tours
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
  */
-public class TourAdapter extends CursorAdapter {
+public class ToursAdapter extends CursorAdapter {
 
     /**
      * Cache of the children views for a tour list item.
@@ -33,7 +33,7 @@ public class TourAdapter extends CursorAdapter {
         }
     }
 
-    public TourAdapter(Context context, Cursor c, int flags) {
+    public ToursAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
 

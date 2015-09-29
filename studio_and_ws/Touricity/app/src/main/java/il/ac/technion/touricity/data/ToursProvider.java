@@ -36,8 +36,12 @@ public class ToursProvider extends ContentProvider {
     static final int TOURS_WITH_LOCATION = 301;
     static final int LANGUAGES = 400;
     static final int SLOTS = 500;
+    static final int RESERVATIONS = 600;
+    static final int USERS = 700;
 
     private static final SQLiteQueryBuilder sToursWithLanguageNameQueryBuilder;
+    private static final SQLiteQueryBuilder sSlotsWithUsersQueryBuilder;
+    private static final SQLiteQueryBuilder sReservationsQueryBuilder;
 
     static {
         sToursWithLanguageNameQueryBuilder = new SQLiteQueryBuilder();
@@ -51,6 +55,44 @@ public class ToursProvider extends ContentProvider {
                         "." + ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE +
                         " = " + ToursContract.LanguageEntry.TABLE_NAME +
                         "." + ToursContract.LanguageEntry._ID);
+
+        sSlotsWithUsersQueryBuilder = new SQLiteQueryBuilder();
+
+        // This is an inner join which looks like
+        // slots INNER JOIN users ON slots.u_id_language = language._id
+        sSlotsWithUsersQueryBuilder.setTables(
+                ToursContract.SlotEntry.TABLE_NAME + " INNER JOIN " +
+                        ToursContract.UserEntry.TABLE_NAME +
+                        " ON " + ToursContract.SlotEntry.TABLE_NAME +
+                        "." + ToursContract.SlotEntry.COLUMN_SLOT_GUIDE_ID +
+                        " = " + ToursContract.UserEntry.TABLE_NAME +
+                        "." + ToursContract.UserEntry._ID);
+
+        sReservationsQueryBuilder = new SQLiteQueryBuilder();
+
+        // This is an inner join which contains all the tables that are related to a tour.
+        sReservationsQueryBuilder.setTables(
+                ToursContract.ReservationEntry.TABLE_NAME + " INNER JOIN " +
+                        ToursContract.SlotEntry.TABLE_NAME +
+                        " ON " + ToursContract.ReservationEntry.TABLE_NAME +
+                        "." + ToursContract.ReservationEntry._ID +
+                        " = " + ToursContract.SlotEntry.TABLE_NAME +
+                        "." + ToursContract.SlotEntry._ID + " INNER JOIN " +
+                        ToursContract.UserEntry.TABLE_NAME +
+                        " ON " + ToursContract.SlotEntry.TABLE_NAME +
+                        "." + ToursContract.SlotEntry.COLUMN_SLOT_GUIDE_ID +
+                        " = " + ToursContract.UserEntry.TABLE_NAME +
+                        "." + ToursContract.UserEntry._ID + " INNER JOIN " +
+                        ToursContract.TourEntry.TABLE_NAME +
+                        " ON " + ToursContract.SlotEntry.TABLE_NAME +
+                        "." + ToursContract.SlotEntry.COLUMN_SLOT_TOUR_ID +
+                        " = " + ToursContract.TourEntry.TABLE_NAME +
+                        "." + ToursContract.TourEntry._ID + " INNER JOIN " +
+                        ToursContract.LanguageEntry.TABLE_NAME +
+                        " ON " + ToursContract.TourEntry.TABLE_NAME +
+                        "." + ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE +
+                        " = " + ToursContract.LanguageEntry.TABLE_NAME +
+                        "." + ToursContract.LanguageEntry._ID);
     }
 
     // Tour with a specific location (i.e. OSM ID)
@@ -59,7 +101,7 @@ public class ToursProvider extends ContentProvider {
                     "." + ToursContract.TourEntry.COLUMN_OSM_ID + " = ?";
 
     private Cursor getToursWithLocation(Uri uri, String[] projection, String sortOrder) {
-        long locationId = ToursContract.TourEntry.getIdFromUri(uri);
+        long locationId = ToursContract.TourEntry.getOsmIdFromUri(uri);
 
         return sToursWithLanguageNameQueryBuilder.query(
                 mOpenHelper.getReadableDatabase(),
@@ -87,6 +129,8 @@ public class ToursProvider extends ContentProvider {
         uriMatcher.addURI(authority, ToursContract.PATH_TOURS + "/#", TOURS_WITH_LOCATION);
         uriMatcher.addURI(authority, ToursContract.PATH_LANGUAGES, LANGUAGES);
         uriMatcher.addURI(authority, ToursContract.PATH_SLOTS, SLOTS);
+        uriMatcher.addURI(authority, ToursContract.PATH_RESERVATIONS, RESERVATIONS);
+        uriMatcher.addURI(authority, ToursContract.PATH_USERS, USERS);
         // 3) Return the new matcher!
         return uriMatcher;
     }
@@ -118,6 +162,11 @@ public class ToursProvider extends ContentProvider {
                 return ToursContract.LanguageEntry.CONTENT_ITEM_TYPE;
             case SLOTS:
                 return ToursContract.SlotEntry.CONTENT_TYPE;
+            case RESERVATIONS:
+                return ToursContract.ReservationEntry.CONTENT_TYPE;
+            case USERS:
+                // Always returns a single user.
+                return ToursContract.UserEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -184,8 +233,32 @@ public class ToursProvider extends ContentProvider {
                 break;
             }
             case SLOTS: {
+                retCursor = sSlotsWithUsersQueryBuilder.query(
+                        mOpenHelper.getReadableDatabase(),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case RESERVATIONS: {
+                retCursor = sReservationsQueryBuilder.query(
+                        mOpenHelper.getReadableDatabase(),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case USERS: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
-                        ToursContract.SlotEntry.TABLE_NAME,
+                        ToursContract.UserEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -236,7 +309,7 @@ public class ToursProvider extends ContentProvider {
             case LANGUAGES: {
                 long _id = db.insert(ToursContract.LanguageEntry.TABLE_NAME, null, values);
                 if (_id > 0)
-                    returnUri = ToursContract.LanguageEntry.buildLanguagesUri(_id);
+                    returnUri = ToursContract.LanguageEntry.buildLanguageUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
@@ -245,6 +318,22 @@ public class ToursProvider extends ContentProvider {
                 long _id = db.insert(ToursContract.SlotEntry.TABLE_NAME, null, values);
                 if (_id > 0)
                     returnUri = ToursContract.SlotEntry.buildSlotUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case RESERVATIONS: {
+                long _id = db.insert(ToursContract.ReservationEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ToursContract.ReservationEntry.buildReservationUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case USERS: {
+                long _id = db.insert(ToursContract.UserEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ToursContract.UserEntry.buildUserUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
@@ -302,6 +391,22 @@ public class ToursProvider extends ContentProvider {
             case SLOTS: {
                 rowsDeleted = db.delete(
                         ToursContract.SlotEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case RESERVATIONS: {
+                rowsDeleted = db.delete(
+                        ToursContract.ReservationEntry.TABLE_NAME,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case USERS: {
+                rowsDeleted = db.delete(
+                        ToursContract.UserEntry.TABLE_NAME,
                         selection,
                         selectionArgs
                 );
@@ -376,6 +481,24 @@ public class ToursProvider extends ContentProvider {
                 );
                 break;
             }
+            case RESERVATIONS: {
+                rowsUpdated = db.update(
+                        ToursContract.ReservationEntry.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
+            case USERS: {
+                rowsUpdated = db.update(
+                        ToursContract.UserEntry.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs
+                );
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -417,6 +540,14 @@ public class ToursProvider extends ContentProvider {
                     }
                     case SLOTS: {
                         _id = db.insert(ToursContract.SlotEntry.TABLE_NAME, null, value);
+                        break;
+                    }
+                    case RESERVATIONS: {
+                        _id = db.insert(ToursContract.ReservationEntry.TABLE_NAME, null, value);
+                        break;
+                    }
+                    case USERS: {
+                        _id = db.insert(ToursContract.UserEntry.TABLE_NAME, null, value);
                         break;
                     }
                     default:

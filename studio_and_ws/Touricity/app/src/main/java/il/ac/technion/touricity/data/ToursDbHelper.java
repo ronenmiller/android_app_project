@@ -24,6 +24,8 @@ import il.ac.technion.touricity.data.ToursContract.LocationEntry;
 import il.ac.technion.touricity.data.ToursContract.OSMEntry;
 import il.ac.technion.touricity.data.ToursContract.SlotEntry;
 import il.ac.technion.touricity.data.ToursContract.TourEntry;
+import il.ac.technion.touricity.data.ToursContract.UserEntry;
+import il.ac.technion.touricity.data.ToursContract.ReservationEntry;
 
 /**
  * Manages a local database for weather data.
@@ -31,17 +33,12 @@ import il.ac.technion.touricity.data.ToursContract.TourEntry;
 public class ToursDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
 
     static final String DATABASE_NAME = "tours.db";
 
-    private static final String LOG_TAG = ToursDbHelper.class.getSimpleName();
-
-    private Context mContext;
-
     public ToursDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        mContext = context;
     }
 
     @Override
@@ -78,14 +75,15 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 TourEntry._ID + " INTEGER, " +
 
                 TourEntry.COLUMN_OSM_ID + " INTEGER NOT NULL, " +
+                TourEntry.COLUMN_TOUR_MANAGER_ID + " TEXT NOT NULL, " +
                 TourEntry.COLUMN_TOUR_TITLE + " TEXT NOT NULL, " +
                 TourEntry.COLUMN_TOUR_DURATION + " INTEGER NOT NULL CHECK (" +
-                        TourEntry.COLUMN_TOUR_DURATION + " > 0), " +
+                TourEntry.COLUMN_TOUR_DURATION + " > 0), " +
                 TourEntry.COLUMN_TOUR_LANGUAGE + " INTEGER NOT NULL, " +
                 TourEntry.COLUMN_TOUR_LOCATION + " TEXT NOT NULL, " +
                 TourEntry.COLUMN_TOUR_RATING + " REAL CHECK (" +
-                        TourEntry.COLUMN_TOUR_RATING + " >= 0 AND " +
-                        TourEntry.COLUMN_TOUR_RATING + " <= 5 ), " +
+                TourEntry.COLUMN_TOUR_RATING + " >= 0 AND " +
+                TourEntry.COLUMN_TOUR_RATING + " <= 5 ), " +
                 // 1 = Tour is available, 0 = otherwise.
                 TourEntry.COLUMN_TOUR_AVAILABLE + " INTEGER NOT NULL, " +
                 TourEntry.COLUMN_TOUR_DESCRIPTION + " TEXT, " +
@@ -114,7 +112,7 @@ public class ToursDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SQL_CREATE_LANGUAGES_TABLE);
 
         final String SQL_CREATE_SLOTS_TABLE = "CREATE TABLE " + SlotEntry.TABLE_NAME + " (" +
-                SlotEntry._ID + " INTEGER PRIMARY KEY, " +
+                SlotEntry._ID + " INTEGER, " +
 
                 SlotEntry.COLUMN_SLOT_GUIDE_ID + " TEXT NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_TOUR_ID + " INTEGER NOT NULL, " +
@@ -125,15 +123,44 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 // 1 = Slot is active, 0 = otherwise.
                 SlotEntry.COLUMN_SLOT_ACTIVE + " INTEGER NOT NULL, " +
 
+                " PRIMARY KEY (" + SlotEntry._ID + ") ON CONFLICT REPLACE, " +
                 // Set up the guide ID column as a foreign key to the users table.
-                // TODO: uncomment later (get inner join slots + user from server, and in the service add the user and then the slot
-//                " FOREIGN KEY (" + SlotEntry.COLUMN_SLOT_GUIDE_ID + ") REFERENCES " +
-//                UserEntry.TABLE_NAME + " (" + UserEntry.COLUMN_USER_RATING + ") ON DELETE RESTRICT, " +
+                " FOREIGN KEY (" + SlotEntry.COLUMN_SLOT_GUIDE_ID + ") REFERENCES " +
+                UserEntry.TABLE_NAME + " (" + UserEntry._ID + ") ON DELETE RESTRICT, " +
                 // Set up the tour ID column as a foreign key to the tours table.
                 " FOREIGN KEY (" + SlotEntry.COLUMN_SLOT_TOUR_ID + ") REFERENCES " +
                 TourEntry.TABLE_NAME + " (" + TourEntry._ID + ") ON DELETE RESTRICT)";
 
         sqLiteDatabase.execSQL(SQL_CREATE_SLOTS_TABLE);
+
+        final String SQL_CREATE_RESERVATIONS_TABLE = "CREATE TABLE " + ReservationEntry.TABLE_NAME + " (" +
+                ReservationEntry._ID + " INTEGER, " +
+
+                ReservationEntry.COLUMN_RESERVATION_USER_ID + " TEXT, " +
+                ReservationEntry.COLUMN_RESERVATION_PARTICIPANTS + " INTEGER NOT NULL, " +
+                ReservationEntry.COLUMN_RESERVATION_ACTIVE + " INTEGER NOT NULL, " +
+
+                "PRIMARY KEY (" + ReservationEntry._ID + ", " +
+                ReservationEntry.COLUMN_RESERVATION_USER_ID + ") ON CONFLICT REPLACE, " +
+                " FOREIGN KEY (" + ReservationEntry._ID + ") REFERENCES " +
+                SlotEntry.TABLE_NAME + " (" + SlotEntry._ID + ") ON DELETE RESTRICT)";
+
+        sqLiteDatabase.execSQL(SQL_CREATE_RESERVATIONS_TABLE);
+
+        final String SQL_CREATE_USERS_TABLE = "CREATE TABLE " + UserEntry.TABLE_NAME + " (" +
+                UserEntry._ID + " TEXT, " +
+
+                UserEntry.COLUMN_USER_NAME + " TEXT, " +
+                UserEntry.COLUMN_USER_EMAIL + " TEXT, " +
+                UserEntry.COLUMN_USER_RATING + " REAL, " +
+
+                // Set up the tour ID column as a foreign key to the tours table.
+                "PRIMARY KEY (" + UserEntry._ID + ", " +
+                UserEntry.COLUMN_USER_NAME + ", " +
+                UserEntry.COLUMN_USER_EMAIL + ") ON CONFLICT REPLACE)";
+
+        sqLiteDatabase.execSQL(SQL_CREATE_USERS_TABLE);
+
     }
 
     @Override
@@ -149,6 +176,8 @@ public class ToursDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TourEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + LanguageEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + SlotEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ReservationEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + UserEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

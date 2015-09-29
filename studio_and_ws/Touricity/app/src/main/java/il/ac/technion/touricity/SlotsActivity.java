@@ -2,28 +2,29 @@ package il.ac.technion.touricity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
-public class DetailActivity extends FragmentActivity
-        implements DetailFragment.Callback {
+public class SlotsActivity extends FragmentActivity
+        implements LoginDialogFragment.LoginDialogListener {
 
     private AppCompatDelegate mDelegate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail);
+        setContentView(R.layout.activity_slots);
 
         // Inflate action bar
         setupActionBar(savedInstanceState);
 
         if (savedInstanceState == null) {
-            DetailFragment fragment = DetailFragment.newInstance(getIntent().getData());
+            SlotsFragment fragment = SlotsFragment.newInstance(getIntent().getData());
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.tours_slots_detail_container, fragment)
                     .commit();
@@ -34,7 +35,7 @@ public class DetailActivity extends FragmentActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_detail, menu);
+        getMenuInflater().inflate(R.menu.menu_slots, menu);
         return true;
     }
 
@@ -78,13 +79,20 @@ public class DetailActivity extends FragmentActivity
         return mDelegate;
     }
 
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the LoginDialogFragment.LoginDialogListener interface
     @Override
-    public void onViewSlots(Uri tourUri) {
-        if (tourUri == null) {
-            return;
-        }
+    public void onLogin(DialogFragment dialog, String userId, boolean isGuide) {
+        // User touched the dialog's login button
+        String loginSuccess = getString(R.string.login_success);
+        Toast.makeText(this, loginSuccess, Toast.LENGTH_LONG).show();
+        // We need to implement this function in this activity, and not in the
+        // LoginDialogActivity, because here one can call getApplicationContext().
+        Utility.saveLoginSession(this.getApplicationContext(), userId, isGuide);
+        dialog.dismiss();
 
-        Intent intent = new Intent(this, SlotsActivity.class).setData(tourUri);
-        startActivity(intent);
+        // TODO: add sign in, login, logout menu buttons to activity
+//        showSignInMenuItems(false);
     }
 }

@@ -19,7 +19,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -42,7 +41,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import il.ac.technion.touricity.MainActivity;
-import il.ac.technion.touricity.MainFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.R;
 import il.ac.technion.touricity.Utility;
@@ -179,7 +177,7 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     /**
-     * Take the String representing the complete forecast in JSON Format and
+     * Take the String representing the matching tours in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
      *
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -187,29 +185,25 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public void getTourDataFromJson(String toursJsonStr, long osmID) throws JSONException {
 
-        // Now we have a String representing the complete forecast in JSON Format.
+        // Now we have a String representing the matching tours in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
         // into an Object hierarchy for us.
 
-        // These are the names of the JSON objects that need to be extracted.
-        final String TOUR_ID = "t_id";
-        final String TOUR_TITLE = "t_title";
-        final String TOUR_DURATION = "t_duration";
-        final String TOUR_LANGUAGE = "t_language";
-        final String TOUR_LOCATION = "t_location";
-        final String TOUR_RATING = "t_rating";
-        final String TOUR_DESCRIPTION = "t_description";
-        final String TOUR_PHOTOS = "t_photos";
-        final String TOUR_COMMENTS = "t_comments";
-
         try {
             JSONArray toursArray = new JSONArray(toursJsonStr);
+
+            // Avoid crash.
+            if (toursArray.isNull(0)) {
+                Log.d(LOG_TAG, "SyncAdapter complete. No tours found for this location.");
+                return;
+            }
 
             // Insert the new tours information into the database.
             ArrayList<ContentValues> cvArrayList = new ArrayList<>(toursArray.length());
             for(int i = 0; i < toursArray.length(); i++) {
                 // These are the values that will be collected.
                 int tourID;
+                String managerID;
                 String title;
                 // Duration is in minutes.
                 int duration;
@@ -225,19 +219,21 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
                 // Get the JSON object representing the day
                 JSONObject tourObject = toursArray.getJSONObject(i);
 
-                tourID = tourObject.getInt(TOUR_ID);
-                title = tourObject.getString(TOUR_TITLE);
-                duration = tourObject.getInt(TOUR_DURATION);
-                language = tourObject.getInt(TOUR_LANGUAGE);
-                location = tourObject.getString(TOUR_LOCATION);
-                rating = tourObject.getDouble(TOUR_RATING);
-                description = tourObject.getString(TOUR_DESCRIPTION);
+                tourID = tourObject.getInt(Message.MessageKeys.TOUR_ID_KEY);
+                managerID = tourObject.getString(Message.MessageKeys.TOUR_MANAGER_KEY);
+                title = tourObject.getString(Message.MessageKeys.TOUR_TITLE_KEY);
+                duration = tourObject.getInt(Message.MessageKeys.TOUR_DURATION_KEY);
+                language = tourObject.getInt(Message.MessageKeys.TOUR_LANGUAGE_KEY);
+                location = tourObject.getString(Message.MessageKeys.TOUR_LOCATION_KEY);
+                rating = tourObject.getDouble(Message.MessageKeys.TOUR_RATING_KEY);
+                description = tourObject.getString(Message.MessageKeys.TOUR_DESCRIPTION_KEY);
 
 
                 ContentValues tourValues = new ContentValues();
 
                 tourValues.put(ToursContract.TourEntry._ID, tourID);
                 tourValues.put(ToursContract.TourEntry.COLUMN_OSM_ID, osmID);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_MANAGER_ID, managerID);
                 tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_TITLE, title);
                 tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_DURATION, duration);
                 tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE, language);
@@ -324,9 +320,7 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
                 mInserted = inserted;
             }
 
-            Log.d(LOG_TAG, "SyncAdapter Complete. " + inserted + " Inserted");
-
-            sendBroadcast();
+            Log.d(LOG_TAG, "SyncAdapter complete. " + inserted + " Inserted");
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -479,12 +473,5 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
                 (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
         mNotificationManager.notify(TOURS_NOTIFICATION_ID, mBuilder.build());
-    }
-
-    // Send an Intent with an action named BROADCAST_LOCATION_SERVICE_DONE.
-    private void sendBroadcast() {
-        Log.d(LOG_TAG, "Sending broadcast.");
-        Intent intent = new Intent(MainFragment.BROADCAST_TOURS_SYNC_ADAPTER_DONE);
-        LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
     }
 }

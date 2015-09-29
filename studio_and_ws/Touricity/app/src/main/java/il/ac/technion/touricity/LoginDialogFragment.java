@@ -262,7 +262,7 @@ public class LoginDialogFragment extends DialogFragment {
                 new IntentFilter(BROADCAST_LOGIN_SERVICE_DONE));
     }
 
-    // handler for received Intents for the "my-event" event
+    // handler for received Intents for the BROADCAST_LOGIN_SERVICE_DONE event
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

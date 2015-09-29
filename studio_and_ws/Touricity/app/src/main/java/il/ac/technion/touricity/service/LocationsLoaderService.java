@@ -20,14 +20,15 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import il.ac.technion.touricity.MainFragment;
+import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.Utility;
 import il.ac.technion.touricity.data.ToursContract;
 
-public class LocationService extends IntentService {
+public class LocationsLoaderService extends IntentService {
 
-    private static final String LOG_TAG = LocationService.class.getSimpleName();
+    private static final String LOG_TAG = LocationsLoaderService.class.getSimpleName();
 
-    public LocationService() {
+    public LocationsLoaderService() {
         super("LocationService");
     }
 
@@ -129,7 +130,7 @@ public class LocationService extends IntentService {
     }
 
     /**
-     * Take the String representing the complete forecast in JSON Format and
+     * Take the String representing the matching locations in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
      *
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -139,20 +140,9 @@ public class LocationService extends IntentService {
                                          String locationQuery  )
             throws JSONException {
 
-        // Now we have a String representing the complete forecast in JSON Format.
+        // Now we have a String representing the matching locations in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
         // into an Object hierarchy for us.
-
-        // These are the names of the JSON objects that need to be extracted.
-
-        // Location information
-        final String OSM_ID = "osm_id";
-        final String OSM_NAME = "display_name";
-        final String OSM_TYPE = "type";
-
-        // Location coordinate
-        final String OSM_LATITUDE = "lat";
-        final String OSM_LONGITUDE = "lon";
 
         try {
             JSONArray locationsArray = new JSONArray(locationsJsonStr);
@@ -171,13 +161,13 @@ public class LocationService extends IntentService {
                 // Get the JSON object representing the location
                 JSONObject locationObject = locationsArray.getJSONObject(i);
 
-                locationType = locationObject.getString(OSM_TYPE);
+                locationType = locationObject.getString(Message.MessageKeys.LOCATION_OSM_TYPE_KEY);
                 if (Utility.isPlace(locationType)) {
                     // get requested elements from json
-                    locationId = locationObject.getLong(OSM_ID);
-                    locationName = locationObject.getString(OSM_NAME);
-                    locationLatitude = locationObject.getDouble(OSM_LATITUDE);
-                    locationLongitude = locationObject.getDouble(OSM_LONGITUDE);
+                    locationId = locationObject.getLong(Message.MessageKeys.LOCATION_OSM_ID_KEY);
+                    locationName = locationObject.getString(Message.MessageKeys.LOCATION_OSM_NAME_KEY);
+                    locationLatitude = locationObject.getDouble(Message.MessageKeys.LOCATION_OSM_LATITUDE_KEY);
+                    locationLongitude = locationObject.getDouble(Message.MessageKeys.LOCATION_OSM_LONGITUDE_KEY);
 
                     ContentValues locationValues = new ContentValues();
 
@@ -212,9 +202,9 @@ public class LocationService extends IntentService {
         }
     }
 
-    // Send an Intent with an action named BROADCAST_LOCATION_SERVICE_DONE.
+    // Send an Intent with an action named BROADCAST_LOCATIONS_LOADER_SERVICE_DONE.
     private void sendBroadcast() {
-        Intent intent = new Intent(MainFragment.BROADCAST_LOCATION_SERVICE_DONE);
+        Intent intent = new Intent(MainFragment.BROADCAST_LOCATIONS_LOADER_SERVICE_DONE);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

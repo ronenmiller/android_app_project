@@ -35,7 +35,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
-import il.ac.technion.touricity.service.LocationService;
+import il.ac.technion.touricity.service.LocationsLoaderService;
 import il.ac.technion.touricity.sync.TouricitySyncAdapter;
 
 /**
@@ -53,8 +53,7 @@ public class MainFragment extends Fragment
 
     private static final String RECENT_BUNDLE_KEY = "recent_bundle_key";
 
-    public static final String BROADCAST_LOCATION_SERVICE_DONE = "broadcast_location_service_done";
-    public static final String BROADCAST_TOURS_SYNC_ADAPTER_DONE = "broadcast_tours_sync_adapter_done";
+    public static final String BROADCAST_LOCATIONS_LOADER_SERVICE_DONE = "broadcast_locations_loader_service_done";
 
     // package-shared
     static final String[] OSM_COLUMNS = {
@@ -123,7 +122,7 @@ public class MainFragment extends Fragment
     static final int LOCATIONS_REQUEST = 0;
 
     private RecentLocationAdapter mRecentLocationAdapter;
-    private TourAdapter mTourAdapter;
+    private ToursAdapter mToursAdapter;
 
     private ListView mToursListView;
     private FrameLayout mProgressBarLayout;
@@ -163,7 +162,7 @@ public class MainFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         mRecentLocationAdapter = new RecentLocationAdapter(getActivity(), null, 0);
-        mTourAdapter = new TourAdapter(getActivity(), null, 0);
+        mToursAdapter = new ToursAdapter(getActivity(), null, 0);
 
         mToursListView = (ListView)rootView.findViewById(R.id.listview_main);
         mProgressBarLayout = (FrameLayout) rootView.findViewById(R.id.framelayout_main);
@@ -171,7 +170,7 @@ public class MainFragment extends Fragment
 
         mProgressBarLayout.setVisibility(View.GONE);
 
-        mToursListView.setAdapter(mTourAdapter);
+        mToursListView.setAdapter(mToursAdapter);
 
         mToursListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -324,7 +323,7 @@ public class MainFragment extends Fragment
         animation.setDuration(1500);
         mProgressBarView.startAnimation(animation);
 
-        Intent intent = new Intent(getActivity(), LocationService.class);
+        Intent intent = new Intent(getActivity(), LocationsLoaderService.class);
         intent.putExtra(Intent.EXTRA_TEXT, query);
         getActivity().startService(intent);
     }
@@ -400,10 +399,10 @@ public class MainFragment extends Fragment
         // Release resources.
         cursor.close();
 
-        // Update views.
-        updateLocationViews(true);
         // Load tours from the server and populate the list view.
         updateTours();
+        // Update views.
+        updateLocationViews(true);
     }
 
     private void launchSearchFragment() {
@@ -418,10 +417,10 @@ public class MainFragment extends Fragment
 
         if (requestCode == LOCATIONS_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
-                // Update views.
-                updateLocationViews(true);
                 // Load tours from the server and populate the list view.
                 updateTours();
+                // Update views.
+                updateLocationViews(true);
             }
         }
     }
@@ -532,8 +531,9 @@ public class MainFragment extends Fragment
             mRecentLocationAdapter.swapCursor(cursor);
         }
         else if (cursorLoader.getId() == TOURS_LOADER) {
+            Log.d(LOG_TAG, "Tours cursor returned " + cursor.getCount() + " rows.");
             if (cursor.getCount() > 0) {
-                mTourAdapter.swapCursor(cursor);
+                mToursAdapter.swapCursor(cursor);
                 if (mPosition != ListView.INVALID_POSITION) {
                     // If we don't need to restart the loader, and there's a desired position to restore
                     // to, do so now.
@@ -553,7 +553,7 @@ public class MainFragment extends Fragment
         }
         else
         if (loader.getId() == TOURS_LOADER) {
-            mTourAdapter.swapCursor(null);
+            mToursAdapter.swapCursor(null);
         }
     }
 
@@ -563,10 +563,10 @@ public class MainFragment extends Fragment
 
         // Register mMessageReceiver to receive messages.
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mLocationReceiver,
-                new IntentFilter(BROADCAST_LOCATION_SERVICE_DONE));
+                new IntentFilter(BROADCAST_LOCATIONS_LOADER_SERVICE_DONE));
     }
 
-    // handler for received Intents for the BROADCAST_LOCATION_SERVICE_DONE event
+    // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event
     private BroadcastReceiver mLocationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

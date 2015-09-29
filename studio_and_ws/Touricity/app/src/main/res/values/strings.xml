@@ -7,7 +7,8 @@
 
     <!-- Activity titles -->
     <string name="title_activity_search">Location results</string>
-    <string name="title_activity_detail">Details</string>
+    <string name="title_activity_detail">Tour details</string>
+    <string name="title_activity_slots">Available slots</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_signup">Sign up</string>
     <string name="dialog_login_title">Login</string>
@@ -60,11 +61,23 @@
     <string name="action_logout_button">Logout</string>
     <string name="logout_success">Logged out</string>
 
+    <!-- Strings related to slot reservation dialog -->
+    <string name="dialog_create_reservation_title">Create reservation</string>
+    <string name="dialog_change_reservation_title">Change reservation</string>
+    <string name="reserve_slot_msg">How many places would you like to reserve for this slot?</string>
+    <string name="action_reserve_slot_button">Reserve</string>
+
     <!-- Strings related to detail activity -->
     <string name="action_view_slots">View Slots</string>
     <string name="tour_duration">Duration: <xliff:g id="duration">%s</xliff:g> minutes</string>
     <string name="tour_language">Language: <xliff:g id="language">%s</xliff:g></string>
     <string name="tour_location">Tour starts from: <xliff:g id="location">%s</xliff:g></string>
+
+    <!-- Strings related to slot activity -->
+    <string name="slot_reserved">Reserved</string>
+    <string name="slot_not_reserved">Not reserved</string>
+    <string name="slot_vacant"><xliff:g id="vacant">%s</xliff:g> places left</string>
+    <string name="slot_guide">Guided by <xliff:g id="guide_name">%s</xliff:g></string>
 
     <!-- List of available languages -->
     <string name="language_english">English</string>
@@ -113,5 +126,10 @@
     <!-- Account type (for sync-adapter authenticator) -->
     <!-- SyncAdapter related -->
     <string name="sync_account_type">touricity.technion.ac.il</string>
+
+    <!-- Date strings -->
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="format_full_friendly_date"><xliff:g id="date">%1$s</xliff:g>, <xliff:g id="time">%2$s</xliff:g></string>
 
 </resources>

@@ -5,6 +5,7 @@ $$
 DECLARE
 	temp users;
 BEGIN
+
 	SELECT * 
 	INTO temp
 	FROM users 
@@ -12,6 +13,7 @@ BEGIN
 	
 	-- FOUND is set on a SELECT INTO statement, SELECT is not enough
 	RETURN FOUND;
+	
 END;
 $$ 
 LANGUAGE 'plpgsql';

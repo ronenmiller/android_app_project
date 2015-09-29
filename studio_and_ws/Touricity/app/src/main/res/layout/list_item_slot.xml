@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Layout for tour list item in the main fragment -->
+<!-- Padding is already done in fragment_main.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:orientation="horizontal"
+    android:background="@drawable/touch_selector">
+
+    <FrameLayout
+        android:id="@+id/list_item_slot_icon_framelayout"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/list_item_slot_icon"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="48dp"
+            android:maxHeight="48dp" />
+
+    </FrameLayout>
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" >
+
+        <TextView
+            android:id="@+id/list_item_slot_date_and_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="2dp"
+            android:layout_marginEnd="2dp"
+            android:fontFamily="sans-serif-condensed"
+            android:textSize="16sp"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/list_item_slot_vacant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_below="@id/list_item_slot_date_and_time"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif-condensed"
+            android:textSize="16sp"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/list_item_slot_guide_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBottom="@id/list_item_slot_vacant"
+            android:fontFamily="sans-serif-condensed"
+            android:textSize="16sp"
+            android:textColor="@color/black" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_above="@id/list_item_slot_guide_name"
+            android:layout_marginBottom="8dp">
+
+            <RatingBar
+                android:id="@+id/list_item_slot_rating_bar"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:rating="2.5" />
+
+        </FrameLayout>
+
+    </RelativeLayout>
+</LinearLayout>

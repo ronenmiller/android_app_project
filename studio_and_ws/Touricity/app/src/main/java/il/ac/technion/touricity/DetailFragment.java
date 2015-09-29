@@ -1,7 +1,12 @@
 package il.ac.technion.touricity;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -10,6 +15,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,6 +32,7 @@ import android.widget.TextView;
 
 import il.ac.technion.touricity.data.ToursContract;
 import il.ac.technion.touricity.data.ToursContract.TourEntry;
+import il.ac.technion.touricity.service.SlotsLoaderService;
 
 
 /**
@@ -34,8 +42,12 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     public final String LOG_TAG = DetailFragment.class.getSimpleName();
 
+    public static final String BROADCAST_SLOTS_LOADER_SERVICE_DONE = "broadcast_slots_loader_service_done";
+
     private static final String DETAIL_URI = "URI";
     private static final int DETAIL_LOADER = 0;
+
+    public static final String INTENT_EXTRA_TOUR_ID = "extra_tour_id";
 
     private Uri mUri = null;
 
@@ -43,8 +55,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     private MenuItem mMapMenuItem;
     private boolean mIsTourVisible = false;
-
-    private static final String MAP_MENU_KEY = "map_menu_key";
 
     private static final String[] DETAIL_COLUMNS = {
             TourEntry.TABLE_NAME + "." + TourEntry._ID,
@@ -81,6 +91,22 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView mDescriptionView;
     private HorizontalScrollView mPhotosView;
     private LinearLayout mCommentsView;
+
+    private View mDetailFormView;
+    private View mProgressView;
+
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        void onViewSlots(Uri tourUri);
+    }
 
     public DetailFragment() {
         setHasOptionsMenu(true);
@@ -121,13 +147,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        // When tablets rotate, the map menu item needs to be saved.
-        outState.putInt(MAP_MENU_KEY, mMapMenuItem.getItemId());
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mUri = getShownUri();
@@ -142,11 +161,30 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         mRatingBar = (RatingBar)rootView.findViewById(R.id.detail_tour_rating_bar);
         mDescriptionView = (TextView)rootView.findViewById(R.id.detail_tour_description);
 
+        Button viewSlotsBtn = (Button)rootView.findViewById(R.id.detail_view_slots_btn);
+
+        viewSlotsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mUri == null) {
+                    return;
+                }
+
+                int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
+                Intent intent = new Intent(getActivity(), SlotsLoaderService.class);
+                intent.putExtra(INTENT_EXTRA_TOUR_ID, tourId);
+                showProgress(true);
+                getActivity().startService(intent);
+            }
+        });
+
+        mDetailFormView = rootView.findViewById(R.id.detail_scrollview_form);
+        mProgressView = rootView.findViewById(R.id.detail_progressbar);
+
         return rootView;
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
@@ -192,6 +230,42 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    public void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mDetailFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mDetailFormView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mDetailFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mDetailFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -205,7 +279,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             return null;
         }
 
-        int tourId = (int)ToursContract.TourEntry.getIdFromUri(mUri);
+        int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
         Uri uri = TourEntry.CONTENT_URI;
         String selection = ToursContract.TourEntry.TABLE_NAME +
                         "." + ToursContract.TourEntry._ID + " = ?";
@@ -273,4 +347,32 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) { }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Register mMessageReceiver to receive messages.
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSlotReceiver,
+                new IntentFilter(BROADCAST_SLOTS_LOADER_SERVICE_DONE));
+    }
+
+    // handler for received Intents for the BROADCAST_SLOTS_LOADER_SERVICE_DONE event
+    private BroadcastReceiver mSlotReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Stop the rotating animation and set visibility attribute
+            Log.d(LOG_TAG, "Slots broadcast received.");
+            showProgress(false);
+            ((Callback)getActivity()).onViewSlots(mUri);
+        }
+    };
+
+    @Override
+    public void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSlotReceiver);
+        super.onPause();
+    }
 }

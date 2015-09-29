@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import il.ac.technion.touricity.data.ToursContract;
+
 /**
  * {@link il.ac.technion.touricity.LocationAdapter} exposes a list of weather forecasts
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
@@ -51,6 +53,20 @@ public class LocationAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
 
+        String selection = ToursContract.LocationEntry.TABLE_NAME + "." +
+                ToursContract.LocationEntry.COLUMN_LOCATION_ID + "= ?";
+        long locationId = cursor.getLong(MainFragment.COL_OSM_LOCATION_ID);
+
+        Cursor locationCursor = context.getContentResolver().query(
+                ToursContract.LocationEntry.CONTENT_URI,
+                new String[]{ToursContract.LocationEntry.COLUMN_LOCATION_ID},
+                selection,
+                new String[]{Long.toString(locationId)},
+                null
+        );
+
+        boolean isLocationInHistory = locationCursor.moveToFirst();
+
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
         // Read location type from cursor in order to set the icon
@@ -58,7 +74,10 @@ public class LocationAdapter extends CursorAdapter {
 
         // Set the correct icon using an helper method.
         viewHolder.iconView.setImageResource(Utility
-                .getIconResourceIdForLocationType(locationType));
+                .getIconResourceIdForLocationType(locationType, isLocationInHistory));
+        // For accessibility, add a content description to the icon field.
+        viewHolder.iconView.setContentDescription(Utility
+                .convertFirstLetterToUppercase(locationType));
 
         // Read location display string from cursor
         String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);

@@ -41,26 +41,14 @@ public class ToursContract {
     public static final String PATH_TOURS = "tours";
     public static final String PATH_LANGUAGES = "languages";
     public static final String PATH_SLOTS = "slots";
+    public static final String PATH_RESERVATIONS = "reservations";
     public static final String PATH_USERS = "users";
     public static final String PATH_PEOPLE = "people";
-    public static final String PATH_REQUESTS = "requests";
-    public static final String PATH_RATE_TOUR = "rate2tour";
-    public static final String PATH_RATE_GUIDE = "rate2guide";
-
-    // TODO: consider removing normalizeDate if unused
-    // To make it easy to query for the exact date, we normalize all dates that go into
-    // the database to the start of the the Julian day at UTC.
-    /*public static long normalizeDate(long startDate) {
-        // normalize the start date to the beginning of the (UTC) day
-        Time time = new Time();
-        time.set(startDate);
-        int julianDay = Time.getJulianDay(startDate, time.gmtoff);
-        return time.setJulianDay(julianDay);
-    }*/
 
     /* Inner class that defines basic characteristics of locations */
     public static class BasicLocationEntry implements BaseColumns {
 
+        // This is the Open Street Map ID returned by the API.
         public static final String COLUMN_LOCATION_ID = "location_id";
 
         // Human readable location string, provided by the API.
@@ -130,6 +118,9 @@ public class ToursContract {
         // This is the Open Street Map ID returned by the API.
         public static final String COLUMN_OSM_ID = "location_id";
 
+        // This is the unique user ID of the manager who created this tour.
+        public static final String COLUMN_TOUR_MANAGER_ID = "tour_manager_id";
+
         // The tour name to appear in the list of tours.
         public static final String COLUMN_TOUR_TITLE = "tour_title";
 
@@ -184,13 +175,18 @@ public class ToursContract {
             return CONTENT_URI.buildUpon().appendPath(Integer.toString(tourId)).build();
         }
 
-        // Retrieve the OSM ID or tour ID, depending on the supplied uri.
-        public static long getIdFromUri(Uri uri) {
+        // Retrieve the OSM ID.
+        public static long getOsmIdFromUri(Uri uri) {
             return Long.parseLong(uri.getPathSegments().get(1));
+        }
+
+        // Retrieve the tour ID.
+        public static int getTourIdFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(1));
         }
     }
 
-    /* Inner class that defines basic characteristics of locations */
+    /* Inner class that defines basic characteristics of languages */
     public static class LanguageEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "languages";
@@ -210,12 +206,12 @@ public class ToursContract {
 
         // This URI is returned when inserting a row to the table.
         // The returned id is the row number of the inserted row.
-        public static Uri buildLanguagesUri(long id) {
+        public static Uri buildLanguageUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
 
-    /* Inner class that defines basic characteristics of locations */
+    /* Inner class that defines basic characteristics of slots */
     public static class SlotEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "slots";
@@ -256,6 +252,52 @@ public class ToursContract {
         public static Uri buildSlotUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        // location ID is actually the OSM ID, as returned from the OSM API.
+        public static Uri buildSlotIdUri(long slotId, int placesLeft) {
+            return CONTENT_URI.buildUpon().appendPath(Long.toString(slotId))
+            .appendPath(Integer.toString(placesLeft)).build();
+        }
+
+        public static long getSlotIdFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
+        }
+
+        public static int getPlacesLeftFromUri(Uri uri) {
+            return Integer.parseInt(uri.getPathSegments().get(2));
+        }
+    }
+
+    /* Inner class that defines basic characteristics of slots */
+    public static class ReservationEntry implements BaseColumns {
+
+        public static final String TABLE_NAME = "reservations";
+
+        // _ID serves as a slot id.
+
+        // This is the unique user ID of the guide instructing this slot.
+        public static final String COLUMN_RESERVATION_USER_ID = "reservation_user_id";
+
+        // The number of participants registered on this user id.
+        public static final String COLUMN_RESERVATION_PARTICIPANTS = "reservation_participants";
+
+        // A reservation is active as long as the slot ending time did not already pass,
+        // or the guide didn't delete the slot. 1 = Slot is active, 0 = otherwise.
+        public static final String COLUMN_RESERVATION_ACTIVE = "reservation_active";
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_RESERVATIONS).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_RESERVATIONS;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_RESERVATIONS;
+
+        // This URI is returned when inserting a row to the table.
+        // The returned id is the row number of the inserted row.
+        public static Uri buildReservationUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
     }
 
     /* Inner class that defines the contents of the users table */
@@ -263,25 +305,13 @@ public class ToursContract {
 
         public static final String TABLE_NAME = "users";
 
+        // _ID serves as a unique user id.
+
         // User name as chosen by the user.
         public static final String COLUMN_USER_NAME = "user_name";
-        // Password, stored as a string
-        public static final String COLUMN_USER_PASSWORD= "user_password";
-        // User's e-mail
+        // User's e-mail.
         public static final String COLUMN_USER_EMAIL = "user_email";
-        // User's phone number, used for SMS confirmation upon sign-up
-        public static final String COLUMN_USER_PHONE = "user_phone";
-
-        // Two types of users exist: guides and non-guides.
-        // Guides have the ability to add tours and slots, and approve
-        // requests of users to join a tour (=an open slot).
-        public static final String COLUMN_TYPE_GUIDE = "user_type";
-
-        // TODO: figure this out
-        // Time, stored as long in milliseconds since the epoch
-        public static final String COLUMN_LAST_LOGIN = "user_last_login";
-
-        // Rating, used only for guides
+        // Rating, used only for guides.
         public static final String COLUMN_USER_RATING = "user_rating";
 
         public static final Uri CONTENT_URI =
@@ -294,7 +324,7 @@ public class ToursContract {
 
         // This URI is returned when inserting a row to the table.
         // The returned id is the row number of the inserted row.
-        public static Uri buildUsersUri(long id) {
+        public static Uri buildUserUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }

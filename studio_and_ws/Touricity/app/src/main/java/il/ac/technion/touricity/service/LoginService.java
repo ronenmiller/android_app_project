@@ -119,9 +119,6 @@ public class LoginService extends IntentService {
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             JSONArray userAttributesArray = new JSONArray(responseMessage.getMessageJson());
 
-            final String USER_ID = "u_id";
-            final String USER_TYPE = "u_type";
-
             // A single row is returned with the (possibly null) user attributes.
             if (userAttributesArray.isNull(0)) {
                 // Return failure.
@@ -129,8 +126,8 @@ public class LoginService extends IntentService {
             }
 
             JSONObject userAttributesObject = userAttributesArray.getJSONObject(0);
-            mUserId = userAttributesObject.getString(USER_ID);
-            mIsGuide = userAttributesObject.getBoolean(USER_TYPE);
+            mUserId = userAttributesObject.getString(Message.MessageKeys.USER_ID_KEY);
+            mIsGuide = userAttributesObject.getBoolean(Message.MessageKeys.USER_TYPE_KEY);
 
             // Return success.
             return true;
