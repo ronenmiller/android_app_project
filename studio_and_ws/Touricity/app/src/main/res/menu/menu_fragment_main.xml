@@ -10,4 +10,10 @@
         app:actionViewClass="android.support.v7.widget.SearchView"
         android:orderInCategory="1" />
 
+    <item android:id="@+id/action_create_tour"
+        android:title="@string/action_create_tour"
+        app:showAsAction="never"
+        android:orderInCategory="5"
+        android:visible="false" />
+
 </menu>

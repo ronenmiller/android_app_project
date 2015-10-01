@@ -1,6 +1,6 @@
 package tours_app_server;
 
-//Basic container class for server-client messages-based communication.
+// Basic container class for server-client messages-based communication.
 public class Message {
 	
 	private final int mMessageID;
@@ -27,14 +27,13 @@ public class Message {
      public static final int QUERY_TOURS_BY_OSM_ID = 4;
      public static final int QUERY_SLOTS_BY_TOUR_ID = 5;
 		public static final int RESERVE_SLOT = 6;
+		public static final int CREATE_TOUR = 7;
+		public static final int CREATE_SLOT = 8;
 //		public static final int UPDATE_USER = 1;
 //		public static final int REMOVE_USER = 2;
-//		public static final int ADD_TOUR = 3;
 //		public static final int UPDATE_TOUR = 4;
 //		public static final int REMOVE_TOUR = 5;
-//		public static final int ADD_SLOT = 6;
 //		public static final int REMOVE_SLOT = 7;
-//		public static final int GET_CITY_ID = 8;
 
 	}
 	
@@ -82,3 +81,4 @@ public class Message {
 	}
 
 }
+

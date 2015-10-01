@@ -1,3 +1,4 @@
+<!-- Master layout. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,11 +9,11 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="il.ac.technion.touricity.SignUpActivity">
+    tools:context="il.ac.technion.touricity.CreateTourFragment">
 
-    <!-- Sign up progress -->
+    <!-- Create tour progress -->
     <ProgressBar
-        android:id="@+id/signup_progressbar"
+        android:id="@+id/create_tour_progressbar"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,7 +26,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/signup_layout_form"
+            android:id="@+id/create_tour_layout_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -34,97 +35,83 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="@string/signup_header"
+                android:text="@string/create_tour_header"
                 android:textAppearance="?android:textAppearanceLarge"
                 android:textColor="@color/touricity_teal" />
 
             <!-- The actionNext key performs a "next" operation, taking the user to the
             next field that will accept text. Corresponds to IME_ACTION_NEXT. -->
             <EditText
-                android:id="@+id/signup_email"
+                android:id="@+id/create_tour_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:hint="@string/prompt_email"
+                android:hint="@string/create_tour_title"
                 android:imeOptions="actionNext"
-                android:inputType="textEmailAddress"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:fontFamily="sans-serif"
+                android:textAppearance="?android:textAppearanceMedium" />
+
+            <Spinner
+                android:id="@+id/create_tour_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="12dp"
+                android:paddingStart="12dp"
+                android:prompt="@string/create_tour_language" />
+
+            <EditText
+                android:id="@+id/create_tour_duration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="@string/create_tour_duration"
+                android:imeOptions="actionNext"
+                android:inputType="numberDecimal"
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
                 android:textAppearance="?android:textAppearanceMedium" />
 
             <EditText
-                android:id="@+id/signup_username"
+                android:id="@+id/create_tour_location"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:hint="@string/prompt_username"
+                android:hint="@string/create_tour_location"
                 android:imeOptions="actionNext"
-                android:inputType="textPersonName"
+                android:inputType="text"
                 android:maxLines="1"
                 android:singleLine="true"
                 android:fontFamily="sans-serif"
                 android:textAppearance="?android:textAppearanceMedium" />
 
-            <il.ac.technion.touricity.IconifiedEditText
-                android:id="@+id/signup_password"
+            <EditText
+                android:id="@+id/create_tour_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:hint="@string/prompt_password"
-                android:imeOptions="actionNext"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:fontFamily="sans-serif"
-                android:textAppearance="?android:textAppearanceMedium" />
-
-            <il.ac.technion.touricity.IconifiedEditText
-                android:id="@+id/signup_re_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:hint="@string/prompt_re_password"
-                android:imeActionId="@+id/action_signup_id"
-                android:imeActionLabel="@string/action_signup_short"
+                android:hint="@string/create_tour_description"
+                android:imeActionId="@+id/action_create_tour_id"
+                android:imeActionLabel="@string/action_create_tour_short"
                 android:imeOptions="actionUnspecified"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:singleLine="true"
                 android:fontFamily="sans-serif"
-                android:textAppearance="?android:textAppearanceMedium" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:paddingLeft="12dp"
-                    android:layout_gravity="center_vertical|start"
-                    android:text="@string/prompt_checkbox"
-                    android:fontFamily="sans-serif"
-                    android:textAppearance="?android:textAppearanceMedium" />
-
-                <CheckBox
-                    android:id="@+id/signup_checkbox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical" />
-
-            </LinearLayout>
+                android:textAppearance="?android:textAppearanceMedium"
+                android:inputType="textMultiLine"
+                android:lines="6"
+                android:minLines="4"
+                android:gravity="top|left"
+                android:scrollbars="vertical" />
 
             <Button
-                android:id="@+id/signup_submit_btn"
+                android:id="@+id/create_tour_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="32dp"
-                android:text="@string/action_signup_btn"
+                android:text="@string/action_create_tour_btn"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textColor="@color/white"

@@ -39,10 +39,10 @@ public class SignUpService extends IntentService {
         }
 
         boolean cancelEmail  = false;
-        boolean cancelNickname = false;
+        boolean cancelUsername = false;
 
         String email = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_EMAIL);
-        String nickname = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_USERNAME);
+        String username = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_USERNAME);
         String password = intent.getStringExtra(SignUpActivity.INTENT_EXTRA_PASSWORD);
         boolean isGuide = intent.getBooleanExtra(SignUpActivity.INTENT_EXTRA_GUIDE, false);
 
@@ -55,19 +55,19 @@ public class SignUpService extends IntentService {
 
             if (!isUnique(Message.MessageTypes.VALIDATE_UNIQUE_USERNAME,
                     Message.MessageKeys.USER_NAME_KEY,
-                    nickname)) {
+                    username)) {
 
-                cancelNickname = true;
+                cancelUsername = true;
             }
 
-            boolean cancel = cancelEmail || cancelNickname;
+            boolean cancel = cancelEmail || cancelUsername;
 
             boolean success = false;
             if (!cancel) {
-                success = addUserToServerDb(email, nickname, password, isGuide);
+                success = addUserToServerDb(email, username, password, isGuide);
             }
 
-            sendBroadcast(cancelEmail, cancelNickname, success);
+            sendBroadcast(cancelEmail, cancelUsername, success);
         }
         catch (NullPointerException e) {
             // Nothing we can do.
@@ -171,7 +171,7 @@ public class SignUpService extends IntentService {
         return false;
     }
 
-    public boolean addUserToServerDb(String email, String nickname, String password, boolean isGuide) {
+    public boolean addUserToServerDb(String email, String username, String password, boolean isGuide) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -191,7 +191,7 @@ public class SignUpService extends IntentService {
             // Create a message to be delivered to the server.
             Map<String, String> map = new HashMap<>();
             map.put(Message.MessageKeys.USER_EMAIL_KEY, email);
-            map.put(Message.MessageKeys.USER_NAME_KEY, nickname);
+            map.put(Message.MessageKeys.USER_NAME_KEY, username);
             map.put(Message.MessageKeys.USER_PASSWORD_KEY, password);
             map.put(Message.MessageKeys.USER_TYPE_KEY, Boolean.toString(isGuide));
             JSONObject jsonObject = new JSONObject(map);

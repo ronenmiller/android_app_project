@@ -562,7 +562,10 @@ public class ToursProvider extends ContentProvider {
             db.endTransaction();
         }
         // Notify the uri listeners (using the content resolver) about the insertion.
-        getContext().getContentResolver().notifyChange(uri, null);
+        // TOURS adapter is notified using a local broadcast intent.
+        if (match != TOURS) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
         return returnCount;
     }
 

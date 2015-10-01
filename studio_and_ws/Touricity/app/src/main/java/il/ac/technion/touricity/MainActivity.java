@@ -3,7 +3,9 @@ package il.ac.technion.touricity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
@@ -30,6 +32,7 @@ public class MainActivity extends ActionBarActivity
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
+    private static final String CREATE_TOUR_FRAGMENT_TAG = "CTFTAG";
     private static final String SLOTS_FRAGMENT_TAG = "SFTAG";
 
     private boolean mTwoPane;
@@ -48,7 +51,7 @@ public class MainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initializeLanguageTable();
+        initializeDatabase();
 
         setContentView(R.layout.activity_main);
 
@@ -99,6 +102,14 @@ public class MainActivity extends ActionBarActivity
         mSignupMenuItem = menu.findItem(R.id.action_signup);
         mLogoutMenuItem = menu.findItem(R.id.action_logout);
         mMyToursMenuItem = menu.findItem(R.id.action_my_tours);
+
+        if (Utility.getIsLoggedIn(getApplicationContext()))
+        {
+            showSignInMenuItems(false);
+        }
+        else {
+            showSignInMenuItems(true);
+        }
 
         return true;
     }
@@ -151,6 +162,23 @@ public class MainActivity extends ActionBarActivity
         // one-pane mode
         else {
             Intent intent = new Intent(this, DetailActivity.class).setData(tourUri);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onCreateTour() {
+        // two-pane mode
+        if (mTwoPane) {
+            mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
+            CreateTourFragment fragment = new CreateTourFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.tours_slots_detail_container, fragment, CREATE_TOUR_FRAGMENT_TAG)
+                    .commit();
+        }
+        // one-pane mode
+        else {
+            Intent intent = new Intent(this, CreateTourActivity.class);
             startActivity(intent);
         }
     }
@@ -217,6 +245,14 @@ public class MainActivity extends ActionBarActivity
         dialog.dismiss();
 
         showSignInMenuItems(false);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (Utility.getLoggedInUserIsGuide(getApplicationContext())) {
+                MainFragment mf = (MainFragment)getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_main);
+                mf.showGuideOptions(true);
+            }
+        }
     }
 
     // The dialog fragment receives a reference to this Activity through the
@@ -233,6 +269,12 @@ public class MainActivity extends ActionBarActivity
         dialog.dismiss();
 
         showSignInMenuItems(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            MainFragment mf = (MainFragment)getSupportFragmentManager()
+                    .findFragmentById(R.id.fragment_main);
+            mf.showGuideOptions(false);
+        }
     }
 
     private void showSignInMenuItems(boolean show) {
@@ -250,9 +292,30 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    private void initializeLanguageTable() {
+    private void initializeDatabase() {
         // Delete previous contents.
-        getContentResolver().delete(ToursContract.LanguageEntry.CONTENT_URI, null, null);
+        int deleted = getContentResolver().delete(ToursContract.LanguageEntry.CONTENT_URI, null, null);
+
+        Log.d(LOG_TAG, "ToursDbHelper deleted " + deleted + " rows from the languages table.");
+
+        if (deleted == 0) {
+            // This is the first time the user is running the app, or deliberately deleted the data
+            // from the android settings.
+            Context context = getApplicationContext();
+            SharedPreferences sharedPref = context.getSharedPreferences(
+                    context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.remove(context.getString(R.string.pref_location_id_key));
+            editor.remove(context.getString(R.string.pref_location_name_key));
+            editor.remove(context.getString(R.string.pref_location_lat_key));
+            editor.remove(context.getString(R.string.pref_location_long_key));
+            editor.remove(context.getString(R.string.pref_user_is_logged_in_key));
+            editor.remove(context.getString(R.string.pref_user_id_key));
+            editor.remove(context.getString(R.string.pref_user_is_guide_key));
+            editor.commit();
+
+            showSignInMenuItems(true);
+        }
 
         String[] languages = new String[]
                 {getString(R.string.language_english),

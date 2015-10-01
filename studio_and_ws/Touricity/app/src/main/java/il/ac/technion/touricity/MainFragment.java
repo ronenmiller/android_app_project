@@ -32,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
@@ -54,6 +55,7 @@ public class MainFragment extends Fragment
     private static final String RECENT_BUNDLE_KEY = "recent_bundle_key";
 
     public static final String BROADCAST_LOCATIONS_LOADER_SERVICE_DONE = "broadcast_locations_loader_service_done";
+    public static final String BROADCAST_TOURS_LOADER_SERVICE_DONE = "broadcast_tours_loader_service_done";
 
     // package-shared
     static final String[] OSM_COLUMNS = {
@@ -124,6 +126,9 @@ public class MainFragment extends Fragment
     private RecentLocationAdapter mRecentLocationAdapter;
     private ToursAdapter mToursAdapter;
 
+    private View mHeaderView;
+    private TextView mHeaderText;
+    private View mFooterView;
     private ListView mToursListView;
     private FrameLayout mProgressBarLayout;
     private ImageView mProgressBarView;
@@ -133,6 +138,8 @@ public class MainFragment extends Fragment
 
     private static final String SHOW_KEY = "show_location";
     private boolean mShowLocation = false;
+
+    private MenuItem mCreateTourMenuItem;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -144,6 +151,7 @@ public class MainFragment extends Fragment
          * DetailFragmentCallback for when an item has been selected.
          */
         void onItemSelected(Uri tourUri);
+        void onCreateTour();
     }
 
 
@@ -170,8 +178,34 @@ public class MainFragment extends Fragment
 
         mProgressBarLayout.setVisibility(View.GONE);
 
-        mToursListView.setAdapter(mToursAdapter);
+        mHeaderView = ((LayoutInflater)getActivity().getSystemService
+                (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_tour_header, null, false);
+        mHeaderText = (TextView)mHeaderView.findViewById(R.id.list_item_tour_header);
+        mFooterView = ((LayoutInflater)getActivity().getSystemService
+                (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_create_tour, null, false);
 
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
+        boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
+        boolean isLocationSelected = Utility.getPreferredLocationId
+                (getActivity().getApplicationContext()) != -1L;
+
+        if (!isLocationSelected) {
+            mHeaderText.setText(getResources().getString(R.string.find_destination));
+            mToursListView.addHeaderView(mHeaderView);
+            mToursListView.setClickable(false);
+        }
+        else {
+            updateLocationViews(true);
+        }
+
+        if (isUserLoggedIn && isUserGuide && isLocationSelected) {
+            mToursListView.addFooterView(mFooterView);
+        }
+        else {
+            mToursListView.removeFooterView(mFooterView);
+        }
+
+        mToursListView.setAdapter(mToursAdapter);
         mToursListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -184,7 +218,19 @@ public class MainFragment extends Fragment
                     Uri tourUri = ToursContract.TourEntry.buildTourIdUri(tourId);
                     ((Callback)getActivity()).onItemSelected(tourUri);
                 }
+                else {
+                    // When the footer to create a tour is shown in the list, the cursor is null.
+                    // The cursor is also null for the header position, but the list view is not
+                    // clickable when the header is shown.
+                    if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
+                            Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
+                        if (mToursListView.getLastVisiblePosition() == position) {
+                            ((Callback) getActivity()).onCreateTour();
+                        }
+                    }
+                }
                 mPosition = position;
+
             }
         });
 
@@ -208,6 +254,26 @@ public class MainFragment extends Fragment
         return rootView;
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void showGuideOptions(boolean show) {
+        if (show) {
+            if (mToursListView != null) {
+                mToursListView.addFooterView(mFooterView);
+            }
+            if (mCreateTourMenuItem != null) {
+                mCreateTourMenuItem.setVisible(true);
+            }
+        }
+        else {
+            if (mToursListView != null) {
+                mToursListView.removeFooterView(mFooterView);
+            }
+            if (mCreateTourMenuItem != null) {
+                mCreateTourMenuItem.setVisible(false);
+            }
+        }
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         // When tablets rotate, the currently selected list item needs to be saved.
@@ -227,6 +293,8 @@ public class MainFragment extends Fragment
 
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.menu_fragment_main, menu);
+
+        mCreateTourMenuItem = menu.findItem(R.id.action_create_tour);
 
         // Associate searchable configuration with the SearchView
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -300,6 +368,10 @@ public class MainFragment extends Fragment
             getActivity().onSearchRequested();
             return true;
         }
+        if (id == R.id.action_create_tour) {
+            ((Callback)getActivity()).onCreateTour();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -314,6 +386,7 @@ public class MainFragment extends Fragment
         // Arrange visibility of views.
         updateLocationViews(false);
         mProgressBarLayout.setVisibility(View.VISIBLE);
+        mToursListView.setVisibility(View.GONE);
 
         // Set animation while loading results
         RotateAnimation animation = new RotateAnimation
@@ -339,12 +412,10 @@ public class MainFragment extends Fragment
             mShowLocation = true;
             mProgressBarLayout.setVisibility(View.GONE);
             mainActivity.showLocationLinearLayout(true);
-            mToursListView.setVisibility(View.VISIBLE);
         }
         else {
             mShowLocation = false;
             mainActivity.showLocationLinearLayout(false);
-            mToursListView.setVisibility(View.GONE);
         }
     }
 
@@ -509,9 +580,15 @@ public class MainFragment extends Fragment
                 String locationDisplay = getString(R.string.search_not_found);
                 Toast.makeText(getActivity(), locationDisplay, Toast.LENGTH_LONG).show();
                 if (Utility.getPreferredLocationId(getActivity().getApplicationContext()) == -1L) {
+                    // There is no location to show.
                     updateLocationViews(false);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        // The list header is already visible.
+                        mHeaderText.setText(getString(R.string.find_destination));
+                    }
                 }
                 else {
+                    // Show the last location found.
                     updateLocationViews(true);
                 }
             }
@@ -532,12 +609,33 @@ public class MainFragment extends Fragment
         }
         else if (cursorLoader.getId() == TOURS_LOADER) {
             Log.d(LOG_TAG, "Tours cursor returned " + cursor.getCount() + " rows.");
+            mToursAdapter.swapCursor(cursor);
+            if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
+                    Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
+                if (mCreateTourMenuItem != null) {
+                    mCreateTourMenuItem.setVisible(true);
+                }
+            }
+
             if (cursor.getCount() > 0) {
-                mToursAdapter.swapCursor(cursor);
+                mToursListView.removeHeaderView(mHeaderView);
+                mToursListView.setClickable(true);
                 if (mPosition != ListView.INVALID_POSITION) {
                     // If we don't need to restart the loader, and there's a desired position to restore
                     // to, do so now.
                     mToursListView.smoothScrollToPosition(mPosition);
+                }
+            }
+            else {
+                mToursListView.removeHeaderView(mHeaderView);
+                String toursNotFound = getString(R.string.tours_not_found);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    mHeaderText.setText(toursNotFound);
+                    mToursListView.addHeaderView(mHeaderView);
+                    mToursListView.setClickable(false);
+                }
+                else {
+                    Toast.makeText(getActivity(), toursNotFound, Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -564,6 +662,10 @@ public class MainFragment extends Fragment
         // Register mMessageReceiver to receive messages.
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mLocationReceiver,
                 new IntentFilter(BROADCAST_LOCATIONS_LOADER_SERVICE_DONE));
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mToursReceiver,
+                new IntentFilter(BROADCAST_TOURS_LOADER_SERVICE_DONE));
+
+        updateTours();
     }
 
     // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event
@@ -574,9 +676,22 @@ public class MainFragment extends Fragment
             Log.d(LOG_TAG, "Location broadcast received.");
             mProgressBarView.setAnimation(null);
             mProgressBarLayout.setVisibility(View.GONE);
+            mToursListView.setVisibility(View.VISIBLE);
             MainFragment mf = (MainFragment)getActivity().getSupportFragmentManager()
                     .findFragmentById(R.id.fragment_main);
             getActivity().getSupportLoaderManager().restartLoader(OSM_LOADER, null, mf);
+        }
+    };
+
+    // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event
+    private BroadcastReceiver mToursReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Stop the rotating animation and set visibility attribute
+            Log.d(LOG_TAG, "Tours broadcast received.");
+            MainFragment mf = (MainFragment)getActivity().getSupportFragmentManager()
+                    .findFragmentById(R.id.fragment_main);
+            getActivity().getSupportLoaderManager().restartLoader(TOURS_LOADER, null, mf);
         }
     };
 
@@ -584,6 +699,7 @@ public class MainFragment extends Fragment
     public void onPause() {
         // Unregister since the activity is not visible
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mLocationReceiver);
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mToursReceiver);
         super.onPause();
     }
 }

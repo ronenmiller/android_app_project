@@ -56,19 +56,6 @@ public final class JDBCServer {
 //		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
 //		        	return getCityIdByName(city, region, country);
 //				}
-//				case Message.MessageTypes.ADD_TOUR: {
-//					String uuid = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
-//		        	String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
-//		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
-//		        	String country = requestJSON.getString(Message.MessageKeys.LOCATION_COUNTRY_NAME_KEY);
-//		        	int duration = requestJSON.getInt(Message.MessageKeys.TOURS_DURATION_KEY);
-//		        	String location = requestJSON.getString(Message.MessageKeys.TOURS_LOCATION_KEY);
-//		        	String description = requestJSON.getString(Message.MessageKeys.TOURS_DESCRIPTION_KEY);
-//		        	// TODO: figure out photos
-//		        	String photos = requestJSON.getString(Message.MessageKeys.TOURS_PHOTOS_KEY);
-//		        	int language = requestJSON.getInt(Message.MessageKeys.TOURS_LANGUAGE_KEY);
-//		        	return addTour(uuid, city, region, country, duration, location, description, photos, language);
-//				}
 //				case Message.MessageTypes.FIND_TOURS_BY_CITY_NAME: {
 //					String city = requestJSON.getString(Message.MessageKeys.LOCATION_CITY_NAME_KEY);
 //		        	String region = requestJSON.getString(Message.MessageKeys.LOCATION_STATE_NAME_KEY);
@@ -122,6 +109,16 @@ public final class JDBCServer {
 					String userId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
 					int numOfPlacesRequested = requestJSON.getInt(Message.MessageKeys.RESERVATION_NUM_PARTICIPANTS_KEY);
 					return reserveSlot(slotId, userId, numOfPlacesRequested);
+				}
+				case Message.MessageTypes.CREATE_TOUR: {
+					Long osmId = requestJSON.getLong(Message.MessageKeys.LOCATION_OSM_ID_KEY);
+					String userId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+					String title = requestJSON.getString(Message.MessageKeys.TOUR_TITLE_KEY);
+		        	int language = requestJSON.getInt(Message.MessageKeys.TOUR_LANGUAGE_KEY);
+		        	int duration = requestJSON.getInt(Message.MessageKeys.TOUR_DURATION_KEY);
+		        	String location = requestJSON.getString(Message.MessageKeys.TOUR_LOCATION_KEY);
+		        	String description = requestJSON.getString(Message.MessageKeys.TOUR_DESCRIPTION_KEY);
+		        	return createTour(osmId, userId, title, language, duration, location, description);
 				}
 				default: {
 					throw new IllegalArgumentException("Illegal message ID!");
@@ -399,56 +396,7 @@ public final class JDBCServer {
 //		return gson.toJson(message);
 //	}
 //	
-//	public static String addTour(String uuid, String city, String region, String country, 
-//			int duration, String location, String description, String photos, int language) {
-//		Connection connection = initConnection();
-//		CallableStatement cstmt = null;
-//		boolean isModified;
-//		
-//		try {
-//		   if (connection != null) {
-//			   String sql = "{call add_tour (?, ?, ?, ?, ?, ?, ?, ?, ?)}";
-//			   cstmt = connection.prepareCall(sql);
-//			   cstmt.setString(1, uuid);
-//			   cstmt.setString(2, city);
-//			   cstmt.setString(3, region);
-//			   cstmt.setString(4, country);
-//			   cstmt.setInt   (5, duration);
-//			   cstmt.setString(6, location);
-//			   cstmt.setString(7, description);
-//			   cstmt.setString(8, photos);
-//			   cstmt.setInt   (9, language);
-//			   
-//			   // modify database
-//			   System.out.println("Adding tour to the database...");
-//			   isModified = modifyServerDB(cstmt);
-//		   }
-//		   else { 
-//			   throw new NullPointerException("Error: connection is null in addTour!");
-//		   }
-//		} catch (SQLException se) {
-//			System.err.println("SQL exception: " + se);
-//			return null;
-//		} finally {
-//			// release resources
-//			closeStatement(cstmt);
-//			closeConnection(connection);
-//		}
-//					
-//		// generate JSON message with the results
-//		JSONObject jsonObject = new JSONObject();
-//		try {
-//			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
-//		} catch (JSONException e) {
-//			e.printStackTrace();
-//		}
-//		String messageJsonStr = jsonObject.toString();
-//		// put the message in an envelope
-//		Message message = new Message(Message.MessageTypes.ADD_TOUR, messageJsonStr);
-//		// convert envelope to JSON format
-//		Gson gson = new Gson();
-//		return gson.toJson(message);
-//	}
+
 //	
 //	/**
 //	 * Finds tours in a city based on its name, region/state and country.
@@ -955,6 +903,55 @@ public final class JDBCServer {
 		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.RESERVE_SLOT, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	public static String createTour(long osmId, String userId, String title, int language, 
+			int duration, String location, String description) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call create_tour (?, ?, ?, ?, ?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setLong  (1, osmId);
+			   cstmt.setString(2, userId);
+			   cstmt.setString(3, title);
+			   cstmt.setInt   (4, language);
+			   cstmt.setInt   (5, duration);
+			   cstmt.setString(6, location);
+			   cstmt.setString(7, description);
+			   
+			   // modify database
+			   System.out.println("Adding tour to the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in createTour!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+					
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.CREATE_TOUR, messageJsonStr);
 		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);

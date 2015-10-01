@@ -26,7 +26,7 @@ public class Utility {
         // Ori's home
 //        public static final String SERVER_IP = "10.100.102.8";
         // Liron's apartment
-        public static final String SERVER_IP = "10.0.0.3";
+        public static final String SERVER_IP = "10.0.0.1";
         // Ronen's apartment
 //        public static final String SERVER_IP = "10.0.0.1";
         public static final String SERVER_PORT = "8080";
@@ -101,7 +101,7 @@ public class Utility {
     public static String getLoggedInUserId(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(
                 context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return sharedPref.getString(context.getString(R.string.pref_user_id_key), "");
+        return sharedPref.getString(context.getString(R.string.pref_user_id_key), null);
     }
 
     public static boolean getLoggedInUserIsGuide(Context context) {

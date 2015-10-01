@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import il.ac.technion.touricity.MainActivity;
+import il.ac.technion.touricity.MainFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.R;
 import il.ac.technion.touricity.Utility;
@@ -195,6 +197,7 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
             // Avoid crash.
             if (toursArray.isNull(0)) {
                 Log.d(LOG_TAG, "SyncAdapter complete. No tours found for this location.");
+                sendBroadcast();
                 return;
             }
 
@@ -321,6 +324,8 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             Log.d(LOG_TAG, "SyncAdapter complete. " + inserted + " Inserted");
+
+            sendBroadcast();
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -473,5 +478,11 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
                 (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
         mNotificationManager.notify(TOURS_NOTIFICATION_ID, mBuilder.build());
+    }
+
+    // Send an Intent with an action named BROADCAST_TOURS_LOADER_SERVICE_DONE.
+    private void sendBroadcast() {
+        Intent intent = new Intent(MainFragment.BROADCAST_TOURS_LOADER_SERVICE_DONE);
+        LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
     }
 }
