@@ -2,7 +2,6 @@ package il.ac.technion.touricity;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -17,7 +16,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -49,10 +47,7 @@ public class MainFragment extends Fragment
 
     // package-shared
     static final int OSM_LOADER = 0;
-    static final int RECENT_LOCATIONS_LOADER = 1;
-    static final int TOURS_LOADER = 2;
-
-    private static final String RECENT_BUNDLE_KEY = "recent_bundle_key";
+    static final int TOURS_LOADER = 1;
 
     public static final String BROADCAST_LOCATIONS_LOADER_SERVICE_DONE = "broadcast_locations_loader_service_done";
     public static final String BROADCAST_TOURS_LOADER_SERVICE_DONE = "broadcast_tours_loader_service_done";
@@ -82,27 +77,6 @@ public class MainFragment extends Fragment
     static final int COL_COORD_LONG = 5;
 
     // package-shared
-    static final String[] RECENT_LOCATION_COLUMNS = {
-            // Used for projection.
-            // _ID must be used in every projection
-            ToursContract.LocationEntry._ID,
-            ToursContract.LocationEntry.COLUMN_LOCATION_ID,
-            ToursContract.LocationEntry.COLUMN_LOCATION_NAME,
-            ToursContract.LocationEntry.COLUMN_LOCATION_TYPE,
-            ToursContract.LocationEntry.COLUMN_COORD_LAT,
-            ToursContract.LocationEntry.COLUMN_COORD_LONG
-    };
-
-    // These indices are tied to RECENT_LOCATION_COLUMNS.  If RECENT_LOCATION_COLUMNS changes, these
-    // must change.
-    static final int COL_RECENT_ID = 0;
-    static final int COL_RECENT_LOCATION_ID = 1;
-    static final int COL_RECENT_LOCATION_NAME = 2;
-    static final int COL_RECENT_LOCATION_TYPE = 3;
-    static final int COL_RECENT_COORD_LAT = 4;
-    static final int COL_RECENT_COORD_LONG = 5;
-
-    // package-shared
     static final String[] TOUR_COLUMNS = {
             // Used for projection.
             // _ID must be used in every projection
@@ -123,7 +97,6 @@ public class MainFragment extends Fragment
 
     static final int LOCATIONS_REQUEST = 0;
 
-    private RecentLocationAdapter mRecentLocationAdapter;
     private ToursAdapter mToursAdapter;
 
     private View mHeaderView;
@@ -169,7 +142,6 @@ public class MainFragment extends Fragment
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mRecentLocationAdapter = new RecentLocationAdapter(getActivity(), null, 0);
         mToursAdapter = new ToursAdapter(getActivity(), null, 0);
 
         mToursListView = (ListView)rootView.findViewById(R.id.listview_main);
@@ -225,7 +197,7 @@ public class MainFragment extends Fragment
                     if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
                             Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
                         if (mToursListView.getLastVisiblePosition() == position) {
-                            ((Callback) getActivity()).onCreateTour();
+                            ((Callback)getActivity()).onCreateTour();
                         }
                     }
                 }
@@ -287,7 +259,6 @@ public class MainFragment extends Fragment
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
@@ -295,66 +266,6 @@ public class MainFragment extends Fragment
         inflater.inflate(R.menu.menu_fragment_main, menu);
 
         mCreateTourMenuItem = menu.findItem(R.id.action_create_tour);
-
-        // Associate searchable configuration with the SearchView
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            SearchManager searchManager = (SearchManager)getActivity()
-                    .getSystemService(Context.SEARCH_SERVICE);
-            final SearchView searchView = (SearchView)menu
-                    .findItem(R.id.action_search).getActionView();
-            if (searchView != null) {
-                searchView.setSearchableInfo(searchManager.
-                        getSearchableInfo(getActivity().getComponentName()));
-                searchView.setIconifiedByDefault(true);
-                searchView.setSubmitButtonEnabled(false);
-                searchView.setQueryHint(getResources().getString(R.string.search_hint));
-                searchView.setSuggestionsAdapter(mRecentLocationAdapter);
-
-                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String s) {
-                        // TODO: stop searching if internet connection is not available
-                        performLocationSearch(s);
-                        // return true if the query has been handled by the listener
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String s) {
-                        if (!s.equals("")) {
-                            if (s.length() >= 3) {
-                                MainFragment mf = (MainFragment)getActivity().getSupportFragmentManager()
-                                        .findFragmentById(R.id.fragment_main);
-                                Bundle bundle = new Bundle();
-                                bundle.putString(RECENT_BUNDLE_KEY, s);
-                                getLoaderManager().restartLoader(RECENT_LOCATIONS_LOADER, bundle, mf);
-                            }
-                        }
-                        // return true if the action was handled by the listener
-                        return true;
-                    }
-                });
-
-                searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
-                    @Override
-                    public boolean onSuggestionSelect(int position) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onSuggestionClick(int position) {
-                        Cursor cursor = (Cursor)searchView.getSuggestionsAdapter().getItem(position);
-                        if (cursor != null) {
-                            addLocation(cursor, false);
-                        }
-                        // true if the listener handles the event and wants to override the default
-                        // behavior of launching any intent or submitting a search query specified
-                        // on that item.
-                        return true;
-                    }
-                });
-            }
-        }
     }
 
     @Override
@@ -376,7 +287,7 @@ public class MainFragment extends Fragment
         return super.onOptionsItemSelected(item);
     }
 
-    private void performLocationSearch(String query) {
+    public void performLocationSearch(String query) {
         // Delete previous results
         getActivity().getContentResolver().delete(
                 ToursContract.OSMEntry.CONTENT_URI,
@@ -419,14 +330,14 @@ public class MainFragment extends Fragment
         }
     }
 
-    private void addLocation(Cursor cursor, boolean isOSM) {
+    public void addLocation(Cursor cursor, boolean isOsm) {
         long osmId;
         String locationName;
         String locationType;
         double latitude;
         double longitude;
         // Read contents from cursor.
-        if (isOSM) {
+        if (isOsm) {
             osmId = cursor.getLong(COL_OSM_LOCATION_ID);
             locationName = cursor.getString(COL_LOCATION_NAME);
             locationType = cursor.getString(COL_LOCATION_TYPE);
@@ -435,11 +346,11 @@ public class MainFragment extends Fragment
         }
         else {
             // Read contents from cursor.
-            osmId = cursor.getLong(COL_RECENT_LOCATION_ID);
-            locationName = cursor.getString(COL_RECENT_LOCATION_NAME);
-            locationType = cursor.getString(COL_RECENT_LOCATION_TYPE);
-            latitude = cursor.getDouble(COL_RECENT_COORD_LAT);
-            longitude = cursor.getDouble(COL_RECENT_COORD_LONG);
+            osmId = cursor.getLong(MainActivity.COL_RECENT_LOCATION_ID);
+            locationName = cursor.getString(MainActivity.COL_RECENT_LOCATION_NAME);
+            locationType = cursor.getString(MainActivity.COL_RECENT_LOCATION_TYPE);
+            latitude = cursor.getDouble(MainActivity.COL_RECENT_COORD_LAT);
+            longitude = cursor.getDouble(MainActivity.COL_RECENT_COORD_LONG);
         }
 
         // Save values to preferences file to be used later on.
@@ -523,26 +434,6 @@ public class MainFragment extends Fragment
                     sortOrder
             );
         }
-        else if (i == RECENT_LOCATIONS_LOADER) {
-            // Sort order:  By recently used locations, the most recent is first.
-            String sortOrder = ToursContract.LocationEntry._ID + " DESC";
-            Uri queryLocationUri = ToursContract.LocationEntry.CONTENT_URI;
-            String selection = null;
-            String location = bundle.getString(RECENT_BUNDLE_KEY);
-            if (location != null && !location.equals("")) {
-                selection = ToursContract.LocationEntry.TABLE_NAME +
-                        "." + ToursContract.LocationEntry.COLUMN_LOCATION_NAME +
-                        " LIKE '%" + location + "%'";
-                return new CursorLoader(
-                        getActivity(),
-                        queryLocationUri,
-                        RECENT_LOCATION_COLUMNS,
-                        selection,
-                        null,
-                        sortOrder
-                );
-            }
-        }
         else if (i == TOURS_LOADER) {
             // Sort order:  By tour rating, highest is first.
             String sortOrder = ToursContract.TourEntry.COLUMN_TOUR_RATING + " DESC";
@@ -604,9 +495,6 @@ public class MainFragment extends Fragment
                 launchSearchFragment();
             }
         }
-        else if (cursorLoader.getId() == RECENT_LOCATIONS_LOADER) {
-            mRecentLocationAdapter.swapCursor(cursor);
-        }
         else if (cursorLoader.getId() == TOURS_LOADER) {
             Log.d(LOG_TAG, "Tours cursor returned " + cursor.getCount() + " rows.");
             mToursAdapter.swapCursor(cursor);
@@ -646,10 +534,6 @@ public class MainFragment extends Fragment
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        if (loader.getId() == RECENT_LOCATIONS_LOADER) {
-            mRecentLocationAdapter.swapCursor(null);
-        }
-        else
         if (loader.getId() == TOURS_LOADER) {
             mToursAdapter.swapCursor(null);
         }

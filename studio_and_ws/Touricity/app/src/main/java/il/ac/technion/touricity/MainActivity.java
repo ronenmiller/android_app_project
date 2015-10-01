@@ -1,14 +1,21 @@
 package il.ac.technion.touricity;
 
+import android.annotation.TargetApi;
+import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,15 +32,42 @@ import il.ac.technion.touricity.data.ToursContract;
 import il.ac.technion.touricity.sync.TouricitySyncAdapter;
 
 public class MainActivity extends ActionBarActivity
-        implements LoginDialogFragment.LoginDialogListener,
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        LoginDialogFragment.LoginDialogListener,
         LogoutDialogFragment.LogoutDialogListener,
         MainFragment.Callback,
         DetailFragment.Callback {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+
     private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
     private static final String CREATE_TOUR_FRAGMENT_TAG = "CTFTAG";
     private static final String SLOTS_FRAGMENT_TAG = "SFTAG";
+
+    static final int RECENT_LOCATIONS_LOADER = 0;
+
+    private static final String RECENT_BUNDLE_KEY = "recent_bundle_key";
+
+    // package-shared
+    static final String[] RECENT_LOCATION_COLUMNS = {
+            // Used for projection.
+            // _ID must be used in every projection
+            ToursContract.LocationEntry._ID,
+            ToursContract.LocationEntry.COLUMN_LOCATION_ID,
+            ToursContract.LocationEntry.COLUMN_LOCATION_NAME,
+            ToursContract.LocationEntry.COLUMN_LOCATION_TYPE,
+            ToursContract.LocationEntry.COLUMN_COORD_LAT,
+            ToursContract.LocationEntry.COLUMN_COORD_LONG
+    };
+
+    // These indices are tied to RECENT_LOCATION_COLUMNS.  If RECENT_LOCATION_COLUMNS changes, these
+    // must change.
+    static final int COL_RECENT_ID = 0;
+    static final int COL_RECENT_LOCATION_ID = 1;
+    static final int COL_RECENT_LOCATION_NAME = 2;
+    static final int COL_RECENT_LOCATION_TYPE = 3;
+    static final int COL_RECENT_COORD_LAT = 4;
+    static final int COL_RECENT_COORD_LONG = 5;
 
     private boolean mTwoPane;
 
@@ -47,6 +81,8 @@ public class MainActivity extends ActionBarActivity
     private MenuItem mLogoutMenuItem;
     private MenuItem mMyToursMenuItem;
 
+    private RecentLocationAdapter mRecentLocationAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +90,8 @@ public class MainActivity extends ActionBarActivity
         initializeDatabase();
 
         setContentView(R.layout.activity_main);
+
+        mRecentLocationAdapter = new RecentLocationAdapter(this, null, 0);
 
         mLocationLinearLayout = (LinearLayout)findViewById(R.id.linearlayout_location_main);
         mLocationNameTextView = (TextView)findViewById(R.id.textview_location_main);
@@ -78,9 +116,9 @@ public class MainActivity extends ActionBarActivity
             // adding or replacing the detail fragment using a
             // fragment transaction.
             if (savedInstanceState == null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.tours_slots_detail_container, new DetailFragment(), DETAIL_FRAGMENT_TAG)
-                        .commit();
+//                getSupportFragmentManager().beginTransaction()
+//                        .replace(R.id.tours_slots_detail_container, new DetailFragment(), DETAIL_FRAGMENT_TAG)
+//                        .commit();
                 mToursSlotsDetailContainer.setVisibility(View.INVISIBLE);
             }
         } else {
@@ -103,6 +141,8 @@ public class MainActivity extends ActionBarActivity
         mLogoutMenuItem = menu.findItem(R.id.action_logout);
         mMyToursMenuItem = menu.findItem(R.id.action_my_tours);
 
+        addSearchView(menu);
+
         if (Utility.getIsLoggedIn(getApplicationContext()))
         {
             showSignInMenuItems(false);
@@ -112,6 +152,75 @@ public class MainActivity extends ActionBarActivity
         }
 
         return true;
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    private void addSearchView(Menu menu) {
+        // Associate searchable configuration with the SearchView
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
+            final SearchView searchView = (SearchView)menu
+                    .findItem(R.id.action_search).getActionView();
+            if (searchView != null) {
+                searchView.setSearchableInfo(searchManager.
+                        getSearchableInfo(getComponentName()));
+                searchView.setIconifiedByDefault(true);
+                searchView.setSubmitButtonEnabled(false);
+                searchView.setQueryHint(getResources().getString(R.string.search_hint));
+                searchView.setSuggestionsAdapter(mRecentLocationAdapter);
+
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+                    @Override
+                    public boolean onQueryTextSubmit(String s) {
+                        // TODO: stop searching if internet connection is not available
+                        MainFragment mf = (MainFragment)getSupportFragmentManager()
+                                .findFragmentById(R.id.fragment_main);
+                        mf.performLocationSearch(s);
+                        // return true if the query has been handled by the listener
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String s) {
+                        if (!s.equals("")) {
+                            if (s.length() >= 3) {
+                                showSuggestions(s);
+                            }
+                        }
+                        // return true if the action was handled by the listener
+                        return true;
+                    }
+                });
+
+                searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
+                    @Override
+                    public boolean onSuggestionSelect(int position) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onSuggestionClick(int position) {
+                        Cursor cursor = (Cursor)searchView.getSuggestionsAdapter().getItem(position);
+                        if (cursor != null) {
+                            MainFragment mf = (MainFragment)getSupportFragmentManager()
+                                    .findFragmentById(R.id.fragment_main);
+                            mf.addLocation(cursor, false);
+                        }
+                        // true if the listener handles the event and wants to override the default
+                        // behavior of launching any intent or submitting a search query specified
+                        // on that item.
+                        return true;
+                    }
+                });
+            }
+        }
+    }
+
+    private void showSuggestions(String s) {
+        Bundle bundle = new Bundle();
+        bundle.putString(RECENT_BUNDLE_KEY, s);
+        getSupportLoaderManager().restartLoader(RECENT_LOCATIONS_LOADER, bundle, this);
     }
 
     @Override
@@ -312,7 +421,7 @@ public class MainActivity extends ActionBarActivity
             editor.remove(context.getString(R.string.pref_user_is_logged_in_key));
             editor.remove(context.getString(R.string.pref_user_id_key));
             editor.remove(context.getString(R.string.pref_user_is_guide_key));
-            editor.commit();
+            editor.apply();
 
             showSignInMenuItems(true);
         }
@@ -328,19 +437,58 @@ public class MainActivity extends ActionBarActivity
                         getString(R.string.language_hebrew)};
 
         ArrayList<ContentValues> cvArrayList = new ArrayList<>();
-        for (int i = 0; i < languages.length; i++) {
+        for (String language : languages) {
             ContentValues cv = new ContentValues();
-            cv.put(ToursContract.LanguageEntry.COLUMN_LANGUAGE_NAME, languages[i]);
+            cv.put(ToursContract.LanguageEntry.COLUMN_LANGUAGE_NAME, language);
             cvArrayList.add(cv);
         }
 
         ContentValues[] cvArray = new ContentValues[cvArrayList.size()];
         cvArrayList.toArray(cvArray);
-        int inserted = 0;
-        inserted = getContentResolver().bulkInsert(
+        int inserted = getContentResolver().bulkInsert(
                 ToursContract.LanguageEntry.CONTENT_URI,
                 cvArray
         );
         Log.d(LOG_TAG, "ToursDbHelper inserted " + inserted + " rows into the languages table.");
+    }
+
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        // This is called when a new Loader needs to be created.
+
+        // Sort order:  By recently used locations, the most recent is first.
+        String sortOrder = ToursContract.LocationEntry._ID + " DESC";
+        Uri queryLocationUri = ToursContract.LocationEntry.CONTENT_URI;
+        String selection;
+        String location = bundle.getString(RECENT_BUNDLE_KEY);
+        if (location != null && !location.equals("")) {
+            selection = ToursContract.LocationEntry.TABLE_NAME +
+                    "." + ToursContract.LocationEntry.COLUMN_LOCATION_NAME +
+                    " LIKE '%" + location + "%'";
+            return new CursorLoader(
+                    this,
+                    queryLocationUri,
+                    RECENT_LOCATION_COLUMNS,
+                    selection,
+                    null,
+                    sortOrder
+            );
+        }
+
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        // Swap the new cursor in.  (The framework will take care of closing the
+        // old cursor once we return.)
+        mRecentLocationAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // This is called when the last Cursor provided to onLoadFinished()
+        // above is about to be closed.  We need to make sure we are no
+        // longer using it.
+        mRecentLocationAdapter.swapCursor(null);
     }
 }

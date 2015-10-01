@@ -82,7 +82,8 @@
                         android:id="@+id/detail_tour_rating_bar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:rating="2.5" />
+                        android:rating="0"
+                        android:clickable="false" />
 
                     <ImageView
                         android:id="@+id/detail_language_icon"
