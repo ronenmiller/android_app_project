@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 
 public class Utility {
 
+    private static final String ABOUT_TAG = "about_tag";
     private static final String LOGIN_TAG = "login_tag";
     private static final String LOGOUT_TAG = "logout_tag";
     private static final String RESERVE_SLOT_TAG = "reserve_slot_tag";
@@ -208,6 +209,12 @@ public class Utility {
         }
 
         return -1;
+    }
+
+    public static void showAboutDialog(FragmentActivity context) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment aboutDialogFragment = new AboutDialogFragment();
+        aboutDialogFragment.show(context.getSupportFragmentManager(), ABOUT_TAG);
     }
 
     public static void showLoginDialog(FragmentActivity context) {

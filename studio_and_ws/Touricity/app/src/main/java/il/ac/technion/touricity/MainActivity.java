@@ -241,6 +241,9 @@ public class MainActivity extends ActionBarActivity
             startActivity(settingsIntent);
             return true;
         }
+        else if (id == R.id.action_about) {
+            Utility.showAboutDialog(this);
+        }
         else if (id == R.id.action_search) {
             onSearchRequested();
             return true;
