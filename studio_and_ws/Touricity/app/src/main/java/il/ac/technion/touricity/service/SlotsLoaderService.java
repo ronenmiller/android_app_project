@@ -222,7 +222,7 @@ public class SlotsLoaderService extends IntentService {
                 slotValues.put(ToursContract.SlotEntry.COLUMN_SLOT_TOUR_ID, tourId);
                 slotValues.put(ToursContract.SlotEntry.COLUMN_SLOT_DATE, slotDate);
                 slotValues.put(ToursContract.SlotEntry.COLUMN_SLOT_TIME, slotTime);
-                slotValues.put(ToursContract.SlotEntry.COLUMN_SLOT_VACANT, slotVacant);
+                slotValues.put(ToursContract.SlotEntry.COLUMN_SLOT_CAPACITY, slotVacant);
                 slotValues.put(ToursContract.SlotEntry.COLUMN_SLOT_ACTIVE, 1);
 
                 cvSlotsArrayList.add(slotValues);

@@ -129,7 +129,7 @@
                 android:textSize="18sp"
                 android:textColor="@color/white"
                 android:textAppearance="?android:textAppearanceButton"
-                android:background="@drawable/btn_touricity" />
+                android:background="@drawable/btn_touricity_teal" />
 
         </LinearLayout>
     </ScrollView>

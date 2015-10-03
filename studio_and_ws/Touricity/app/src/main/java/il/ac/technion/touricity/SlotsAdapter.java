@@ -109,12 +109,15 @@ public class SlotsAdapter extends CursorAdapter {
                 formattedTime));
 
         // Read the number of places left for this slot from the cursor.
-        String placesLeft = Integer.toString(cursor.getInt(SlotsFragment.COL_SLOT_VACANT));
-        int vacantFormatId = R.string.slot_vacant;
+        int placesLeft = cursor.getInt(SlotsFragment.COL_SLOT_CAPACITY);
+        int capacityFormatId = R.string.slot_capacity;
         // Set the number of places left
         viewHolder.capacityView.setText(context.getString(
-                vacantFormatId,
-                placesLeft));
+                capacityFormatId,
+                Integer.toString(placesLeft)));
+        if (placesLeft <= 5) {
+            viewHolder.capacityView.setTextColor(context.getResources().getColor(R.color.red));
+        }
 
         double rating = cursor.getInt(SlotsFragment.COL_SLOT_GUIDE_RATING);
         viewHolder.ratingBar.setRating((float) rating);

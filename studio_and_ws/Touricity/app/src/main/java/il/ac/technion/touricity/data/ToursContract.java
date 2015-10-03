@@ -233,7 +233,7 @@ public class ToursContract {
         public static final String COLUMN_SLOT_TIME = "slot_time";
 
         // The number of open positions that can still be reserved for this slot.
-        public static final String COLUMN_SLOT_VACANT = "slot_vacant";
+        public static final String COLUMN_SLOT_CAPACITY = "slot_vacant";
 
         // A slot is active as long as its ending time did not already pass, or the guide didn't
         // delete the slot. 1 = Slot is active, 0 = otherwise.

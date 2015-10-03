@@ -118,8 +118,8 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 SlotEntry.COLUMN_SLOT_TOUR_ID + " INTEGER NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_DATE + " REAL NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_TIME + " INTEGER NOT NULL, " +
-                SlotEntry.COLUMN_SLOT_VACANT + " INTEGER NOT NULL CHECK (" +
-                SlotEntry.COLUMN_SLOT_VACANT + " >= 0), " +
+                SlotEntry.COLUMN_SLOT_CAPACITY + " INTEGER NOT NULL CHECK (" +
+                SlotEntry.COLUMN_SLOT_CAPACITY + " >= 0), " +
                 // 1 = Slot is active, 0 = otherwise.
                 SlotEntry.COLUMN_SLOT_ACTIVE + " INTEGER NOT NULL, " +
 

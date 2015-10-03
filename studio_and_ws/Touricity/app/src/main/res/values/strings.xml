@@ -87,7 +87,7 @@
     <!-- Strings related to slot activity -->
     <string name="slot_reserved">Reserved</string>
     <string name="slot_not_reserved">Not reserved</string>
-    <string name="slot_vacant"><xliff:g id="vacant">%s</xliff:g> places left</string>
+    <string name="slot_capacity"><xliff:g id="vacant">%s</xliff:g> places left</string>
     <string name="slot_guide">Guided by <xliff:g id="guide_name">%s</xliff:g></string>
     <string name="slots_not_found">No slots found</string>
     <string name="slot_create">Create a new slot</string>

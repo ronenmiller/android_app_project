@@ -63,7 +63,7 @@ public class SlotsFragment extends Fragment
             ToursContract.UserEntry.COLUMN_USER_RATING,
             SlotEntry.COLUMN_SLOT_DATE,
             SlotEntry.COLUMN_SLOT_TIME,
-            SlotEntry.COLUMN_SLOT_VACANT,
+            SlotEntry.COLUMN_SLOT_CAPACITY,
     };
 
     // These indices are tied to SLOT_COLUMNS.  If SLOT_COLUMNS changes, these
@@ -73,7 +73,7 @@ public class SlotsFragment extends Fragment
     public static final int COL_SLOT_GUIDE_RATING = 2;
     public static final int COL_SLOT_DATE = 3;
     public static final int COL_SLOT_TIME = 4;
-    public static final int COL_SLOT_VACANT = 5;
+    public static final int COL_SLOT_CAPACITY = 5;
 
     private MenuItem mCreateSlotMenuItem;
 
@@ -159,7 +159,7 @@ public class SlotsFragment extends Fragment
                         return;
                     }
                     long slotId = cursor.getLong(COL_SLOT_ID);
-                    int slotVacant = cursor.getInt(COL_SLOT_VACANT);
+                    int slotVacant = cursor.getInt(COL_SLOT_CAPACITY);
                     Uri slotUri = SlotEntry.buildSlotIdUri(slotId, slotVacant);
                     Utility.showReserveSlotDialog(getActivity(), slotUri);
                 }
