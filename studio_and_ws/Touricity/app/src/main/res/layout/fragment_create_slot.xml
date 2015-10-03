@@ -1,0 +1,144 @@
+<!-- Master layout. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="il.ac.technion.touricity.CreateSlotFragment">
+
+    <!-- Create tour progress -->
+    <ProgressBar
+        android:id="@+id/create_slot_progressbar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <ScrollView
+        android:id="@+id/signup_scrollview_form"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/create_slot_layout_form"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/create_slot_header"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textColor="@color/touricity_teal" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/create_slot_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/create_slot_date"
+                    android:imeOptions="actionNext"
+                    android:inputType="date"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:fontFamily="sans-serif"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:enabled="false" />
+
+                <Button
+                    android:id="@+id/create_slot_date_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/create_slot_select"
+                    android:textStyle="normal"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:textAppearance="?android:textAppearanceButton" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/create_slot_time"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/create_slot_time"
+                    android:imeOptions="actionNext"
+                    android:inputType="time"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:fontFamily="sans-serif"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:enabled="false" />
+
+                <Button
+                    android:id="@+id/create_slot_time_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/create_slot_select"
+                    android:textStyle="normal"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:textAppearance="?android:textAppearanceButton" />
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/create_slot_capacity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="@string/create_slot_capacity"
+                android:imeActionId="@+id/action_create_slot_id"
+                android:imeActionLabel="@string/action_create_slot_short"
+                android:imeOptions="actionUnspecified"
+                android:inputType="numberDecimal"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:fontFamily="sans-serif"
+                android:textAppearance="?android:textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/create_slot_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:text="@string/action_create_slot_btn"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:textAppearance="?android:textAppearanceButton"
+                android:background="@drawable/btn_touricity" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
+

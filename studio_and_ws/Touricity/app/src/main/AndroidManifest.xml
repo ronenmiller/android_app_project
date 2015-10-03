@@ -26,6 +26,7 @@
         <service android:name=".service.SlotsLoaderService" />
         <service android:name=".service.ReserveSlotService" />
         <service android:name=".service.CreateTourService" />
+        <service android:name=".service.CreateSlotService" />
 
         <!-- SyncAdapter's dummy authentication service -->
         <service android:name=".sync.TouricityAuthenticatorService" >
@@ -120,6 +121,14 @@
         <activity
             android:name=".CreateTourActivity"
             android:label="@string/title_activity_create_tour"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="il.ac.technion.touricity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".CreateSlotActivity"
+            android:label="@string/title_activity_create_slot"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

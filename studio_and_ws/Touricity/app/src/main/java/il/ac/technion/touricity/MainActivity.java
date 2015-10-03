@@ -36,13 +36,17 @@ public class MainActivity extends ActionBarActivity
         LoginDialogFragment.LoginDialogListener,
         LogoutDialogFragment.LogoutDialogListener,
         MainFragment.Callback,
-        DetailFragment.Callback {
+        DetailFragment.Callback,
+        SlotsFragment.Callback,
+        DatePickerFragment.DatePickerDialogListener,
+        TimePickerFragment.TimePickerDialogListener {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
     private static final String CREATE_TOUR_FRAGMENT_TAG = "CTFTAG";
     private static final String SLOTS_FRAGMENT_TAG = "SFTAG";
+    private static final String CREATE_SLOT_FRAGMENT_TAG = "CSFTAG";
 
     static final int RECENT_LOCATIONS_LOADER = 0;
 
@@ -237,6 +241,10 @@ public class MainActivity extends ActionBarActivity
             startActivity(settingsIntent);
             return true;
         }
+        else if (id == R.id.action_search) {
+            onSearchRequested();
+            return true;
+        }
         else if (id == R.id.action_signup) {
             Intent intent = new Intent(this, SignUpActivity.class);
             this.startActivity(intent);
@@ -293,6 +301,35 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
+    public void onCreateSlot(Uri tourUri) {
+        // always two-pane mode, otherwise pressing the create slot button will lead to
+        // slots activity.
+        mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
+        CreateSlotFragment fragment = CreateSlotFragment.newInstance(tourUri);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.tours_slots_detail_container, fragment, CREATE_SLOT_FRAGMENT_TAG)
+                .commit();
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the LoginDialogFragment.LoginDialogListener interface
+    @Override
+    public void onDateSelected(int julianDate) {
+        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+        csf.applyDate(julianDate);
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the LoginDialogFragment.LoginDialogListener interface
+    @Override
+    public void onTimeSelected(long timeInMillis) {
+        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+        csf.applyTime(timeInMillis);
+    }
+
+    @Override
     public void onViewSlots(Uri tourUri) {
         if (tourUri == null) {
             return;
@@ -303,7 +340,7 @@ public class MainActivity extends ActionBarActivity
         mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
         SlotsFragment fragment = SlotsFragment.newInstance(tourUri);
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.tours_slots_detail_container, fragment, SLOTS_FRAGMENT_TAG)
+                .replace(R.id.tours_slots_detail_container, fragment, SLOTS_FRAGMENT_TAG)
                 .commit();
     }
 

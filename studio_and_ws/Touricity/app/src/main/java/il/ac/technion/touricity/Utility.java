@@ -15,7 +15,9 @@ public class Utility {
 
     private static final String LOGIN_TAG = "login_tag";
     private static final String LOGOUT_TAG = "logout_tag";
-    private static final String RESERVE_SLOT_TAG = "reserve_Slot_tag";
+    private static final String RESERVE_SLOT_TAG = "reserve_slot_tag";
+    private static final String TIME_PICKER_TAG = "time_picker_tag";
+    private static final String DATE_PICKER_TAG = "date_picker_tag";
 
     public class ServerConfig {
 
@@ -26,7 +28,7 @@ public class Utility {
         // Ori's home
 //        public static final String SERVER_IP = "10.100.102.8";
         // Liron's apartment
-        public static final String SERVER_IP = "10.0.0.1";
+        public static final String SERVER_IP = "10.0.0.4";
         // Ronen's apartment
 //        public static final String SERVER_IP = "10.0.0.1";
         public static final String SERVER_PORT = "8080";
@@ -220,10 +222,27 @@ public class Utility {
         logoutDialogFragment.show(context.getSupportFragmentManager(), LOGOUT_TAG);
     }
 
-    public static void showReserveSlotDialog (FragmentActivity context, Uri uri) {
+    public static void showReserveSlotDialog(FragmentActivity context, Uri uri) {
         // Create an instance of the dialog fragment and show it
         ReserveSlotDialogFragment reserveSlotDialogfragment = ReserveSlotDialogFragment.newInstance(uri);
         reserveSlotDialogfragment.show(context.getSupportFragmentManager(), RESERVE_SLOT_TAG);
+    }
+
+    public static void showDatePickerDialog(FragmentActivity context) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment datePickerFragment = new DatePickerFragment();
+        datePickerFragment.show(context.getSupportFragmentManager(), DATE_PICKER_TAG);
+    }
+
+    public static void showTimePickerDialog(FragmentActivity context) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment timePickerFragment = new TimePickerFragment();
+        timePickerFragment.show(context.getSupportFragmentManager(), TIME_PICKER_TAG);
+    }
+
+    public static String getFriendlyTimeString(long timeInMillis) {
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("HH:mm");
+        return shortenedDateFormat.format(timeInMillis);
     }
 
     /**
@@ -239,7 +258,7 @@ public class Utility {
         // For today: "Today"
         // For tomorrow:  "Tomorrow"
         // For the next 5 days: "Wednesday" (just the day name)
-        // For all days after that: "Mon Jun 8"
+        // For all days after that: "Mon, Jun 8, 2015"
 
         Time time = new Time();
         time.setToNow();
@@ -256,7 +275,7 @@ public class Utility {
             return getDayName(context, dateInMillis);
         } else {
             // Otherwise, use the form "Mon Jun 3"
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy");
             return shortenedDateFormat.format(dateInMillis);
         }
     }

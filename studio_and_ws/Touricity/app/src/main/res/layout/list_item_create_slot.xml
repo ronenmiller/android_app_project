@@ -9,12 +9,25 @@
     android:orientation="horizontal"
     android:background="@drawable/touch_selector">
 
+    <FrameLayout
+        android:layout_width="60dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_add_circle_teal_24dp"
+            android:maxWidth="48dp"
+            android:maxHeight="48dp" />
+
+    </FrameLayout>
+
     <TextView
-        android:id="@+id/list_item_tour_header"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:fontFamily="sans-serif-light"
+        android:fontFamily="sans-serif-condensed"
+        android:text="@string/slot_create"
         android:textSize="20sp"
         android:textColor="@color/black" />
 

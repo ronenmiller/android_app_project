@@ -117,7 +117,7 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 SlotEntry.COLUMN_SLOT_GUIDE_ID + " TEXT NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_TOUR_ID + " INTEGER NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_DATE + " REAL NOT NULL, " +
-                SlotEntry.COLUMN_SLOT_TIME + " TEXT NOT NULL, " +
+                SlotEntry.COLUMN_SLOT_TIME + " INTEGER NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_VACANT + " INTEGER NOT NULL CHECK (" +
                 SlotEntry.COLUMN_SLOT_VACANT + " >= 0), " +
                 // 1 = Slot is active, 0 = otherwise.
@@ -143,7 +143,7 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 "PRIMARY KEY (" + ReservationEntry._ID + ", " +
                 ReservationEntry.COLUMN_RESERVATION_USER_ID + ") ON CONFLICT REPLACE, " +
                 " FOREIGN KEY (" + ReservationEntry._ID + ") REFERENCES " +
-                SlotEntry.TABLE_NAME + " (" + SlotEntry._ID + ") ON DELETE RESTRICT)";
+                SlotEntry.TABLE_NAME + " (" + SlotEntry._ID + ") ON DELETE CASCADE)";
 
         sqLiteDatabase.execSQL(SQL_CREATE_RESERVATIONS_TABLE);
 

@@ -22,15 +22,16 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import il.ac.technion.touricity.CreateSlotFragment;
 import il.ac.technion.touricity.CreateTourFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.Utility;
 
-public class CreateTourService extends IntentService {
+public class CreateSlotService extends IntentService {
 
     private static final String LOG_TAG = CreateTourService.class.getSimpleName();
 
-    public CreateTourService() { super("CreateTourService"); }
+    public CreateSlotService() { super("CreateSlotService"); }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -38,22 +39,23 @@ public class CreateTourService extends IntentService {
             return;
         }
 
-        String title = intent.getStringExtra(CreateTourFragment.INTENT_EXTRA_TITLE);
-        int language  = intent.getIntExtra(CreateTourFragment.INTENT_EXTRA_LANGUAGE, -1);
-        if (language == -1) {
+        int tourId = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_TOUR_ID, -1);
+        int julianDate = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_DATE, -1);
+        long timeInMillis = intent.getLongExtra(CreateSlotFragment.INTENT_EXTRA_TIME, -1L);
+
+        // Sanity check.
+        if (tourId == -1 && julianDate == -1 || timeInMillis == -1L) {
             sendBroadcast(false);
         }
-        String duration = intent.getStringExtra(CreateTourFragment.INTENT_EXTRA_DURATION);
-        String location = intent.getStringExtra(CreateTourFragment.INTENT_EXTRA_LOCATION);
-        String description = intent.getStringExtra(CreateTourFragment.INTENT_EXTRA_DESCRIPTION);
 
-        boolean success = addTourToServerDb(title, language, duration, location, description);
+        String capacity = intent.getStringExtra(CreateSlotFragment.INTENT_EXTRA_CAPACITY);
+
+        boolean success = addSlotToServerDb(tourId, julianDate, timeInMillis, capacity);
 
         sendBroadcast(success);
     }
 
-    public boolean addTourToServerDb(String title, int language, String duration,
-                                     String location, String description) {
+    public boolean addSlotToServerDb(int tourId, int julianDate, long timeInMillis, String capacity) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -70,20 +72,17 @@ public class CreateTourService extends IntentService {
             urlConnection = (HttpURLConnection) url.openConnection();
             Utility.setupHttpUrlConnection(urlConnection);
 
-            long osmId = Utility.getPreferredLocationId(getApplicationContext());
-            String userId = Utility.getLoggedInUserId(getApplicationContext());
+            String guideId = Utility.getLoggedInUserId(getApplicationContext());
 
             // Create a message to be delivered to the server.
             Map<String, String> map = new HashMap<>();
-            map.put(Message.MessageKeys.LOCATION_OSM_ID_KEY, Long.toString(osmId));
-            map.put(Message.MessageKeys.USER_ID_KEY, userId);
-            map.put(Message.MessageKeys.TOUR_TITLE_KEY, title);
-            map.put(Message.MessageKeys.TOUR_LANGUAGE_KEY, Integer.toString(language));
-            map.put(Message.MessageKeys.TOUR_DURATION_KEY, duration);
-            map.put(Message.MessageKeys.TOUR_LOCATION_KEY, location);
-            map.put(Message.MessageKeys.TOUR_DESCRIPTION_KEY, description);
+            map.put(Message.MessageKeys.SLOT_GUIDE_ID_KEY, guideId);
+            map.put(Message.MessageKeys.SLOT_TOUR_ID_KEY, Integer.toString(tourId));
+            map.put(Message.MessageKeys.SLOT_DATE_KEY, Integer.toString(julianDate));
+            map.put(Message.MessageKeys.SLOT_TIME_KEY, Long.toString(timeInMillis));
+            map.put(Message.MessageKeys.SLOT_CAPACITY_KEY, capacity);
             JSONObject jsonObject = new JSONObject(map);
-            Message message = new Message(Message.MessageTypes.CREATE_TOUR, jsonObject.toString());
+            Message message = new Message(Message.MessageTypes.CREATE_SLOT, jsonObject.toString());
             Gson gson = new Gson();
             String requestMessageJsonStr = gson.toJson(message);
 
@@ -127,7 +126,7 @@ public class CreateTourService extends IntentService {
             responseMessageJsonStr = buffer.toString();
             Log.v(LOG_TAG, responseMessageJsonStr);
 
-            // We know the message type to be CREATE_TOUR.
+            // We know the message type to be CREATE_SLOT.
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
             String isModified = responseJSON.getString(Message.MessageKeys.IS_MODIFIED);
@@ -157,9 +156,9 @@ public class CreateTourService extends IntentService {
         return false;
     }
 
-    // Send an Intent with an action named BROADCAST_CREATE_TOUR_SERVICE_DONE.
+    // Send an Intent with an action named BROADCAST_CREATE_SLOT_SERVICE_DONE.
     private void sendBroadcast(boolean success) {
-        Intent broadcastIntent = new Intent(CreateTourFragment.BROADCAST_CREATE_TOUR_SERVICE_DONE);
+        Intent broadcastIntent = new Intent(CreateSlotFragment.BROADCAST_CREATE_SLOT_SERVICE_DONE);
         broadcastIntent.putExtra(CreateTourFragment.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }

@@ -194,7 +194,7 @@ public class LocationsLoaderService extends IntentService {
 
             sendBroadcast();
 
-            Log.d(LOG_TAG, "Location service complete. " + inserted + " rows inserted to OSM table.");
+            Log.d(LOG_TAG, "Location loader service complete. " + inserted + " rows inserted to OSM table.");
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);

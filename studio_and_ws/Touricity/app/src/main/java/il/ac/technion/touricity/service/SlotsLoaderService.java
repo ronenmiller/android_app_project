@@ -165,6 +165,7 @@ public class SlotsLoaderService extends IntentService {
             // Avoid crash.
             if (slotsArray.isNull(0)) {
                 Log.d(LOG_TAG, "Slots service complete. No slots found for this tour.");
+                sendBroadcast();
                 return;
             }
 
@@ -182,7 +183,7 @@ public class SlotsLoaderService extends IntentService {
                 long slotId;
                 // Date is stored as a julian date.
                 int slotDate;
-                String slotTime;
+                long slotTime;
                 int slotVacant;
 
                 // Get the JSON object representing the location
@@ -211,8 +212,8 @@ public class SlotsLoaderService extends IntentService {
 
                 slotId = slotObject.getLong(Message.MessageKeys.SLOT_ID_KEY);
                 slotDate = slotObject.getInt(Message.MessageKeys.SLOT_DATE_KEY);
-                slotTime = slotObject.getString(Message.MessageKeys.SLOT_TIME_KEY);
-                slotVacant = slotObject.getInt(Message.MessageKeys.SLOT_NUM_PLACES_KEY);
+                slotTime = slotObject.getLong(Message.MessageKeys.SLOT_TIME_KEY);
+                slotVacant = slotObject.getInt(Message.MessageKeys.SLOT_CAPACITY_KEY);
 
                 ContentValues slotValues = new ContentValues();
 
@@ -251,7 +252,7 @@ public class SlotsLoaderService extends IntentService {
                 );
             }
 
-            Log.d(LOG_TAG, "Slots service complete. " + slotsInserted + " slots inserted to slots table.");
+            Log.d(LOG_TAG, "Slots loader service complete. " + slotsInserted + " slots inserted to slots table.");
 
             sendBroadcast();
 

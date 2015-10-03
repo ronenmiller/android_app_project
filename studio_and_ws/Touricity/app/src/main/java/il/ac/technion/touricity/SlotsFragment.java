@@ -1,17 +1,26 @@
 package il.ac.technion.touricity;
 
+import android.annotation.TargetApi;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
 import il.ac.technion.touricity.data.ToursContract.SlotEntry;
@@ -22,6 +31,8 @@ import il.ac.technion.touricity.data.ToursContract.SlotEntry;
  */
 public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    public final String LOG_TAG = SlotsFragment.class.getSimpleName();
+
     private static final String SLOT_URI = "SLOT_URI";
     private static final int SLOTS_LOADER = 0;
 
@@ -29,6 +40,10 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
 
     private ListView mSlotsListView;
     private SlotsAdapter mSlotsAdapter;
+
+    private View mHeaderView;
+    private TextView mHeaderText;
+    private View mFooterView;
 
     private static final String SELECTED_KEY = "selected_position";
     private int mPosition = ListView.INVALID_POSITION;
@@ -50,6 +65,12 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
     public static final int COL_SLOT_DATE = 3;
     public static final int COL_SLOT_TIME = 4;
     public static final int COL_SLOT_VACANT = 5;
+
+    private MenuItem mCreateSlotMenuItem;
+
+    public interface Callback {
+        void onCreateSlot(Uri tourUri);
+    }
 
     public SlotsFragment() {
     }
@@ -75,6 +96,12 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mUri = getShownUri();
@@ -84,6 +111,23 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
         mSlotsAdapter = new SlotsAdapter(getActivity(), null, 0);
 
         mSlotsListView = (ListView)rootView.findViewById(R.id.listview_slots);
+
+        mHeaderView = ((LayoutInflater)getActivity().getSystemService
+                (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_header, null, false);
+        mHeaderText = (TextView)mHeaderView.findViewById(R.id.list_item_header);
+        mHeaderText.setText(getResources().getString(R.string.slots_not_found));
+        mFooterView = ((LayoutInflater)getActivity().getSystemService
+                (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_create_slot, null, false);
+
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
+        boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
+
+        if (isUserLoggedIn && isUserGuide) {
+            mSlotsListView.addFooterView(mFooterView);
+        }
+        else {
+            mSlotsListView.removeFooterView(mFooterView);
+        }
 
         mSlotsListView.setAdapter(mSlotsAdapter);
 
@@ -104,11 +148,70 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
                     Uri slotUri = SlotEntry.buildSlotIdUri(slotId, slotVacant);
                     Utility.showReserveSlotDialog(getActivity(), slotUri);
                 }
+                else {
+                    if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
+                            Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
+                        if (mSlotsListView.getLastVisiblePosition() == position) {
+                            ((Callback)getActivity()).onCreateSlot(mUri);
+                        }
+                    }
+                }
                 mPosition = position;
             }
         });
 
         return rootView;
+    }
+
+    // Called on login or logout.
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void showGuideOptions(boolean show) {
+        if (show) {
+            if (mSlotsListView != null) {
+                mSlotsListView.addFooterView(mFooterView);
+            }
+            if (mCreateSlotMenuItem != null) {
+                mCreateSlotMenuItem.setVisible(true);
+            }
+        }
+        else {
+            if (mSlotsListView != null) {
+                mSlotsListView.removeFooterView(mFooterView);
+            }
+            if (mCreateSlotMenuItem != null) {
+                mCreateSlotMenuItem.setVisible(false);
+            }
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.menu_fragment_slots, menu);
+
+        mCreateSlotMenuItem = menu.findItem(R.id.action_create_slot);
+
+        if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
+                Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
+            mCreateSlotMenuItem.setVisible(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        if (id == R.id.action_create_slot) {
+            ((Callback)getActivity()).onCreateSlot(mUri);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -155,6 +258,37 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        Log.d(LOG_TAG, "Slots cursor returned " + cursor.getCount() + " rows.");
+        mSlotsAdapter.swapCursor(cursor);
+        if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
+                Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
+            if (mCreateSlotMenuItem != null) {
+                mCreateSlotMenuItem.setVisible(true);
+            }
+        }
+
+        if (cursor.getCount() > 0) {
+            mSlotsListView.removeHeaderView(mHeaderView);
+            if (mPosition != ListView.INVALID_POSITION) {
+                // If we don't need to restart the loader, and there's a desired position to restore
+                // to, do so now.
+                mSlotsListView.smoothScrollToPosition(mPosition);
+            }
+        }
+        else {
+            // Slots not found.
+            mSlotsListView.removeHeaderView(mHeaderView);
+            String slotsNotFound = getString(R.string.slots_not_found);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                mSlotsListView.addHeaderView(mHeaderView);
+                mHeaderView.setClickable(false);
+            }
+            else {
+                Toast.makeText(getActivity(), slotsNotFound, Toast.LENGTH_LONG).show();
+            }
+        }
+
+
         mSlotsAdapter.swapCursor(cursor);
         if (mPosition != ListView.INVALID_POSITION) {
             // If we don't need to restart the loader, and there's a desired position to restore

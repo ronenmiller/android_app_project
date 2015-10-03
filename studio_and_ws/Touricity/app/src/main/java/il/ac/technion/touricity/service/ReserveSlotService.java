@@ -157,7 +157,7 @@ public class ReserveSlotService extends IntentService {
             Map<String, String> map = new HashMap<>();
             map.put(Message.MessageKeys.SLOT_ID_KEY, Long.toString(slotId));
             map.put(Message.MessageKeys.USER_ID_KEY, userId);
-            map.put(Message.MessageKeys.RESERVATION_NUM_PARTICIPANTS_KEY,
+            map.put(Message.MessageKeys.RESERVATION_OCCUPIED_KEY,
                     Integer.toString(numOfPlacesRequested));
             JSONObject jsonObject = new JSONObject(map);
             Message message = new Message(Message.MessageTypes.RESERVE_SLOT, jsonObject.toString());

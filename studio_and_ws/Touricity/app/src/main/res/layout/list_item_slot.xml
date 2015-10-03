@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
+    android:layout_marginBottom="2dp"
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:orientation="horizontal"
     android:background="@drawable/touch_selector">
@@ -25,61 +26,53 @@
 
     </FrameLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1" >
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/list_item_slot_capacity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical">
+
+                <RatingBar
+                    android:id="@+id/list_item_slot_rating_bar"
+                    style="?android:attr/ratingBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:rating="0"
+                    android:isIndicator="true" />
+
+            </FrameLayout>
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/list_item_slot_date_and_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="2dp"
-            android:layout_marginEnd="2dp"
-            android:fontFamily="sans-serif-condensed"
-            android:textSize="16sp"
-            android:textColor="@color/black" />
-
-        <TextView
-            android:id="@+id/list_item_slot_vacant"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="2dp"
-            android:layout_marginEnd="2dp"
-            android:layout_below="@id/list_item_slot_date_and_time"
             android:layout_marginTop="4dp"
             android:fontFamily="sans-serif-condensed"
             android:textSize="16sp"
             android:textColor="@color/black" />
 
-        <TextView
-            android:id="@+id/list_item_slot_guide_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignBottom="@id/list_item_slot_vacant"
-            android:fontFamily="sans-serif-condensed"
-            android:textSize="16sp"
-            android:textColor="@color/black" />
+    </LinearLayout>
 
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_above="@id/list_item_slot_guide_name"
-            android:layout_marginBottom="8dp">
-
-            <RatingBar
-                android:id="@+id/list_item_slot_rating_bar"
-                style="?android:attr/ratingBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:rating="0"
-                android:clickable="false" />
-
-        </FrameLayout>
-
-    </RelativeLayout>
 </LinearLayout>

@@ -151,8 +151,8 @@ public class MainFragment extends Fragment
         mProgressBarLayout.setVisibility(View.GONE);
 
         mHeaderView = ((LayoutInflater)getActivity().getSystemService
-                (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_tour_header, null, false);
-        mHeaderText = (TextView)mHeaderView.findViewById(R.id.list_item_tour_header);
+                (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_header, null, false);
+        mHeaderText = (TextView)mHeaderView.findViewById(R.id.list_item_header);
         mFooterView = ((LayoutInflater)getActivity().getSystemService
                 (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_create_tour, null, false);
 
@@ -164,7 +164,7 @@ public class MainFragment extends Fragment
         if (!isLocationSelected) {
             mHeaderText.setText(getResources().getString(R.string.find_destination));
             mToursListView.addHeaderView(mHeaderView);
-            mToursListView.setClickable(false);
+            mHeaderView.setClickable(false);
         }
         else {
             updateLocationViews(true);
@@ -191,9 +191,6 @@ public class MainFragment extends Fragment
                     ((Callback)getActivity()).onItemSelected(tourUri);
                 }
                 else {
-                    // When the footer to create a tour is shown in the list, the cursor is null.
-                    // The cursor is also null for the header position, but the list view is not
-                    // clickable when the header is shown.
                     if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
                             Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
                         if (mToursListView.getLastVisiblePosition() == position) {
@@ -226,6 +223,7 @@ public class MainFragment extends Fragment
         return rootView;
     }
 
+    // Called on login or logout.
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void showGuideOptions(boolean show) {
         if (show) {
@@ -275,10 +273,6 @@ public class MainFragment extends Fragment
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        if (id == R.id.action_search) {
-            getActivity().onSearchRequested();
-            return true;
-        }
         if (id == R.id.action_create_tour) {
             ((Callback)getActivity()).onCreateTour();
             return true;
@@ -498,6 +492,7 @@ public class MainFragment extends Fragment
         else if (cursorLoader.getId() == TOURS_LOADER) {
             Log.d(LOG_TAG, "Tours cursor returned " + cursor.getCount() + " rows.");
             mToursAdapter.swapCursor(cursor);
+            // Only show the create tour menu item when a location is selected.
             if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
                     Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
                 if (mCreateTourMenuItem != null) {

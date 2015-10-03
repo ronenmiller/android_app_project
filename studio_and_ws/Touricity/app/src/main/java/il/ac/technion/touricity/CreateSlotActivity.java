@@ -2,36 +2,32 @@ package il.ac.technion.touricity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-public class SlotsActivity extends FragmentActivity
-        implements LoginDialogFragment.LoginDialogListener,
-        SlotsFragment.Callback {
-
-    private static final String SLOTS_FRAGMENT_TAG = "SFTAG";
+public class CreateSlotActivity extends FragmentActivity implements
+        DatePickerFragment.DatePickerDialogListener,
+        TimePickerFragment.TimePickerDialogListener {
 
     private AppCompatDelegate mDelegate;
+
+    static final String CREATE_SLOT_FRAGMENT_TAG = "CSFTAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_slots);
+        setContentView(R.layout.activity_create_slot);
 
         // Inflate action bar
         setupActionBar(savedInstanceState);
 
         if (savedInstanceState == null) {
-            SlotsFragment fragment = SlotsFragment.newInstance(getIntent().getData());
+            CreateSlotFragment fragment = CreateSlotFragment.newInstance(getIntent().getData());
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.tours_slots_detail_container, fragment, SLOTS_FRAGMENT_TAG)
+                    .add(R.id.tours_slots_detail_container, fragment, CREATE_SLOT_FRAGMENT_TAG)
                     .commit();
         }
     }
@@ -40,7 +36,7 @@ public class SlotsActivity extends FragmentActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_slots, menu);
+        getMenuInflater().inflate(R.menu.menu_create_slot, menu);
         return true;
     }
 
@@ -84,35 +80,22 @@ public class SlotsActivity extends FragmentActivity
         return mDelegate;
     }
 
+
     // The dialog fragment receives a reference to this Activity through the
     // Fragment.onAttach() callback, which it uses to call the following methods
     // defined by the LoginDialogFragment.LoginDialogListener interface
     @Override
-    public void onLogin(DialogFragment dialog, String userId, boolean isGuide) {
-        // User touched the dialog's login button
-        String loginSuccess = getString(R.string.login_success);
-        Toast.makeText(this, loginSuccess, Toast.LENGTH_LONG).show();
-        // We need to implement this function in this activity, and not in the
-        // LoginDialogActivity, because here one can call getApplicationContext().
-        Utility.saveLoginSession(this.getApplicationContext(), userId, isGuide);
-        dialog.dismiss();
-
-        // TODO: add sign in, login, logout menu buttons to activity
-//        showSignInMenuItems(false);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (Utility.getLoggedInUserIsGuide(getApplicationContext())) {
-                SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
-                        .findFragmentByTag(SLOTS_FRAGMENT_TAG);
-                sf.showGuideOptions(true);
-            }
-        }
+    public void onDateSelected(int julianDate) {
+        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+        csf.applyDate(julianDate);
     }
 
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the LoginDialogFragment.LoginDialogListener interface
     @Override
-    public void onCreateSlot(Uri tourUri) {
-        // always one-pane mode
-        Intent intent = new Intent(this, CreateSlotActivity.class).setData(tourUri);
-        startActivity(intent);
+    public void onTimeSelected(long timeInMillis) {
+        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+        csf.applyTime(timeInMillis);
     }
 }

@@ -153,7 +153,7 @@ public class CreateTourFragment extends Fragment {
         mDurationView.setError(null);
         mLocationView.setError(null);
 
-        // Store values at the time of the sign up attempt.
+        // Store values at the time of the tour creation attempt.
         String title = mTitleView.getText().toString();
         String duration = mDurationView.getText().toString();
         String location = mLocationView.getText().toString();

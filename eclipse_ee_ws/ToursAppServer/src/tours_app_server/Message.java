@@ -66,19 +66,18 @@ public class Message {
 		public static final String TOUR_PHOTOS_KEY = "t_photos";
 		public static final String TOUR_COMMENTS_KEY = "t_comments";
 
-		public static final String SLOT_ID_KEY = "ts_id";
+		public static final String SLOT_ID_KEY = "s_id";
 		public static final String SLOT_GUIDE_ID_KEY = "u_id";
 		public static final String SLOT_TOUR_ID_KEY = "t_id";
-		public static final String SLOT_DATE_KEY = "ts_date";
-		public static final String SLOT_TIME_KEY = "ts_time";
-		public static final String SLOT_NUM_PLACES_KEY = "ts_vacant";
-		public static final String SLOTS_ACTIVE_KEY = "ts_active";
+		public static final String SLOT_DATE_KEY = "s_date";
+		public static final String SLOT_TIME_KEY = "s_time";
+		public static final String SLOT_CAPACITY_KEY = "s_capacity";
+		public static final String SLOTS_ACTIVE_KEY = "s_active";
 
 		public static final String RESERVATION_USER_ID_KEY = "u_id";
-		public static final String RESERVATION_SLOT_ID_KEY = "ts_id";
-		public static final String RESERVATION_NUM_PARTICIPANTS_KEY = "r_num_participants";
+		public static final String RESERVATION_SLOT_ID_KEY = "s_id";
+		public static final String RESERVATION_OCCUPIED_KEY = "r_occupied";
 		public static final String RESERVATION_ACTIVE_KEY = "r_active";
 	}
 
 }
-

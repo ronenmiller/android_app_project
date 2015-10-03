@@ -58,6 +58,7 @@
                 android:id="@+id/create_tour_spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:paddingLeft="12dp"
                 android:paddingStart="12dp"
                 android:prompt="@string/create_tour_language" />

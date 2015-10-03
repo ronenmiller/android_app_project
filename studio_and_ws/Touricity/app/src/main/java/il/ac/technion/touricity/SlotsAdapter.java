@@ -19,21 +19,21 @@ import il.ac.technion.touricity.data.ToursContract;
  */
 public class SlotsAdapter extends CursorAdapter {
 
+    private boolean mTwoPane;
+
     /**
      * Cache of the children views for a tour list item.
      */
     public static class ViewHolder {
         private ImageView iconView;
         private TextView dateTimeView;
-        private TextView vacantView;
-        private TextView guideNameView;
+        private TextView capacityView;
         private RatingBar ratingBar;
 
         public ViewHolder(View view) {
             iconView = (ImageView)view.findViewById(R.id.list_item_slot_icon);
             dateTimeView = (TextView)view.findViewById(R.id.list_item_slot_date_and_time);
-            vacantView = (TextView)view.findViewById(R.id.list_item_slot_vacant);
-            guideNameView = (TextView)view.findViewById(R.id.list_item_slot_guide_name);
+            capacityView = (TextView)view.findViewById(R.id.list_item_slot_capacity);
             ratingBar = (RatingBar)view.findViewById(R.id.list_item_slot_rating_bar);
         }
     }
@@ -82,7 +82,7 @@ public class SlotsAdapter extends CursorAdapter {
         boolean isAlreadyReserved = reservationCursor.moveToFirst();
 
         if (isAlreadyReserved) {
-            viewHolder.iconView.setImageResource(R.drawable.ic_label_teal_24dp);
+            viewHolder.iconView.setImageResource(R.drawable.ic_check_circle_teal_24dp);
             viewHolder.iconView.setContentDescription(context.getString(R.string.slot_reserved));
         }
         else {
@@ -98,7 +98,8 @@ public class SlotsAdapter extends CursorAdapter {
         String formattedDate = Utility.getFriendlyDayString(context, dateInMillis);
 
         // Read local time string from the cursor.
-        String formattedTime = cursor.getString(SlotsFragment.COL_SLOT_TIME);
+        long timeInMillis = cursor.getLong(SlotsFragment.COL_SLOT_TIME);
+        String formattedTime = Utility.getFriendlyTimeString(timeInMillis);
         int dateFormatId = R.string.format_full_friendly_date;
 
         // Set date and time text on the text view.
@@ -111,19 +112,11 @@ public class SlotsAdapter extends CursorAdapter {
         String placesLeft = Integer.toString(cursor.getInt(SlotsFragment.COL_SLOT_VACANT));
         int vacantFormatId = R.string.slot_vacant;
         // Set the number of places left
-        viewHolder.vacantView.setText(context.getString(
+        viewHolder.capacityView.setText(context.getString(
                 vacantFormatId,
                 placesLeft));
 
         double rating = cursor.getInt(SlotsFragment.COL_SLOT_GUIDE_RATING);
         viewHolder.ratingBar.setRating((float) rating);
-
-        // Read the guide name from cursor.
-        String guideName = cursor.getString(SlotsFragment.COL_SLOT_GUIDE_NAME);
-        int guideFormatId = R.string.slot_guide;
-        // Find TextView and set the guide name on it.
-        viewHolder.guideNameView.setText(context.getString(
-                guideFormatId,
-                guideName));
     }
 }
