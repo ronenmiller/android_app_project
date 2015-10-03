@@ -6,7 +6,7 @@
     <item android:id="@+id/action_create_tour"
         android:title="@string/action_create_tour"
         app:showAsAction="never"
-        android:orderInCategory="5"
+        android:orderInCategory="6"
         android:visible="false" />
 
 </menu>

@@ -6,7 +6,7 @@
     <item
         android:id="@+id/action_map"
         android:title="@string/action_map"
-        android:orderInCategory="1"
+        android:orderInCategory="4"
         app:showAsAction="never" />
 
 </menu>

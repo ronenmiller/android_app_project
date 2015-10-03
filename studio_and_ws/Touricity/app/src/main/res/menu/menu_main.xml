@@ -35,13 +35,13 @@
     <item android:id="@+id/action_my_tours"
         android:title="@string/action_my_tours"
         app:showAsAction="never"
-        android:orderInCategory="4"
+        android:orderInCategory="5"
         android:visible="false" />
 
     <item android:id="@+id/action_logout"
         android:title="@string/action_logout"
         app:showAsAction="never"
-        android:orderInCategory="7"
+        android:orderInCategory="8"
         android:visible="false" />
 
 </menu>

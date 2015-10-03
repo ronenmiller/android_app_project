@@ -279,6 +279,18 @@ public class MainFragment extends Fragment
         inflater.inflate(R.menu.menu_fragment_main, menu);
 
         mCreateTourMenuItem = menu.findItem(R.id.action_create_tour);
+
+        // Only show the create tour menu item when a location is selected.
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
+        boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
+        boolean isLocationSelected = Utility.getPreferredLocationId
+                (getActivity().getApplicationContext()) != -1L;
+
+        if (isUserLoggedIn && isUserGuide && isLocationSelected) {
+            if (mCreateTourMenuItem != null) {
+                mCreateTourMenuItem.setVisible(true);
+            }
+        }
     }
 
     @Override

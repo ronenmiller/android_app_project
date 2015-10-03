@@ -174,7 +174,7 @@
 
     <!-- About dialog -->
     <string name="developers">Developed by Liron Anavi and Ronen Miller.</string>
-    <string name="technion">A students project at the NSSL lab, faculty of EE, Technion.</string>
+    <string name="technion">Touricity is a students project at the NSSL lab, faculty of EE, Technion.</string>
     <string name="advisor">Project advisor: Viktor Kulikov.</string>
     <string name="thanks">The developers would like to thank
         <a href="http://www.smashingmagazine.com/2014/06/freebie-ballicons-2-icon-set-png-psd-svg/">PixelBuddha</a>
