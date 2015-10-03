@@ -16,7 +16,7 @@ public class SlotsActivity extends FragmentActivity
         implements LoginDialogFragment.LoginDialogListener,
         SlotsFragment.Callback {
 
-    private static final String SLOTS_FRAGMENT_TAG = "SFTAG";
+    public static final String SLOTS_FRAGMENT_TAG = "SFTAG";
 
     private AppCompatDelegate mDelegate;
 

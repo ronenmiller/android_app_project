@@ -16,6 +16,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,7 +42,8 @@ import il.ac.technion.touricity.sync.TouricitySyncAdapter;
  * A placeholder fragment containing a simple view.
  */
 public class MainFragment extends Fragment
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        SwipeRefreshLayout.OnRefreshListener {
 
     public final String LOG_TAG = MainFragment.class.getSimpleName();
 
@@ -103,6 +105,7 @@ public class MainFragment extends Fragment
     private TextView mHeaderText;
     private View mFooterView;
     private ListView mToursListView;
+    private SwipeRefreshLayout mSwipeLayout;
     private FrameLayout mProgressBarLayout;
     private ImageView mProgressBarView;
 
@@ -145,6 +148,13 @@ public class MainFragment extends Fragment
         mToursAdapter = new ToursAdapter(getActivity(), null, 0);
 
         mToursListView = (ListView)rootView.findViewById(R.id.listview_main);
+
+        mSwipeLayout = (SwipeRefreshLayout)rootView.findViewById(R.id.swipe_container);
+        mSwipeLayout.setOnRefreshListener(this);
+        mSwipeLayout.setColorScheme(R.color.touricity_teal,
+                R.color.touricity_light_teal,
+                R.color.touricity_light_grey);
+
         mProgressBarLayout = (FrameLayout) rootView.findViewById(R.id.framelayout_main);
         mProgressBarView = (ImageView)rootView.findViewById(R.id.imageview_main);
 
@@ -221,6 +231,11 @@ public class MainFragment extends Fragment
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onRefresh() {
+        updateTours();
     }
 
     // Called on login or logout.
@@ -568,6 +583,7 @@ public class MainFragment extends Fragment
         public void onReceive(Context context, Intent intent) {
             // Stop the rotating animation and set visibility attribute
             Log.d(LOG_TAG, "Tours broadcast received.");
+            mSwipeLayout.setRefreshing(false);
             MainFragment mf = (MainFragment)getActivity().getSupportFragmentManager()
                     .findFragmentById(R.id.fragment_main);
             getActivity().getSupportLoaderManager().restartLoader(TOURS_LOADER, null, mf);

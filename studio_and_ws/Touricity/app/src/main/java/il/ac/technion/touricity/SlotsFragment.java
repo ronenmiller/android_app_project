@@ -1,7 +1,10 @@
 package il.ac.technion.touricity;
 
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -10,6 +13,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,12 +29,15 @@ import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
 import il.ac.technion.touricity.data.ToursContract.SlotEntry;
+import il.ac.technion.touricity.service.SlotsLoaderService;
 
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class SlotsFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor>,
+        SwipeRefreshLayout.OnRefreshListener {
 
     public final String LOG_TAG = SlotsFragment.class.getSimpleName();
 
@@ -39,6 +47,7 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
     private Uri mUri = null;
 
     private ListView mSlotsListView;
+    private SwipeRefreshLayout mSwipeLayout;
     private SlotsAdapter mSlotsAdapter;
 
     private View mHeaderView;
@@ -112,6 +121,12 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
 
         mSlotsListView = (ListView)rootView.findViewById(R.id.listview_slots);
 
+        mSwipeLayout = (SwipeRefreshLayout)rootView.findViewById(R.id.swipe_container);
+        mSwipeLayout.setOnRefreshListener(this);
+        mSwipeLayout.setColorScheme(R.color.touricity_teal,
+                R.color.touricity_light_teal,
+                R.color.touricity_light_grey);
+
         mHeaderView = ((LayoutInflater)getActivity().getSystemService
                 (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_header, null, false);
         mHeaderText = (TextView)mHeaderView.findViewById(R.id.list_item_header);
@@ -161,6 +176,16 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onRefresh() {
+        if (mUri != null) {
+            int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
+            Intent intent = new Intent(getActivity(), SlotsLoaderService.class);
+            intent.putExtra(DetailFragment.INTENT_EXTRA_TOUR_ID, tourId);
+            getActivity().startService(intent);
+        }
     }
 
     // Called on login or logout.
@@ -300,5 +325,34 @@ public class SlotsFragment extends Fragment implements LoaderManager.LoaderCallb
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mSlotsAdapter.swapCursor(null);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Register mMessageReceiver to receive messages.
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSlotReceiver,
+                new IntentFilter(DetailFragment.BROADCAST_SLOTS_LOADER_SERVICE_DONE));
+    }
+
+    // handler for received Intents for the BROADCAST_SLOTS_LOADER_SERVICE_DONE event
+    private BroadcastReceiver mSlotReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Stop the rotating animation and set visibility attribute
+            Log.d(LOG_TAG, "Slots broadcast received.");
+            mSwipeLayout.setRefreshing(false);
+            SlotsFragment sf = (SlotsFragment)getActivity().getSupportFragmentManager()
+                    .findFragmentByTag(SlotsActivity.SLOTS_FRAGMENT_TAG);
+            getActivity().getSupportLoaderManager().restartLoader(SLOTS_LOADER, null, sf);
+        }
+    };
+
+    @Override
+    public void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSlotReceiver);
+        super.onPause();
     }
 }
