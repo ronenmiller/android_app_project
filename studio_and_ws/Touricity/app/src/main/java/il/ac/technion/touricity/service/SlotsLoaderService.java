@@ -34,8 +34,10 @@ public class SlotsLoaderService extends IntentService {
 
     private static final String LOG_TAG = SlotsLoaderService.class.getSimpleName();
 
+    private int mButtonClicked;
+
     public SlotsLoaderService() {
-        super("SlotsService");
+        super("SlotsLoaderService");
     }
 
     @Override
@@ -45,8 +47,9 @@ public class SlotsLoaderService extends IntentService {
         }
 
         int tourId = intent.getIntExtra(DetailFragment.INTENT_EXTRA_TOUR_ID, -1);
+        mButtonClicked = intent.getIntExtra(DetailFragment.INTENT_EXTRA_BTN_ID, -1);
 
-        if (tourId == -1) {
+        if (tourId == -1 || mButtonClicked == -1) {
             return;
         }
 
@@ -265,6 +268,7 @@ public class SlotsLoaderService extends IntentService {
     // Send an Intent with an action named BROADCAST_SLOTS_LOADER_SERVICE_DONE.
     private void sendBroadcast() {
         Intent intent = new Intent(DetailFragment.BROADCAST_SLOTS_LOADER_SERVICE_DONE);
+        intent.putExtra(DetailFragment.INTENT_EXTRA_BTN_ID, mButtonClicked);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

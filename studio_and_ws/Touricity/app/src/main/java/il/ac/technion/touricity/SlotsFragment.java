@@ -1,6 +1,5 @@
 package il.ac.technion.touricity;
 
-import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -184,16 +183,21 @@ public class SlotsFragment extends Fragment
             int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
             Intent intent = new Intent(getActivity(), SlotsLoaderService.class);
             intent.putExtra(DetailFragment.INTENT_EXTRA_TOUR_ID, tourId);
+            intent.putExtra(DetailFragment.INTENT_EXTRA_BTN_ID, DetailFragment.VIEW_SLOTS_BTN_ID);
             getActivity().startService(intent);
         }
     }
 
     // Called on login or logout.
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void showGuideOptions(boolean show) {
-        if (show) {
-            if (mSlotsListView != null) {
-                mSlotsListView.addFooterView(mFooterView);
+    public void showGuideOptions() {
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
+        boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
+
+        if (isUserLoggedIn && isUserGuide) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (mSlotsListView != null) {
+                    mSlotsListView.addFooterView(mFooterView);
+                }
             }
             if (mCreateSlotMenuItem != null) {
                 mCreateSlotMenuItem.setVisible(true);

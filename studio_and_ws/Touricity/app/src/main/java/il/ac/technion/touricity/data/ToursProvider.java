@@ -23,6 +23,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 public class ToursProvider extends ContentProvider {
 
@@ -34,13 +35,19 @@ public class ToursProvider extends ContentProvider {
     static final int OSM = 200;
     static final int TOURS = 300;
     static final int TOURS_WITH_LOCATION = 301;
+    static final int TOURS_WITH_MANAGER = 302;
     static final int LANGUAGES = 400;
     static final int SLOTS = 500;
     static final int RESERVATIONS = 600;
     static final int USERS = 700;
 
+    // A table of tours with the corresponding languages of those tours.
     private static final SQLiteQueryBuilder sToursWithLanguageNameQueryBuilder;
+    // A table of tours with the corresponding locations and languages of those tours.
+    private static final SQLiteQueryBuilder sToursWithLocationAndLanguageNameQueryBuilder;
+    // A table of slots with the guides of those slots.
     private static final SQLiteQueryBuilder sSlotsWithUsersQueryBuilder;
+    // All the tables together.
     private static final SQLiteQueryBuilder sReservationsQueryBuilder;
 
     static {
@@ -56,10 +63,27 @@ public class ToursProvider extends ContentProvider {
                         " = " + ToursContract.LanguageEntry.TABLE_NAME +
                         "." + ToursContract.LanguageEntry._ID);
 
+        sToursWithLocationAndLanguageNameQueryBuilder = new SQLiteQueryBuilder();
+
+        // This is an inner join which looks like
+        // tours INNER JOIN languages ON tours.t_language = language._id
+        sToursWithLocationAndLanguageNameQueryBuilder.setTables(
+                ToursContract.TourEntry.TABLE_NAME + " INNER JOIN " +
+                        ToursContract.LocationEntry.TABLE_NAME +
+                        " ON " + ToursContract.TourEntry.TABLE_NAME +
+                        "." + ToursContract.TourEntry.COLUMN_OSM_ID +
+                        " = " + ToursContract.LocationEntry.TABLE_NAME +
+                        "." + ToursContract.LocationEntry.COLUMN_LOCATION_ID + " INNER JOIN " +
+                        ToursContract.LanguageEntry.TABLE_NAME +
+                        " ON " + ToursContract.TourEntry.TABLE_NAME +
+                        "." + ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE +
+                        " = " + ToursContract.LanguageEntry.TABLE_NAME +
+                        "." + ToursContract.LanguageEntry._ID);
+
         sSlotsWithUsersQueryBuilder = new SQLiteQueryBuilder();
 
         // This is an inner join which looks like
-        // slots INNER JOIN users ON slots.u_id_language = language._id
+        // slots INNER JOIN users ON slots.u_id = language._id
         sSlotsWithUsersQueryBuilder.setTables(
                 ToursContract.SlotEntry.TABLE_NAME + " INNER JOIN " +
                         ToursContract.UserEntry.TABLE_NAME +
@@ -95,7 +119,7 @@ public class ToursProvider extends ContentProvider {
                         "." + ToursContract.LanguageEntry._ID);
     }
 
-    // Tour with a specific location (i.e. OSM ID)
+    // Tour with a specific location (i.e. OSM ID).
     private static final String sToursWithLocationSelection =
             ToursContract.TourEntry.TABLE_NAME +
                     "." + ToursContract.TourEntry.COLUMN_OSM_ID + " = ?";
@@ -108,6 +132,25 @@ public class ToursProvider extends ContentProvider {
                 projection,
                 sToursWithLocationSelection,
                 new String[]{Long.toString(locationId)},
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    // Tour with a specific manager.
+    private static final String sToursWithManagerSelection =
+            ToursContract.TourEntry.TABLE_NAME +
+                    "." + ToursContract.TourEntry.COLUMN_TOUR_MANAGER_ID + " = ?";
+
+    private Cursor getToursWithManager(Uri uri, String[] projection, String sortOrder) {
+        String managerId = ToursContract.TourEntry.getTourManagerIdFromUri(uri);
+
+        return sToursWithLocationAndLanguageNameQueryBuilder.query(
+                mOpenHelper.getReadableDatabase(),
+                projection,
+                sToursWithManagerSelection,
+                new String[]{managerId},
                 null,
                 null,
                 sortOrder
@@ -127,6 +170,7 @@ public class ToursProvider extends ContentProvider {
         uriMatcher.addURI(authority, ToursContract.PATH_OSM, OSM);
         uriMatcher.addURI(authority, ToursContract.PATH_TOURS, TOURS);
         uriMatcher.addURI(authority, ToursContract.PATH_TOURS + "/#", TOURS_WITH_LOCATION);
+        uriMatcher.addURI(authority, ToursContract.PATH_TOURS + "/*", TOURS_WITH_MANAGER);
         uriMatcher.addURI(authority, ToursContract.PATH_LANGUAGES, LANGUAGES);
         uriMatcher.addURI(authority, ToursContract.PATH_SLOTS, SLOTS);
         uriMatcher.addURI(authority, ToursContract.PATH_RESERVATIONS, RESERVATIONS);
@@ -156,6 +200,8 @@ public class ToursProvider extends ContentProvider {
             case TOURS:
                 return ToursContract.TourEntry.CONTENT_TYPE;
             case TOURS_WITH_LOCATION:
+                return ToursContract.TourEntry.CONTENT_TYPE;
+            case TOURS_WITH_MANAGER:
                 return ToursContract.TourEntry.CONTENT_TYPE;
             case LANGUAGES:
                 // Always returns a single language.
@@ -220,6 +266,10 @@ public class ToursProvider extends ContentProvider {
                 retCursor = getToursWithLocation(uri, projection, sortOrder);
                 break;
             }
+            case TOURS_WITH_MANAGER: {
+                retCursor = getToursWithManager(uri, projection, sortOrder);
+                break;
+            }
             case LANGUAGES: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         ToursContract.LanguageEntry.TABLE_NAME,
@@ -276,7 +326,7 @@ public class ToursProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         Uri returnUri;
@@ -348,7 +398,7 @@ public class ToursProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         int rowsDeleted = 0;

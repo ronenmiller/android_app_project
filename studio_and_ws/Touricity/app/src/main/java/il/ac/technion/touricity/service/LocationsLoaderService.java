@@ -107,7 +107,7 @@ public class LocationsLoaderService extends IntentService {
             locationsJsonStr = buffer.toString();
 
             Log.v(LOG_TAG, "Json: " + locationsJsonStr);
-            getLocationsDataFromJson(locationsJsonStr, locationQuery);
+            getLocationsDataFromJson(locationsJsonStr);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
@@ -136,8 +136,7 @@ public class LocationsLoaderService extends IntentService {
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
-    public void getLocationsDataFromJson(String locationsJsonStr,
-                                         String locationQuery  )
+    public void getLocationsDataFromJson(String locationsJsonStr)
             throws JSONException {
 
         // Now we have a String representing the matching locations in JSON Format.
@@ -180,6 +179,13 @@ public class LocationsLoaderService extends IntentService {
                     cvArrayList.add(locationValues);
                 }
             }
+
+            // Delete previous results
+            this.getContentResolver().delete(
+                    ToursContract.OSMEntry.CONTENT_URI,
+                    null,
+                    null
+            );
 
             // Add to the database
             int inserted = 0;

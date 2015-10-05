@@ -32,12 +32,22 @@
             android:layout_marginTop="8dp"
             android:orientation="vertical">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/create_tour_header"
+                android:fontFamily="sans-serif"
+                android:textSize="24sp"
+                android:textColor="@color/touricity_teal" />
+
             <!-- The actionNext key performs a "next" operation, taking the user to the
             next field that will accept text. Corresponds to IME_ACTION_NEXT. -->
             <EditText
                 android:id="@+id/create_tour_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:hint="@string/create_tour_title"
                 android:imeOptions="actionNext"
                 android:inputType="text"

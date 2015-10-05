@@ -185,7 +185,7 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
-    public void getTourDataFromJson(String toursJsonStr, long osmID) throws JSONException {
+    public void getTourDataFromJson(String toursJsonStr, long osmId) throws JSONException {
 
         // Now we have a String representing the matching tours in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -205,8 +205,8 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
             ArrayList<ContentValues> cvArrayList = new ArrayList<>(toursArray.length());
             for(int i = 0; i < toursArray.length(); i++) {
                 // These are the values that will be collected.
-                int tourID;
-                String managerID;
+                int tourId;
+                String managerId;
                 String title;
                 // Duration is in minutes.
                 int duration;
@@ -219,11 +219,11 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
                 Object photos;
                 String comments;
 
-                // Get the JSON object representing the day
+                // Get the JSON object representing the tour.
                 JSONObject tourObject = toursArray.getJSONObject(i);
 
-                tourID = tourObject.getInt(Message.MessageKeys.TOUR_ID_KEY);
-                managerID = tourObject.getString(Message.MessageKeys.TOUR_MANAGER_KEY);
+                tourId = tourObject.getInt(Message.MessageKeys.TOUR_ID_KEY);
+                managerId = tourObject.getString(Message.MessageKeys.TOUR_MANAGER_KEY);
                 title = tourObject.getString(Message.MessageKeys.TOUR_TITLE_KEY);
                 duration = tourObject.getInt(Message.MessageKeys.TOUR_DURATION_KEY);
                 language = tourObject.getInt(Message.MessageKeys.TOUR_LANGUAGE_KEY);
@@ -234,9 +234,9 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
 
                 ContentValues tourValues = new ContentValues();
 
-                tourValues.put(ToursContract.TourEntry._ID, tourID);
-                tourValues.put(ToursContract.TourEntry.COLUMN_OSM_ID, osmID);
-                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_MANAGER_ID, managerID);
+                tourValues.put(ToursContract.TourEntry._ID, tourId);
+                tourValues.put(ToursContract.TourEntry.COLUMN_OSM_ID, osmId);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_MANAGER_ID, managerId);
                 tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_TITLE, title);
                 tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_DURATION, duration);
                 tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE, language);
@@ -249,7 +249,8 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
                 cvArrayList.add(tourValues);
             }
 
-            // Delete tours which have no open slots, so we don't build up an endless history.
+            // Delete tours which have no open slots, and are marked as unavailable in the server,
+            // so we don't build up an endless history.
             // That way, old tours will be deleted, and new tours, for which we didn't query
             // the slots table yet (and therefore don't have any slots open) will be deleted
             // and added again next (that's why the insertion is after the deletion).
@@ -258,41 +259,43 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
             Cursor toursCursor = null;
             Cursor slotsCursor = null;
             try {
-                // Find tours
+                // Find tours.
                 toursCursor = resolver.query(
-                        ToursContract.TourEntry.buildTourLocationUri(osmID),
+                        ToursContract.TourEntry.buildTourLocationUri(osmId),
                         TOUR_ID_COLUMNS,
                         null,
                         null,
                         null
                 );
-                while (toursCursor.moveToNext()) {
-                    int tourID = toursCursor.getInt(COL_TOUR_ID);
-                    String slotSelection = ToursContract.SlotEntry.TABLE_NAME +
-                            "." + ToursContract.SlotEntry.COLUMN_SLOT_TOUR_ID +
-                            " = ?";
-                    String[] slotSelectionArgs = new String[]{Integer.toString(tourID)};
-
-                    slotsCursor = resolver.query(
-                            ToursContract.SlotEntry.CONTENT_URI,
-                            null,
-                            slotSelection,
-                            slotSelectionArgs,
-                            null
-                    );
-
-                    // If the cursor is empty, i.e. there are no open slots for this tour,
-                    // then delete the tour from the database.
-                    if (!slotsCursor.moveToFirst()) {
-                        String tourSelection = ToursContract.TourEntry.TABLE_NAME +
-                                "." + ToursContract.TourEntry._ID +
+                if (toursCursor != null) {
+                    while (toursCursor.moveToNext()) {
+                        int tourID = toursCursor.getInt(COL_TOUR_ID);
+                        String slotSelection = ToursContract.SlotEntry.TABLE_NAME +
+                                "." + ToursContract.SlotEntry.COLUMN_SLOT_TOUR_ID +
                                 " = ?";
+                        String[] slotSelectionArgs = new String[]{Integer.toString(tourID)};
 
-                        resolver.delete(
-                                ToursContract.TourEntry.CONTENT_URI,
-                                tourSelection,
-                                slotSelectionArgs
+                        slotsCursor = resolver.query(
+                                ToursContract.SlotEntry.CONTENT_URI,
+                                null,
+                                slotSelection,
+                                slotSelectionArgs,
+                                null
                         );
+
+                        // If the cursor is empty, i.e. there are no open slots for this tour,
+                        // then delete the tour from the database.
+                        if (slotsCursor != null && !slotsCursor.moveToFirst()) {
+                            String tourSelection = ToursContract.TourEntry.TABLE_NAME +
+                                    "." + ToursContract.TourEntry._ID +
+                                    " = ?";
+
+                            resolver.delete(
+                                    ToursContract.TourEntry.CONTENT_URI,
+                                    tourSelection,
+                                    slotSelectionArgs
+                            );
+                        }
                     }
                 }
             }
@@ -323,7 +326,7 @@ public class TouricitySyncAdapter extends AbstractThreadedSyncAdapter {
                 mInserted = inserted;
             }
 
-            Log.d(LOG_TAG, "SyncAdapter complete. " + inserted + " Inserted");
+            Log.d(LOG_TAG, "SyncAdapter complete. " + inserted + " inserted.");
 
             sendBroadcast();
 

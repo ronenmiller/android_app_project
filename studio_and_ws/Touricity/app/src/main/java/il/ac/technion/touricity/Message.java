@@ -29,10 +29,12 @@ public class Message {
 		public static final int RESERVE_SLOT = 6;
 		public static final int CREATE_TOUR = 7;
 		public static final int CREATE_SLOT = 8;
+		public static final int ADD_LOCATION = 9;
+		public static final int QUERY_TOURS_BY_MANAGER_ID = 10;
+        public static final int DELETE_TOUR = 11;
 //		public static final int UPDATE_USER = 1;
 //		public static final int REMOVE_USER = 2;
 //		public static final int UPDATE_TOUR = 4;
-//		public static final int REMOVE_TOUR = 5;
 //		public static final int REMOVE_SLOT = 7;
 
 	}
@@ -41,7 +43,7 @@ public class Message {
 		public static final String IS_MODIFIED = "is_modified";
 		public static final String IS_EXISTS = "is_exists";
         public static final String IS_UNIQUE = "is_unique";
-		
+
 		public static final String LOCATION_OSM_ID_KEY = "osm_id";
 		public static final String LOCATION_OSM_NAME_KEY = "display_name";
 		public static final String LOCATION_OSM_TYPE_KEY = "type";
@@ -56,6 +58,7 @@ public class Message {
 		public static final String USER_RATING_KEY = "u_rating";
 		
 		public static final String TOUR_ID_KEY = "t_id";
+		public static final String TOUR_OSM_ID = "t_osm_id";
 		public static final String TOUR_MANAGER_KEY = "u_id";
         public static final String TOUR_TITLE_KEY = "t_title";
 		public static final String TOUR_DURATION_KEY = "t_duration";

@@ -38,10 +38,22 @@
         android:orderInCategory="5"
         android:visible="false" />
 
+    <item android:id="@+id/action_manage_tours"
+        android:title="@string/action_manage_tours"
+        app:showAsAction="never"
+        android:orderInCategory="8"
+        android:visible="false" />
+
+    <item android:id="@+id/action_manage_slots"
+        android:title="@string/action_manage_slots"
+        app:showAsAction="never"
+        android:orderInCategory="9"
+        android:visible="false" />
+
     <item android:id="@+id/action_logout"
         android:title="@string/action_logout"
         app:showAsAction="never"
-        android:orderInCategory="8"
+        android:orderInCategory="10"
         android:visible="false" />
 
 </menu>

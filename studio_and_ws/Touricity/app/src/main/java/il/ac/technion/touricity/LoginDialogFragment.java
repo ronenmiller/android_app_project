@@ -150,9 +150,14 @@ public class LoginDialogFragment extends DialogFragment {
         mSignupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Activity parentActivity = (Activity)mListener;
-                Intent intent = new Intent(parentActivity, SignUpActivity.class);
-                parentActivity.startActivity(intent);
+                try {
+                    Activity parentActivity = (Activity) mListener;
+                    Intent intent = new Intent(parentActivity, SignUpActivity.class);
+                    parentActivity.startActivity(intent);
+                }
+                finally {
+                    dismiss();
+                }
             }
         });
 

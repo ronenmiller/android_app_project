@@ -175,6 +175,10 @@ public class ToursContract {
             return CONTENT_URI.buildUpon().appendPath(Integer.toString(tourId)).build();
         }
 
+        public static Uri buildTourManagerUri(String managerId) {
+            return CONTENT_URI.buildUpon().appendPath(managerId).build();
+        }
+
         // Retrieve the OSM ID.
         public static long getOsmIdFromUri(Uri uri) {
             return Long.parseLong(uri.getPathSegments().get(1));
@@ -183,6 +187,11 @@ public class ToursContract {
         // Retrieve the tour ID.
         public static int getTourIdFromUri(Uri uri) {
             return Integer.parseInt(uri.getPathSegments().get(1));
+        }
+
+        // Retrieve the manager ID.
+        public static String getTourManagerIdFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
         }
     }
 

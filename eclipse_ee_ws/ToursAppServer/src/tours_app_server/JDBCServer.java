@@ -98,6 +98,22 @@ public final class JDBCServer {
 					int capacity = requestJSON.getInt(Message.MessageKeys.SLOT_CAPACITY_KEY);
 					return createSlot(guideId, tourId, date, time, capacity);
 				}
+				case Message.MessageTypes.ADD_LOCATION: {
+					long osmId = requestJSON.getLong(Message.MessageKeys.LOCATION_OSM_ID_KEY);
+					String locationName = requestJSON.getString(Message.MessageKeys.LOCATION_OSM_NAME_KEY);
+					String locationType = requestJSON.getString(Message.MessageKeys.LOCATION_OSM_TYPE_KEY);
+					double latitude = requestJSON.getDouble(Message.MessageKeys.LOCATION_OSM_LATITUDE_KEY);
+					double longitude = requestJSON.getDouble(Message.MessageKeys.LOCATION_OSM_LONGITUDE_KEY);
+					return addLocation(osmId, locationName, locationType, latitude, longitude);
+				}
+				case Message.MessageTypes.QUERY_TOURS_BY_MANAGER_ID: {
+					String managerId = requestJSON.getString(Message.MessageKeys.TOUR_MANAGER_KEY);
+					return queryToursByManagerId(managerId);
+				}
+				case Message.MessageTypes.DELETE_TOUR: {
+					int tourId = requestJSON.getInt(Message.MessageKeys.TOUR_ID_KEY);
+					return deleteTour(tourId);
+				}
 				default: {
 					throw new IllegalArgumentException("Illegal message ID!");
 				}
@@ -686,6 +702,138 @@ public final class JDBCServer {
 		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.CREATE_SLOT, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	public static String addLocation(long osmId, String locationName, String locationType, double latitude, double longitude) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified = true;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call add_location (?, ?, ?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setLong(1, osmId);
+			   cstmt.setString(2, locationName);
+			   cstmt.setString(3, locationType);
+			   cstmt.setFloat(4, (float)latitude);
+			   cstmt.setFloat(5, (float)longitude);
+			   
+			   // modify database
+			   System.out.println("Adding location to the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in addUser!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.ADD_LOCATION, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	
+	public static String queryToursByManagerId(String managerId) throws Exception {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray tours = null;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call query_tours_by_manager_id (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, managerId);
+			   resultSet = queryDB(cstmt);
+			   tours = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in queryToursByManagerId!");
+			}
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		if (tours != null) {
+			// generate JSON message with the results
+			String messageJsonStr = tours.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.QUERY_TOURS_BY_MANAGER_ID, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
+		}
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
+	}
+	
+	
+	public static String deleteTour(int tourId) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call delete_tour (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setInt(1, tourId);
+			   
+			   // modify database
+			   System.out.println("Deleting tour from the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in deleteTour!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+					
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.DELETE_TOUR, messageJsonStr);
 		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);

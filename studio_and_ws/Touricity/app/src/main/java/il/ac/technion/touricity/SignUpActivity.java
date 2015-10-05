@@ -363,7 +363,8 @@ public class SignUpActivity extends Activity {
                 }
             } else {
                 // TODO: add email confirmation logic and delete following line
-                Toast.makeText(context, "Sign up complete.", Toast.LENGTH_LONG).show();
+                String signUpComplete = getString(R.string.signup_complete);
+                Toast.makeText(context, signUpComplete, Toast.LENGTH_LONG).show();
                 finish();
             }
         }

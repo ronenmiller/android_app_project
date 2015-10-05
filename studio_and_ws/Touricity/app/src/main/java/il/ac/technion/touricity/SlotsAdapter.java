@@ -62,24 +62,39 @@ public class SlotsAdapter extends CursorAdapter {
         ViewHolder viewHolder = (ViewHolder)view.getTag();
 
         long slotId = cursor.getLong(SlotsFragment.COL_SLOT_ID);
-        String userId = Utility.getLoggedInUserId(context.getApplicationContext());
 
-        String selection = ToursContract.ReservationEntry.TABLE_NAME + "." +
-                ToursContract.ReservationEntry._ID + " = ? AND " +
-                ToursContract.ReservationEntry.TABLE_NAME + "." +
-                ToursContract.ReservationEntry.COLUMN_RESERVATION_USER_ID + " = ?";
+        boolean isAlreadyReserved = false;
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(context.getApplicationContext());
+        if (isUserLoggedIn) {
+            String userId = Utility.getLoggedInUserId(context.getApplicationContext());
 
-        Cursor reservationCursor = context.getContentResolver().query(
-                ToursContract.ReservationEntry.CONTENT_URI,
-                // Projection is not important in this case.
-                new String[]{ToursContract.ReservationEntry.TABLE_NAME +
-                        "." + ToursContract.ReservationEntry._ID},
-                selection,
-                new String[]{Long.toString(slotId), userId},
-                null
-        );
+            String selection = ToursContract.ReservationEntry.TABLE_NAME + "." +
+                    ToursContract.ReservationEntry._ID + " = ? AND " +
+                    ToursContract.ReservationEntry.TABLE_NAME + "." +
+                    ToursContract.ReservationEntry.COLUMN_RESERVATION_USER_ID + " = ?";
 
-        boolean isAlreadyReserved = reservationCursor.moveToFirst();
+            Cursor reservationCursor = null;
+            try {
+                reservationCursor = context.getContentResolver().query(
+                        ToursContract.ReservationEntry.CONTENT_URI,
+                        // Projection is not important in this case.
+                        new String[]{ToursContract.ReservationEntry.TABLE_NAME +
+                                "." + ToursContract.ReservationEntry._ID},
+                        selection,
+                        new String[]{Long.toString(slotId), userId},
+                        null
+                );
+
+                if (reservationCursor != null) {
+                    isAlreadyReserved = reservationCursor.moveToFirst();
+                }
+            }
+            finally {
+                if (reservationCursor != null) {
+                    reservationCursor.close();
+                }
+            }
+        }
 
         if (isAlreadyReserved) {
             viewHolder.iconView.setImageResource(R.drawable.ic_check_circle_teal_24dp);

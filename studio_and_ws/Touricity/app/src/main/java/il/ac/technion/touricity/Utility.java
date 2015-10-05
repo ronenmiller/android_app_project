@@ -13,12 +13,14 @@ import java.text.SimpleDateFormat;
 
 public class Utility {
 
-    private static final String ABOUT_TAG = "about_tag";
-    private static final String LOGIN_TAG = "login_tag";
-    private static final String LOGOUT_TAG = "logout_tag";
-    private static final String RESERVE_SLOT_TAG = "reserve_slot_tag";
-    private static final String TIME_PICKER_TAG = "time_picker_tag";
-    private static final String DATE_PICKER_TAG = "date_picker_tag";
+    // Package-shared
+    static final String ABOUT_TAG = "about_tag";
+    static final String LOGIN_TAG = "login_tag";
+    static final String LOGOUT_TAG = "logout_tag";
+    static final String DELETE_TOUR_TAG = "delete_tour_tag";
+    static final String RESERVE_SLOT_TAG = "reserve_slot_tag";
+    static final String TIME_PICKER_TAG = "time_picker_tag";
+    static final String DATE_PICKER_TAG = "date_picker_tag";
 
     public class ServerConfig {
 
@@ -229,9 +231,15 @@ public class Utility {
         logoutDialogFragment.show(context.getSupportFragmentManager(), LOGOUT_TAG);
     }
 
+    public static void showDeleteTourDialog(FragmentActivity context, Uri uri) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment deleteTourDialogFragment = DeleteTourDialogFragment.newInstance(uri);
+        deleteTourDialogFragment.show(context.getSupportFragmentManager(), DELETE_TOUR_TAG);
+    }
+
     public static void showReserveSlotDialog(FragmentActivity context, Uri uri) {
         // Create an instance of the dialog fragment and show it
-        ReserveSlotDialogFragment reserveSlotDialogfragment = ReserveSlotDialogFragment.newInstance(uri);
+        DialogFragment reserveSlotDialogfragment = ReserveSlotDialogFragment.newInstance(uri);
         reserveSlotDialogfragment.show(context.getSupportFragmentManager(), RESERVE_SLOT_TAG);
     }
 

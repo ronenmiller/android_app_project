@@ -3,7 +3,6 @@ package il.ac.technion.touricity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -100,13 +99,9 @@ public class SlotsActivity extends FragmentActivity
         // TODO: add sign in, login, logout menu buttons to activity
 //        showSignInMenuItems(false);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (Utility.getLoggedInUserIsGuide(getApplicationContext())) {
-                SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
-                        .findFragmentByTag(SLOTS_FRAGMENT_TAG);
-                sf.showGuideOptions(true);
-            }
-        }
+        SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
+                .findFragmentByTag(SLOTS_FRAGMENT_TAG);
+        sf.showGuideOptions();
     }
 
     @Override

@@ -48,6 +48,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private static final int DETAIL_LOADER = 0;
 
     public static final String INTENT_EXTRA_TOUR_ID = "extra_tour_id";
+    public static final String INTENT_EXTRA_BTN_ID = "extra_btn_id";
+
+    public static final int VIEW_SLOTS_BTN_ID = 0;
+    public static final int DELETE_TOUR_BTN_ID = 1;
 
     private Uri mUri = null;
 
@@ -91,6 +95,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView mDescriptionView;
     private HorizontalScrollView mPhotosView;
     private LinearLayout mCommentsView;
+
+    private Button mDeleteTourBtn;
 
     private View mDetailFormView;
     private View mProgressView;
@@ -173,6 +179,27 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
                 Intent intent = new Intent(getActivity(), SlotsLoaderService.class);
                 intent.putExtra(INTENT_EXTRA_TOUR_ID, tourId);
+                intent.putExtra(INTENT_EXTRA_BTN_ID, VIEW_SLOTS_BTN_ID);
+                showProgress(true);
+                getActivity().startService(intent);
+            }
+        });
+
+        mDeleteTourBtn = (Button)rootView.findViewById(R.id.detail_delete_tour_btn);
+
+        showGuideOptions();
+
+        mDeleteTourBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mUri == null) {
+                    return;
+                }
+
+                int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
+                Intent intent = new Intent(getActivity(), SlotsLoaderService.class);
+                intent.putExtra(INTENT_EXTRA_TOUR_ID, tourId);
+                intent.putExtra(INTENT_EXTRA_BTN_ID, DELETE_TOUR_BTN_ID);
                 showProgress(true);
                 getActivity().startService(intent);
             }
@@ -182,6 +209,49 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         mProgressView = rootView.findViewById(R.id.detail_progressbar);
 
         return rootView;
+    }
+
+    // Called on login or logout.
+    public void showGuideOptions() {
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
+        boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
+
+        if (isUserLoggedIn && isUserGuide) {
+            if (mUri != null) {
+                int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
+                String selection = TourEntry.TABLE_NAME + "." +
+                        TourEntry._ID + " = ?";
+                Cursor tourCursor = null;
+                try {
+                    tourCursor = getActivity().getContentResolver().query(
+                            TourEntry.CONTENT_URI,
+                            new String[]{TourEntry.COLUMN_TOUR_MANAGER_ID},
+                            selection,
+                            new String[]{Integer.toString(tourId)},
+                            null
+                    );
+
+                    if (tourCursor != null) {
+                        if (tourCursor.moveToNext()) {
+                            String managerId = tourCursor.getString(0);
+                            String loggedInUserId = Utility
+                                    .getLoggedInUserId(getActivity().getApplicationContext());
+                            if (managerId.equals(loggedInUserId)) {
+                                mDeleteTourBtn.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    }
+                }
+                finally {
+                    if (tourCursor != null) {
+                        tourCursor.close();
+                    }
+                }
+            }
+        }
+        else {
+            mDeleteTourBtn.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -365,7 +435,14 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             // Stop the rotating animation and set visibility attribute
             Log.d(LOG_TAG, "Slots broadcast received.");
             showProgress(false);
-            ((Callback)getActivity()).onViewSlots(mUri);
+            if (intent != null) {
+                if (intent.getIntExtra(INTENT_EXTRA_BTN_ID, -1) == VIEW_SLOTS_BTN_ID) {
+                    ((Callback)getActivity()).onViewSlots(mUri);
+                }
+                else if (intent.getIntExtra(INTENT_EXTRA_BTN_ID, -1) == DELETE_TOUR_BTN_ID) {
+                    Utility.showDeleteTourDialog(getActivity(), mUri);
+                }
+            }
         }
     };
 

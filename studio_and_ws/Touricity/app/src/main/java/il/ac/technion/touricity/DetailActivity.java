@@ -4,13 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class DetailActivity extends FragmentActivity
-        implements DetailFragment.Callback {
+        implements DeleteTourDialogFragment.DeleteTourDialogListener,
+        DetailFragment.Callback {
+
+    private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
 
     private AppCompatDelegate mDelegate;
 
@@ -25,7 +29,7 @@ public class DetailActivity extends FragmentActivity
         if (savedInstanceState == null) {
             DetailFragment fragment = DetailFragment.newInstance(getIntent().getData());
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.tours_slots_detail_container, fragment)
+                    .add(R.id.tours_slots_detail_container, fragment, DETAIL_FRAGMENT_TAG)
                     .commit();
         }
     }
@@ -50,11 +54,14 @@ public class DetailActivity extends FragmentActivity
             this.finish();
             return true;
         }
-        if (id == R.id.action_settings) {
+        else if (id == R.id.action_settings) {
             Context context = this;
             Intent settingsIntent = new Intent(context, SettingsActivity.class);
             startActivity(settingsIntent);
             return true;
+        }
+        else if (id == R.id.action_logout) {
+            Utility.showLogoutDialog(this);
         }
 
         return super.onOptionsItemSelected(item);
@@ -76,6 +83,39 @@ public class DetailActivity extends FragmentActivity
             mDelegate = AppCompatDelegate.create(this, null);
         }
         return mDelegate;
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the LogoutDialogFragment.LogoutDialogListener interface
+//    @Override
+//    public void onLogout(DialogFragment dialog) {
+//        // User touched the dialog's login button
+//        String logoutSuccess = getString(R.string.logout_success);
+//        Toast.makeText(this, logoutSuccess, Toast.LENGTH_LONG).show();
+//        Utility.saveLogoutState(this.getApplicationContext());
+//        dialog.dismiss();
+//
+//        // TODO: add this
+////        showSignInMenuItems(true);
+//
+//        DetailFragment df = (DetailFragment)getSupportFragmentManager()
+//                .findFragmentByTag(DETAIL_FRAGMENT_TAG);
+//        if (df != null) {
+//            df.showGuideOptions();
+//        }
+//    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the DeleteTourDialogFragment.DeleteTourDialogListener interface
+    @Override
+    public void onDeleteTour(DialogFragment dialog) {
+        dialog.dismiss();
+
+        // Always one-pane mode, otherwise main activity or manage tours activity will be called.
+        Intent intent = new Intent(this, ManageToursActivity.class);
+        this.startActivity(intent);
     }
 
     @Override

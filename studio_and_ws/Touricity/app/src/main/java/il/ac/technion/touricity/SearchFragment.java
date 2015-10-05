@@ -3,6 +3,7 @@ package il.ac.technion.touricity;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,12 +18,19 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import il.ac.technion.touricity.data.ToursContract;
+import il.ac.technion.touricity.service.AddLocationService;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class SearchFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    public static final String INTENT_EXTRA_LOCATION_ID = "extra_location_id";
+    public static final String INTENT_EXTRA_LOCATION_NAME = "extra_location_name";
+    public static final String INTENT_EXTRA_LOCATION_TYPE = "extra_location_type";
+    public static final String INTENT_EXTRA_LOCATION_LATITUDE = "extra_location_latitude";
+    public static final String INTENT_EXTRA_LOCATION_LONGITUDE = "extra_location_longitude";
 
     private LocationAdapter mLocationAdapter;
 
@@ -93,6 +101,14 @@ public class SearchFragment extends Fragment
 
         // Release resources.
         cursor.close();
+
+        Intent intent = new Intent(getActivity(), AddLocationService.class);
+        intent.putExtra(INTENT_EXTRA_LOCATION_ID, osmID);
+        intent.putExtra(INTENT_EXTRA_LOCATION_NAME, locationName);
+        intent.putExtra(INTENT_EXTRA_LOCATION_TYPE, locationType);
+        intent.putExtra(INTENT_EXTRA_LOCATION_LATITUDE, latitude);
+        intent.putExtra(INTENT_EXTRA_LOCATION_LONGITUDE, longitude);
+        getActivity().startService(intent);
 
         // Return to main activity.
         locationSelected();

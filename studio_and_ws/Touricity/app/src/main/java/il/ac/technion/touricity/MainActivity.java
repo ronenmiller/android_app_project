@@ -35,6 +35,7 @@ public class MainActivity extends ActionBarActivity
         implements LoaderManager.LoaderCallbacks<Cursor>,
         LoginDialogFragment.LoginDialogListener,
         LogoutDialogFragment.LogoutDialogListener,
+        DeleteTourDialogFragment.DeleteTourDialogListener,
         MainFragment.Callback,
         DetailFragment.Callback,
         SlotsFragment.Callback,
@@ -84,6 +85,9 @@ public class MainActivity extends ActionBarActivity
     private MenuItem mSignupMenuItem;
     private MenuItem mLogoutMenuItem;
     private MenuItem mMyToursMenuItem;
+    private MenuItem mManageToursMenuItem;
+    private MenuItem mManageSlotsMenuItem;
+
 
     private RecentLocationAdapter mRecentLocationAdapter;
 
@@ -120,9 +124,6 @@ public class MainActivity extends ActionBarActivity
             // adding or replacing the detail fragment using a
             // fragment transaction.
             if (savedInstanceState == null) {
-//                getSupportFragmentManager().beginTransaction()
-//                        .replace(R.id.tours_slots_detail_container, new DetailFragment(), DETAIL_FRAGMENT_TAG)
-//                        .commit();
                 mToursSlotsDetailContainer.setVisibility(View.INVISIBLE);
             }
         } else {
@@ -144,6 +145,8 @@ public class MainActivity extends ActionBarActivity
         mSignupMenuItem = menu.findItem(R.id.action_signup);
         mLogoutMenuItem = menu.findItem(R.id.action_logout);
         mMyToursMenuItem = menu.findItem(R.id.action_my_tours);
+        mManageToursMenuItem = menu.findItem(R.id.action_manage_tours);
+        mManageSlotsMenuItem = menu.findItem(R.id.action_manage_slots);
 
         addSearchView(menu);
 
@@ -251,6 +254,7 @@ public class MainActivity extends ActionBarActivity
         else if (id == R.id.action_signup) {
             Intent intent = new Intent(this, SignUpActivity.class);
             this.startActivity(intent);
+            return true;
         }
         else if (id == R.id.action_login) {
             Utility.showLoginDialog(this);
@@ -259,7 +263,19 @@ public class MainActivity extends ActionBarActivity
             Utility.showLogoutDialog(this);
         }
         else if (id == R.id.action_my_tours) {
-            // TODO: complete code
+            // TODO: uncomment when activity is ready
+//            Intent intent = new Intent(this, MyToursActivity.class);
+//            this.startActivity(intent);
+        }
+        else if (id == R.id.action_manage_tours) {
+            Intent intent = new Intent(this, ManageToursActivity.class);
+            this.startActivity(intent);
+            return true;
+        }
+        else if (id == R.id.action_manage_slots) {
+            // TODO: uncomment when activity is ready
+//            Intent intent = new Intent(this, ManageSlotsActivity.class);
+//            this.startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -307,7 +323,6 @@ public class MainActivity extends ActionBarActivity
     public void onCreateSlot(Uri tourUri) {
         // always two-pane mode, otherwise pressing the create slot button will lead to
         // slots activity.
-        mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
         CreateSlotFragment fragment = CreateSlotFragment.newInstance(tourUri);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.tours_slots_detail_container, fragment, CREATE_SLOT_FRAGMENT_TAG)
@@ -340,7 +355,6 @@ public class MainActivity extends ActionBarActivity
 
         // always two-pane mode, otherwise pressing the view slots button will lead to
         // detail activity.
-        mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
         SlotsFragment fragment = SlotsFragment.newInstance(tourUri);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.tours_slots_detail_container, fragment, SLOTS_FRAGMENT_TAG)
@@ -388,19 +402,23 @@ public class MainActivity extends ActionBarActivity
         // User touched the dialog's login button
         String loginSuccess = getString(R.string.login_success);
         Toast.makeText(this, loginSuccess, Toast.LENGTH_LONG).show();
-        // We need to implement this function in this activity, and not in the
-        // LoginDialogActivity, because here one can call getApplicationContext().
         Utility.saveLoginSession(this.getApplicationContext(), userId, isGuide);
         dialog.dismiss();
 
         showSignInMenuItems(false);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (Utility.getLoggedInUserIsGuide(getApplicationContext())) {
-                MainFragment mf = (MainFragment)getSupportFragmentManager()
-                        .findFragmentById(R.id.fragment_main);
-                mf.showGuideOptions(true);
-            }
+        MainFragment mf = (MainFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_main);
+        mf.showGuideOptions();
+        DetailFragment df = (DetailFragment)getSupportFragmentManager()
+                .findFragmentByTag(DETAIL_FRAGMENT_TAG);
+        if (df != null) {
+            df.showGuideOptions();
+        }
+        SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
+                .findFragmentByTag(SLOTS_FRAGMENT_TAG);
+        if (sf != null) {
+            sf.showGuideOptions();
         }
     }
 
@@ -412,18 +430,58 @@ public class MainActivity extends ActionBarActivity
         // User touched the dialog's login button
         String logoutSuccess = getString(R.string.logout_success);
         Toast.makeText(this, logoutSuccess, Toast.LENGTH_LONG).show();
-        // We need to implement this function in this activity, and not in the
-        // LogoutDialogActivity, because here one can call getApplicationContext().
         Utility.saveLogoutState(this.getApplicationContext());
         dialog.dismiss();
 
         showSignInMenuItems(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            MainFragment mf = (MainFragment)getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_main);
-            mf.showGuideOptions(false);
+        if (mTwoPane) {
+            CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager()
+                    .findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+            ReserveSlotDialogFragment rsdf = (ReserveSlotDialogFragment)getSupportFragmentManager()
+                    .findFragmentByTag(Utility.RESERVE_SLOT_TAG);
+            if (rsdf != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .remove(rsdf).commit();
+            }
+            if (csf != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .remove(csf).commit();
+            }
+            getSupportFragmentManager().executePendingTransactions();
         }
+
+        MainFragment mf = (MainFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_main);
+        mf.showGuideOptions();
+        DetailFragment df = (DetailFragment)getSupportFragmentManager()
+                .findFragmentByTag(DETAIL_FRAGMENT_TAG);
+        if (df != null) {
+            df.showGuideOptions();
+        }
+        SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
+                .findFragmentByTag(SLOTS_FRAGMENT_TAG);
+        if (sf != null) {
+            sf.showGuideOptions();
+        }
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the DeleteTourDialogFragment.DeleteTourDialogListener interface
+    @Override
+    public void onDeleteTour(DialogFragment dialog) {
+        dialog.dismiss();
+
+        // Always two-pane mode, otherwise detail activity will be called.
+        getSupportFragmentManager().beginTransaction()
+                .remove(getSupportFragmentManager()
+                        .findFragmentById(R.id.tours_slots_detail_container)).commit();
+        getSupportFragmentManager().executePendingTransactions();
+
+        MainFragment mf = (MainFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_main);
+        mf.onDeleteTour();
     }
 
     private void showSignInMenuItems(boolean show) {
@@ -438,6 +496,12 @@ public class MainActivity extends ActionBarActivity
         }
         if (mMyToursMenuItem != null) {
             mMyToursMenuItem.setVisible(!show);
+        }
+        if (mManageToursMenuItem != null) {
+            mManageToursMenuItem.setVisible(!show);
+        }
+        if (mManageSlotsMenuItem != null) {
+            mManageSlotsMenuItem.setVisible(!show);
         }
     }
 

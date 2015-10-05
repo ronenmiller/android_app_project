@@ -15,8 +15,11 @@
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_signup">Sign up</string>
     <string name="dialog_login_title">Login</string>
+    <string name="title_activity_manage_tours">Manage tours</string>
+    <string name="title_activity_manage_slots">Manage slots</string>
 
     <!-- Menu-related strings -->
+    <string name="action_main">Main</string>
     <string name="action_search">Search</string>
     <string name="action_map">Map</string>
     <string name="action_my_tours">My tours</string>
@@ -27,6 +30,8 @@
     <string name="action_about">About</string>
     <string name="action_create_tour">Create tour</string>
     <string name="action_create_slot">Create slot</string>
+    <string name="action_manage_tours">Manage tours</string>
+    <string name="action_manage_slots">Manage slots</string>
 
     <!-- Search-location-related strings -->
     <string name="search_hint">Search cities, towns</string>
@@ -41,6 +46,7 @@
     <string name="prompt_checkbox">Are you a tour guide?</string>
     <string name="action_signup_short">Go</string>
     <string name="action_signup_btn">Create</string>
+    <string name="signup_complete">Sign up complete</string>
 
     <string name="error_field_required">This field is required</string>
     <string name="error_invalid_email">This email address is invalid</string>
@@ -51,7 +57,7 @@
     <string name="error_short_password">Minimum password length is 6 characters</string>
     <string name="error_invalid_password">Password must contain at least one digit and one character</string>
     <string name="error_mismatch_password">This password doesn\'t match the re-entered password</string>
-    <string name="error_signup_failed">Server error: sign up failed</string>
+    <string name="error_signup_failed">Server ERROR: sign up failed</string>
 
     <!-- Strings related to login dialog -->
     <string name="action_login_short">Go</string>
@@ -80,6 +86,7 @@
 
     <!-- Strings related to detail activity -->
     <string name="action_view_slots">View Slots</string>
+    <string name="action_delete_tour">Delete tour</string>
     <string name="tour_duration">Duration: <xliff:g id="duration">%s</xliff:g> minutes</string>
     <string name="tour_language">Language: <xliff:g id="language">%s</xliff:g></string>
     <string name="tour_location">Tour starts from: <xliff:g id="location">%s</xliff:g></string>
@@ -100,10 +107,10 @@
     <string name="create_tour_location">Tour starts from...</string>
     <string name="create_tour_description">Tour description</string>
     <string name="action_create_tour_short">Go</string>
-    <string name="action_create_tour_btn">Create tour</string>
+    <string name="action_create_tour_btn">Create</string>
 
     <string name="error_positive_duration">Tour duration must be positive</string>
-    <string name="error_create_tour_failed">Server error: tour creation failed</string>
+    <string name="error_create_tour_failed">Server ERROR: tour creation failed</string>
 
     <!-- Strings related to create slot activity -->
     <string name="create_slot_header">Create slot</string>
@@ -112,12 +119,12 @@
     <string name="create_slot_time">Select time</string>
     <string name="create_slot_capacity">Slot capacity</string>
     <string name="action_create_slot_short">Go</string>
-    <string name="action_create_slot_btn">Create slot</string>
+    <string name="action_create_slot_btn">Create</string>
 
     <string name="error_date_passed">The selected date has passed</string>
     <string name="error_time_passed">The selected time has passed</string>
     <string name="error_positive_capacity">Slot capacity must be positive</string>
-    <string name="error_create_slot_failed">Server error: slot creation failed</string>
+    <string name="error_create_slot_failed">Server ERROR: slot creation failed</string>
 
     <!-- List of available languages -->
     <string name="language_english">English</string>
@@ -177,12 +184,19 @@
     <string name="technion">Touricity is a students project at the NSSL lab, faculty of EE, Technion.</string>
     <string name="advisor">Project advisor: Viktor Kulikov.</string>
     <string name="thanks">The developers would like to thank
-        <a href="http://www.smashingmagazine.com/2014/06/freebie-ballicons-2-icon-set-png-psd-svg/">PixelBuddha</a>
-        for the app\'s icon and to
+        <a href="http://www.smashingmagazine.com/2014/06/freebie-ballicons-2-icon-set-png-psd-svg/">PixelBuddha</a> for the app\'s icon, and to
         <a href="http://www.smashingmagazine.com/2010/04/the-ultimate-free-web-designer-s-icon-set-750-icons-incl-psd-sources/">Oliver Twardowski</a>
         for the flags icons.</string>
 
     <string name="app_version">Version 1.0</string>
+
+    <!-- Delete tour dialog -->
+    <string name="dialog_delete_tour_title">Delete tour?</string>
+    <string name="dialog_delete_tour_description">Only tours which currently don\'t have open slots can be deleted.</string>
+    <string name="action_delete_tour_cancel">Cancel</string>
+    <string name="action_delete_tour_confirm">Delete</string>
+    <string name="dialog_delete_tour_success">Tour deleted successfully</string>
+    <string name="dialog_delete_tour_fail">Server ERROR: tour deletion failed</string>
 
 
 </resources>

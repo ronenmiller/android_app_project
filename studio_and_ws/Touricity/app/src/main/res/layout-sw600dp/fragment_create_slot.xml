@@ -32,9 +32,19 @@
             android:layout_marginTop="8dp"
             android:orientation="vertical">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="@string/create_slot_header"
+                android:fontFamily="sans-serif"
+                android:textSize="24sp"
+                android:textColor="@color/touricity_teal" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 

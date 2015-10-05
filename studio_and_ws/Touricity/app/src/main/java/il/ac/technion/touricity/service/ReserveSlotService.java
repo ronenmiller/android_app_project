@@ -24,7 +24,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import il.ac.technion.touricity.LoginDialogFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.ReserveSlotDialogFragment;
 import il.ac.technion.touricity.Utility;
@@ -43,13 +42,10 @@ public class ReserveSlotService extends IntentService {
         }
 
         long slotId = intent.getLongExtra(ReserveSlotDialogFragment.INTENT_EXTRA_SLOT_ID, -1L);
-        if (slotId == -1L) {
-            return;
-        }
-
         String userId = intent.getStringExtra(ReserveSlotDialogFragment.INTENT_EXTRA_USER_ID);
         int numOfPlacesRequested = intent.getIntExtra(ReserveSlotDialogFragment.INTENT_EXTRA_PLACES_REQUESTED, -1);
-        if (numOfPlacesRequested == -1) {
+
+        if (slotId == -1L || userId == null || numOfPlacesRequested == -1) {
             return;
         }
 
@@ -234,10 +230,10 @@ public class ReserveSlotService extends IntentService {
         return false;
     }
 
-    // Send an Intent with an action named BROADCAST_LOGIN_SERVICE_DONE.
+    // Send an Intent with an action named BROADCAST_RESERVE_SLOT_SERVICE_DONE.
     private void sendBroadcast(boolean success) {
         Intent broadcastIntent = new Intent(ReserveSlotDialogFragment.BROADCAST_RESERVE_SLOT_SERVICE_DONE);
-        broadcastIntent.putExtra(LoginDialogFragment.BROADCAST_INTENT_RESULT, success);
+        broadcastIntent.putExtra(ReserveSlotDialogFragment.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
 

@@ -1,6 +1,5 @@
 package il.ac.technion.touricity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -49,7 +48,7 @@ public class MainFragment extends Fragment
 
     // package-shared
     static final int OSM_LOADER = 0;
-    static final int TOURS_LOADER = 1;
+    private static final int TOURS_LOADER = 1;
 
     public static final String BROADCAST_LOCATIONS_LOADER_SERVICE_DONE = "broadcast_locations_loader_service_done";
     public static final String BROADCAST_TOURS_LOADER_SERVICE_DONE = "broadcast_tours_loader_service_done";
@@ -166,8 +165,6 @@ public class MainFragment extends Fragment
         mFooterView = ((LayoutInflater)getActivity().getSystemService
                 (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_create_tour, null, false);
 
-        boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
-        boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
         boolean isLocationSelected = Utility.getPreferredLocationId
                 (getActivity().getApplicationContext()) != -1L;
 
@@ -180,30 +177,36 @@ public class MainFragment extends Fragment
             updateLocationViews(true);
         }
 
-        if (isUserLoggedIn && isUserGuide && isLocationSelected) {
-            mToursListView.addFooterView(mFooterView);
-        }
-        else {
-            mToursListView.removeFooterView(mFooterView);
-        }
+        // List's footer view is set in the onResume method.
 
         mToursListView.setAdapter(mToursAdapter);
         mToursListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView adapterView, View view, int position, long l) {
+                boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
+                boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
+                boolean isLocationSelected = Utility.getPreferredLocationId
+                        (getActivity().getApplicationContext()) != -1L;
                 // CursorAdapter returns a cursor at the correct position for getItem(), or null
                 // if it cannot seek to that position.
                 Cursor cursor = (Cursor)adapterView.getItemAtPosition(position);
                 if (cursor != null) {
+                    if (isUserLoggedIn && isUserGuide && isLocationSelected) {
+                        if (mCreateTourMenuItem != null) {
+                            mCreateTourMenuItem.setVisible(true);
+                        }
+                    }
                     int tourId = cursor.getInt(COL_TOUR_ID);
                     Uri tourUri = ToursContract.TourEntry.buildTourIdUri(tourId);
                     ((Callback)getActivity()).onItemSelected(tourUri);
                 }
                 else {
-                    if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
-                            Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
+                    if (isUserLoggedIn && isUserGuide) {
                         if (mToursListView.getLastVisiblePosition() == position) {
+                            if (mCreateTourMenuItem != null) {
+                                mCreateTourMenuItem.setVisible(false);
+                            }
                             ((Callback)getActivity()).onCreateTour();
                         }
                     }
@@ -239,11 +242,18 @@ public class MainFragment extends Fragment
     }
 
     // Called on login or logout.
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void showGuideOptions(boolean show) {
-        if (show) {
-            if (mToursListView != null) {
-                mToursListView.addFooterView(mFooterView);
+    public void showGuideOptions() {
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(getActivity().getApplicationContext());
+        boolean isUserGuide = Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext());
+        boolean isLocationSelected = Utility.getPreferredLocationId
+                (getActivity().getApplicationContext()) != -1L;
+
+        if (isUserLoggedIn && isUserGuide && isLocationSelected) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (mToursListView != null) {
+                    mToursListView.removeFooterView(mFooterView);
+                    mToursListView.addFooterView(mFooterView);
+                }
             }
             if (mCreateTourMenuItem != null) {
                 mCreateTourMenuItem.setVisible(true);
@@ -301,6 +311,9 @@ public class MainFragment extends Fragment
         int id = item.getItemId();
 
         if (id == R.id.action_create_tour) {
+            if (mCreateTourMenuItem != null) {
+                mCreateTourMenuItem.setVisible(false);
+            }
             ((Callback)getActivity()).onCreateTour();
             return true;
         }
@@ -309,12 +322,6 @@ public class MainFragment extends Fragment
     }
 
     public void performLocationSearch(String query) {
-        // Delete previous results
-        getActivity().getContentResolver().delete(
-                ToursContract.OSMEntry.CONTENT_URI,
-                null,
-                null
-        );
         // Arrange visibility of views.
         updateLocationViews(false);
         mProgressBarLayout.setVisibility(View.VISIBLE);
@@ -331,6 +338,10 @@ public class MainFragment extends Fragment
         Intent intent = new Intent(getActivity(), LocationsLoaderService.class);
         intent.putExtra(Intent.EXTRA_TEXT, query);
         getActivity().startService(intent);
+    }
+
+    public void onDeleteTour() {
+        getActivity().getSupportLoaderManager().restartLoader(TOURS_LOADER, null, this);
     }
 
     private void updateTours() {
@@ -435,8 +446,7 @@ public class MainFragment extends Fragment
         // Arrange visibility of views.
         updateLocationViews(mShowLocation);
 
-        // The only loader that has a visible list view in this activity.
-        getLoaderManager().initLoader(TOURS_LOADER, null, this);
+        updateTours();
     }
 
     @Override
@@ -519,13 +529,7 @@ public class MainFragment extends Fragment
         else if (cursorLoader.getId() == TOURS_LOADER) {
             Log.d(LOG_TAG, "Tours cursor returned " + cursor.getCount() + " rows.");
             mToursAdapter.swapCursor(cursor);
-            // Only show the create tour menu item when a location is selected.
-            if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
-                    Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
-                if (mCreateTourMenuItem != null) {
-                    mCreateTourMenuItem.setVisible(true);
-                }
-            }
+            showGuideOptions();
 
             if (cursor.getCount() > 0) {
                 mToursListView.removeHeaderView(mHeaderView);
@@ -571,14 +575,14 @@ public class MainFragment extends Fragment
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mToursReceiver,
                 new IntentFilter(BROADCAST_TOURS_LOADER_SERVICE_DONE));
 
-        updateTours();
+        showGuideOptions();
     }
 
-    // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event
+    // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event.
     private BroadcastReceiver mLocationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Stop the rotating animation and set visibility attribute
+            // Stop the rotating animation and set visibility attribute.
             Log.d(LOG_TAG, "Location broadcast received.");
             mProgressBarView.setAnimation(null);
             mProgressBarLayout.setVisibility(View.GONE);
@@ -589,11 +593,11 @@ public class MainFragment extends Fragment
         }
     };
 
-    // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event
+    // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event.
     private BroadcastReceiver mToursReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Stop the rotating animation and set visibility attribute
+            // Stop the rotating animation and load the results.
             Log.d(LOG_TAG, "Tours broadcast received.");
             mSwipeLayout.setRefreshing(false);
             MainFragment mf = (MainFragment)getActivity().getSupportFragmentManager()
@@ -604,7 +608,7 @@ public class MainFragment extends Fragment
 
     @Override
     public void onPause() {
-        // Unregister since the activity is not visible
+        // Unregister since the activity is not visible.
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mLocationReceiver);
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mToursReceiver);
         super.onPause();

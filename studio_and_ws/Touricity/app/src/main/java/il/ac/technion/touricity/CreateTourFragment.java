@@ -16,6 +16,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -76,6 +79,13 @@ public class CreateTourFragment extends Fragment {
     private View mProgressView;
 
     public CreateTourFragment() { }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -140,6 +150,28 @@ public class CreateTourFragment extends Fragment {
         mProgressView = rootView.findViewById(R.id.create_tour_progressbar);
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.menu_fragment_create_tour, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        if (id == R.id.action_create_tour) {
+            attemptTourCreation();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -270,9 +302,8 @@ public class CreateTourFragment extends Fragment {
                 String tourCreationFailed = getString(R.string.error_create_tour_failed);
                 Toast.makeText(context, tourCreationFailed, Toast.LENGTH_LONG).show();
             } else {
-                // TODO: enable manage tours activity
-//                Intent manageToursIntent = new Intent(context, ManageToursActivity.class);
-//                context.startActivity(manageToursIntent);
+                Intent manageToursIntent = new Intent(context, ManageToursActivity.class);
+                getActivity().startActivity(manageToursIntent);
             }
         }
     };
