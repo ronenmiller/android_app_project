@@ -98,6 +98,8 @@
     <string name="slot_guide">Guided by <xliff:g id="guide_name">%s</xliff:g></string>
     <string name="slots_not_found">No slots found</string>
     <string name="slot_create">Create a new slot</string>
+    <string name="slot_full">Unfortunately, this slot is fully occupied</string>
+    <string name="slot_reserve_own">You cannot reserve your own slot</string>
 
     <!-- Strings related to create tour activity -->
     <string name="create_tour_header">Create tour</string>

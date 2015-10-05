@@ -58,6 +58,7 @@ public class SlotsFragment extends Fragment
 
     private static final String[] SLOTS_COLUMNS = {
             SlotEntry.TABLE_NAME + "." + SlotEntry._ID,
+            SlotEntry.COLUMN_SLOT_GUIDE_ID,
             ToursContract.UserEntry.COLUMN_USER_NAME,
             ToursContract.UserEntry.COLUMN_USER_RATING,
             SlotEntry.COLUMN_SLOT_DATE,
@@ -68,11 +69,12 @@ public class SlotsFragment extends Fragment
     // These indices are tied to SLOT_COLUMNS.  If SLOT_COLUMNS changes, these
     // must change.
     public static final int COL_SLOT_ID = 0;
-    public static final int COL_SLOT_GUIDE_NAME = 1;
-    public static final int COL_SLOT_GUIDE_RATING = 2;
-    public static final int COL_SLOT_DATE = 3;
-    public static final int COL_SLOT_TIME = 4;
-    public static final int COL_SLOT_CAPACITY = 5;
+    public static final int COL_SLOT_GUIDE_ID = 1;
+    public static final int COL_SLOT_GUIDE_NAME = 2;
+    public static final int COL_SLOT_GUIDE_RATING = 3;
+    public static final int COL_SLOT_DATE = 4;
+    public static final int COL_SLOT_TIME = 5;
+    public static final int COL_SLOT_CAPACITY = 6;
 
     private MenuItem mCreateSlotMenuItem;
 
@@ -157,16 +159,31 @@ public class SlotsFragment extends Fragment
                         Utility.showLoginDialog(getActivity());
                         return;
                     }
+                    // Prevent reservations of slots with 0 places left
+                    if (cursor.getInt(COL_SLOT_CAPACITY) == 0) {
+                        Toast.makeText(getActivity(), getString(R.string.slot_full), Toast.LENGTH_LONG)
+                                .show();
+                        return;
+                    }
+                    // Prevent guides from reserving their own slots.
+                    if (Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
+                        String loggedInGuideId = Utility.getLoggedInUserId(getActivity().getApplicationContext());
+                        String slotGuideId = cursor.getString(COL_SLOT_GUIDE_ID);
+                        if (loggedInGuideId.equals(slotGuideId)) {
+                            Toast.makeText(getActivity(), getString(R.string.slot_reserve_own), Toast.LENGTH_LONG)
+                                    .show();
+                            return;
+                        }
+                    }
                     long slotId = cursor.getLong(COL_SLOT_ID);
                     int slotVacant = cursor.getInt(COL_SLOT_CAPACITY);
                     Uri slotUri = SlotEntry.buildSlotIdUri(slotId, slotVacant);
                     Utility.showReserveSlotDialog(getActivity(), slotUri);
-                }
-                else {
+                } else {
                     if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
                             Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
                         if (mSlotsListView.getLastVisiblePosition() == position) {
-                            ((Callback)getActivity()).onCreateSlot(mUri);
+                            ((Callback) getActivity()).onCreateSlot(mUri);
                         }
                     }
                 }
