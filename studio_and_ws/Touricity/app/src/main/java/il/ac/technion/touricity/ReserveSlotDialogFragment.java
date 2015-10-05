@@ -109,7 +109,7 @@ public class ReserveSlotDialogFragment extends DialogFragment {
                     null
             );
 
-            isAlreadyReserved = reservationCursor.moveToFirst();
+            isAlreadyReserved = reservationCursor != null && reservationCursor.moveToFirst();
         }
         finally {
             if (reservationCursor != null) {

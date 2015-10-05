@@ -110,7 +110,7 @@ public class CreateTourFragment extends Fragment {
                     sortOrder
             );
 
-            while (languageCursor.moveToNext()) {
+            while (languageCursor != null && languageCursor.moveToNext()) {
                 list.add(languageCursor.getString(COL_LANGUAGE_NAME));
             }
         }

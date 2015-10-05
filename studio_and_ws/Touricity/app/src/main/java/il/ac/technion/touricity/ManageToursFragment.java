@@ -117,7 +117,6 @@ public class ManageToursFragment extends Fragment
                     ((Callback)getActivity()).onItemSelected(tourUri);
                 }
                 mPosition = position;
-
             }
         });
 

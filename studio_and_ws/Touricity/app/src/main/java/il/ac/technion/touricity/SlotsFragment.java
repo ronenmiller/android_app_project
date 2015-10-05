@@ -315,11 +315,6 @@ public class SlotsFragment extends Fragment
 
         if (cursor.getCount() > 0) {
             mSlotsListView.removeHeaderView(mHeaderView);
-            if (mPosition != ListView.INVALID_POSITION) {
-                // If we don't need to restart the loader, and there's a desired position to restore
-                // to, do so now.
-                mSlotsListView.smoothScrollToPosition(mPosition);
-            }
         }
         else {
             // Slots not found.
@@ -334,8 +329,6 @@ public class SlotsFragment extends Fragment
             }
         }
 
-
-        mSlotsAdapter.swapCursor(cursor);
         if (mPosition != ListView.INVALID_POSITION) {
             // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.

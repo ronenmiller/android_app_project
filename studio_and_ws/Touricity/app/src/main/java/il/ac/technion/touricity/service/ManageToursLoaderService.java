@@ -262,7 +262,6 @@ public class ManageToursLoaderService extends IntentService {
 
             Cursor toursCursor = null;
             Cursor slotsCursor = null;
-
             try {
                 // Find tours
                 toursCursor = resolver.query(

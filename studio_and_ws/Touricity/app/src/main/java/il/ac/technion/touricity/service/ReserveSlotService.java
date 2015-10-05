@@ -68,7 +68,7 @@ public class ReserveSlotService extends IntentService {
                         null
                 );
 
-                if (reservationCursor.moveToFirst()) {
+                if (reservationCursor != null && reservationCursor.moveToFirst()) {
                     oldNumOfPlacesRequested = reservationCursor.getInt(0);
                 }
             }
@@ -106,7 +106,7 @@ public class ReserveSlotService extends IntentService {
                         null
                 );
 
-                if (cursor.moveToFirst()) {
+                if (cursor != null && cursor.moveToFirst()) {
                     int oldNumOfPlacesInSlot = cursor.getInt(0);
                     int newNumOfPlacesInSlot = oldNumOfPlacesInSlot -
                             (numOfPlacesRequested - oldNumOfPlacesRequested);

@@ -85,9 +85,7 @@ public class SlotsAdapter extends CursorAdapter {
                         null
                 );
 
-                if (reservationCursor != null) {
-                    isAlreadyReserved = reservationCursor.moveToFirst();
-                }
+                isAlreadyReserved = reservationCursor != null && reservationCursor.moveToFirst();
             }
             finally {
                 if (reservationCursor != null) {

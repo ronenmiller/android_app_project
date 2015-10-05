@@ -231,14 +231,12 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                             null
                     );
 
-                    if (tourCursor != null) {
-                        if (tourCursor.moveToNext()) {
-                            String managerId = tourCursor.getString(0);
-                            String loggedInUserId = Utility
-                                    .getLoggedInUserId(getActivity().getApplicationContext());
-                            if (managerId.equals(loggedInUserId)) {
-                                mDeleteTourBtn.setVisibility(View.VISIBLE);
-                            }
+                    if (tourCursor != null && tourCursor.moveToNext()) {
+                        String managerId = tourCursor.getString(0);
+                        String loggedInUserId = Utility
+                                .getLoggedInUserId(getActivity().getApplicationContext());
+                        if (managerId.equals(loggedInUserId)) {
+                            mDeleteTourBtn.setVisibility(View.VISIBLE);
                         }
                     }
                 }
@@ -412,6 +410,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             String description = data.getString(COL_TOUR_DESCRIPTION);
             // Set the tour's description.
             mDescriptionView.setText(description);
+
+            data.close();
         }
     }
 

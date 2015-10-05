@@ -57,15 +57,24 @@ public class LocationAdapter extends CursorAdapter {
                 ToursContract.LocationEntry.COLUMN_LOCATION_ID + "= ?";
         long locationId = cursor.getLong(MainFragment.COL_OSM_LOCATION_ID);
 
-        Cursor locationCursor = context.getContentResolver().query(
-                ToursContract.LocationEntry.CONTENT_URI,
-                new String[]{ToursContract.LocationEntry.COLUMN_LOCATION_ID},
-                selection,
-                new String[]{Long.toString(locationId)},
-                null
-        );
+        boolean isLocationInHistory = false;
+        Cursor locationCursor = null;
+        try {
+            locationCursor = context.getContentResolver().query(
+                    ToursContract.LocationEntry.CONTENT_URI,
+                    new String[]{ToursContract.LocationEntry.COLUMN_LOCATION_ID},
+                    selection,
+                    new String[]{Long.toString(locationId)},
+                    null
+            );
 
-        boolean isLocationInHistory = locationCursor.moveToFirst();
+            isLocationInHistory = locationCursor != null && locationCursor.moveToFirst();
+        }
+        finally {
+            if (locationCursor != null) {
+                locationCursor.close();
+            }
+        }
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
