@@ -1,0 +1,10 @@
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/fragment_manage_slots"
+        android:name="il.ac.technion.touricity.ManageSlotsFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false"
+        tools:layout="@android:layout/list_content"
+        android:divider="?android:attr/dividerHorizontal"
+        tools:context="il.ac.technion.touricity.ManageSlotsActivity" />

@@ -1,0 +1,44 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ManageSlotsActivity">
+
+    <!-- When the users sees this activity, he is already logged in -->
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_about"
+        android:title="@string/action_about"
+        android:orderInCategory="101"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_main"
+        android:title="@string/action_main"
+        app:showAsAction="never"
+        android:orderInCategory="1"
+        android:visible="true" />
+
+    <item android:id="@+id/action_my_tours"
+        android:title="@string/action_my_tours"
+        app:showAsAction="never"
+        android:orderInCategory="5"
+        android:visible="true" />
+
+    <item android:id="@+id/action_manage_tours"
+        android:title="@string/action_manage_tours"
+        app:showAsAction="never"
+        android:orderInCategory="7"
+        android:visible="true" />
+
+    <!-- Log out takes the user back to the main activity -->
+    <item android:id="@+id/action_logout"
+        android:title="@string/action_logout"
+        app:showAsAction="never"
+        android:orderInCategory="9"
+        android:visible="true" />
+
+</menu>

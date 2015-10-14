@@ -27,14 +27,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import il.ac.technion.touricity.DetailFragment;
+import il.ac.technion.touricity.ManageSlotsFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.Utility;
 import il.ac.technion.touricity.data.ToursContract;
 
-public class SlotsLoaderService extends IntentService {
+public class ManageSlotsLoaderService extends IntentService {
 
-    private static final String LOG_TAG = SlotsLoaderService.class.getSimpleName();
+    private static final String LOG_TAG = ManageSlotsLoaderService.class.getSimpleName();
 
     private static final String[] SLOT_ID_COLUMNS = new String[] {
             ToursContract.SlotEntry.TABLE_NAME + "." + ToursContract.SlotEntry._ID
@@ -42,10 +42,8 @@ public class SlotsLoaderService extends IntentService {
 
     private static final int COL_SLOT_ID = 0;
 
-    private int mButtonClicked;
-
-    public SlotsLoaderService() {
-        super("SlotsLoaderService");
+    public ManageSlotsLoaderService() {
+        super("ManageSlotsLoaderService");
     }
 
     @Override
@@ -54,10 +52,10 @@ public class SlotsLoaderService extends IntentService {
             return;
         }
 
-        int tourId = intent.getIntExtra(DetailFragment.INTENT_EXTRA_TOUR_ID, -1);
-        mButtonClicked = intent.getIntExtra(DetailFragment.INTENT_EXTRA_BTN_ID, -1);
+        String guideId = Utility.getLoggedInUserId(getApplicationContext());
 
-        if (tourId == -1 || mButtonClicked == -1) {
+        // Bail out.
+        if (guideId == null) {
             return;
         }
 
@@ -78,10 +76,10 @@ public class SlotsLoaderService extends IntentService {
             Utility.setupHttpUrlConnection(urlConnection);
 
             // Create a message to be delivered to the server.
-            Map<String, Integer> map = new HashMap<>();
-            map.put(Message.MessageKeys.TOUR_ID_KEY, tourId);
+            Map<String, String> map = new HashMap<>();
+            map.put(Message.MessageKeys.SLOT_GUIDE_ID_KEY, guideId);
             JSONObject jsonObject = new JSONObject(map);
-            Message message = new Message(Message.MessageTypes.QUERY_SLOTS_BY_TOUR_ID, jsonObject.toString());
+            Message message = new Message(Message.MessageTypes.QUERY_SLOTS_BY_GUIDE_ID, jsonObject.toString());
             Gson gson = new Gson();
             String requestMessageJsonStr = gson.toJson(message);
 
@@ -128,12 +126,7 @@ public class SlotsLoaderService extends IntentService {
             // Extract tours from message
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             String slotsJsonStr = responseMessage.getMessageJson();
-            getSlotsDataFromJson(slotsJsonStr, tourId);
-
-            buffer.toString();
-
-            Log.v(LOG_TAG, "Json: " + slotsJsonStr);
-
+            getSlotDataFromJson(slotsJsonStr, guideId);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
@@ -156,17 +149,15 @@ public class SlotsLoaderService extends IntentService {
     }
 
     /**
-     * Take the String representing the matching slots in JSON Format and
+     * Take the String representing the matching tours in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
      *
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
-    public void getSlotsDataFromJson(String slotsJsonStr,
-                                     int tourId)
-            throws JSONException {
+    public void getSlotDataFromJson(String slotsJsonStr, String guideId) throws JSONException {
 
-        // Now we have a String representing the matching slots in JSON Format.
+        // Now we have a String representing the matching tours in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
         // into an Object hierarchy for us.
 
@@ -175,52 +166,84 @@ public class SlotsLoaderService extends IntentService {
 
             // Avoid crash.
             if (slotsArray.isNull(0)) {
-                Log.d(LOG_TAG, "Slots service complete. No slots found for this tour.");
+                Log.d(LOG_TAG, "ManageSlotsLoaderService complete. No slots found for this guide.");
                 sendBroadcast();
                 return;
             }
 
-            // Store new locations in order for the user to select his desired location
-            ArrayList<ContentValues> cvGuidesArrayList = new ArrayList<>();
-            ArrayList<ContentValues> cvSlotsArrayList = new ArrayList<>();
-
+            // Insert the new tours information into the database.
+            ArrayList<ContentValues> cvSlotsArrayList = new ArrayList<>(slotsArray.length());
+            ArrayList<ContentValues> cvToursArrayList = new ArrayList<>();
+            ArrayList<ContentValues> cvLocationsArrayList = new ArrayList<>();
             for(int i = 0; i < slotsArray.length(); i++) {
                 // These are the values that will be collected.
-                String guideId;
-                String guideName;
-                String guideEmail;
-                double guideRating;
+                long osmId;
+                String locationName;
+                String locationType;
+                double locationLatitude;
+                double locationLongitude;
+
+                int tourId;
+                String managerId;
+                String title;
+                // Duration is in minutes.
+                int duration;
+                int language;
+                String location;
+                double rating;
+                String description;
+                // TODO: figure these out.
+                Object photos;
+                String comments;
 
                 long slotId;
-                // Date is stored as a julian date.
                 int slotDate;
                 long slotTime;
                 int currentCapacity;
                 int totalCapacity;
 
-                // Get the JSON object representing the location
+                // Get the JSON object representing the day
                 JSONObject slotObject = slotsArray.getJSONObject(i);
+                osmId = slotObject.getLong(Message.MessageKeys.TOUR_OSM_ID);
+                locationName = slotObject.getString(Message.MessageKeys.LOCATION_OSM_NAME_KEY);
+                locationType = slotObject.getString(Message.MessageKeys.LOCATION_OSM_TYPE_KEY);
+                locationLatitude = slotObject.getDouble(Message.MessageKeys.LOCATION_OSM_LATITUDE_KEY);
+                locationLongitude = slotObject.getDouble(Message.MessageKeys.LOCATION_OSM_LONGITUDE_KEY);
 
-                // get requested elements from json
-                guideId = slotObject.getString(Message.MessageKeys.SLOT_GUIDE_ID_KEY);
-                guideName = slotObject.getString(Message.MessageKeys.USER_NAME_KEY);
-                guideEmail = slotObject.getString(Message.MessageKeys.USER_EMAIL_KEY);
-                try {
-                    // Might be null if no user has rated this guide yet.
-                    guideRating = slotObject.getDouble(Message.MessageKeys.USER_RATING_KEY);
-                }
-                catch (JSONException e) {
-                    guideRating = 0;
-                }
+                ContentValues locationValues = new ContentValues();
 
-                ContentValues guideValues = new ContentValues();
+                locationValues.put(ToursContract.LocationEntry.COLUMN_LOCATION_ID, osmId);
+                locationValues.put(ToursContract.LocationEntry.COLUMN_LOCATION_NAME, locationName);
+                locationValues.put(ToursContract.LocationEntry.COLUMN_LOCATION_TYPE, locationType);
+                locationValues.put(ToursContract.LocationEntry.COLUMN_COORD_LAT, locationLatitude);
+                locationValues.put(ToursContract.LocationEntry.COLUMN_COORD_LONG, locationLongitude);
 
-                guideValues.put(ToursContract.UserEntry._ID, guideId);
-                guideValues.put(ToursContract.UserEntry.COLUMN_USER_NAME, guideName);
-                guideValues.put(ToursContract.UserEntry.COLUMN_USER_EMAIL, guideEmail);
-                guideValues.put(ToursContract.UserEntry.COLUMN_USER_RATING, guideRating);
+                cvLocationsArrayList.add(locationValues);
 
-                cvGuidesArrayList.add(guideValues);
+                tourId = slotObject.getInt(Message.MessageKeys.TOUR_ID_KEY);
+                managerId = slotObject.getString(Message.MessageKeys.TOUR_MANAGER_KEY);
+                title = slotObject.getString(Message.MessageKeys.TOUR_TITLE_KEY);
+                duration = slotObject.getInt(Message.MessageKeys.TOUR_DURATION_KEY);
+                language = slotObject.getInt(Message.MessageKeys.TOUR_LANGUAGE_KEY);
+                location = slotObject.getString(Message.MessageKeys.TOUR_LOCATION_KEY);
+                rating = slotObject.getDouble(Message.MessageKeys.TOUR_RATING_KEY);
+                description = slotObject.getString(Message.MessageKeys.TOUR_DESCRIPTION_KEY);
+
+                ContentValues tourValues = new ContentValues();
+
+                tourValues.put(ToursContract.TourEntry._ID, tourId);
+                tourValues.put(ToursContract.TourEntry.COLUMN_OSM_ID, osmId);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_MANAGER_ID, managerId);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_TITLE, title);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_DURATION, duration);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE, language);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_LOCATION, location);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_RATING, rating);
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_AVAILABLE, 1);
+                // TODO: retrieve tour description together with photos and comments only when clicking on a specific tour
+                tourValues.put(ToursContract.TourEntry.COLUMN_TOUR_DESCRIPTION, description);
+
+                cvToursArrayList.add(tourValues);
 
                 slotId = slotObject.getLong(Message.MessageKeys.SLOT_ID_KEY);
                 slotDate = slotObject.getInt(Message.MessageKeys.SLOT_DATE_KEY);
@@ -243,18 +266,31 @@ public class SlotsLoaderService extends IntentService {
                 cvSlotsArrayList.add(slotValues);
             }
 
-            // Add guides to the database.
-            int guidesInserted = 0;
-            if ( cvGuidesArrayList.size() > 0 ) {
-                ContentValues[] cvArray = new ContentValues[cvGuidesArrayList.size()];
-                cvGuidesArrayList.toArray(cvArray);
-                guidesInserted = this.getContentResolver().bulkInsert(
-                        ToursContract.UserEntry.CONTENT_URI,
+            // Add locations to the database.
+            int inserted = 0;
+            if ( cvLocationsArrayList.size() > 0 ) {
+                ContentValues[] cvArray = new ContentValues[cvLocationsArrayList.size()];
+                cvLocationsArrayList.toArray(cvArray);
+                inserted = getContentResolver().bulkInsert(
+                        ToursContract.LocationEntry.CONTENT_URI,
                         cvArray
                 );
             }
 
-            Log.d(LOG_TAG, guidesInserted + " guides inserted to users table.");
+            Log.d(LOG_TAG, inserted + " locations inserted to the local database.");
+
+            // Add tours to the database.
+            inserted = 0;
+            if ( cvToursArrayList.size() > 0 ) {
+                ContentValues[] cvArray = new ContentValues[cvToursArrayList.size()];
+                cvToursArrayList.toArray(cvArray);
+                inserted = getContentResolver().bulkInsert(
+                        ToursContract.TourEntry.CONTENT_URI,
+                        cvArray
+                );
+            }
+
+            Log.d(LOG_TAG, inserted + " tours inserted to the local database.");
 
             // Delete slots which don't have reservations, so we don't build up an endless history.
             // That way, old slots will be deleted, and new slots, for which we didn't query
@@ -266,13 +302,11 @@ public class SlotsLoaderService extends IntentService {
             Cursor reservationsCursor = null;
             try {
                 // Find slots
-                String slotSelection = ToursContract.SlotEntry.TABLE_NAME + "." +
-                        ToursContract.SlotEntry.COLUMN_SLOT_TOUR_ID + " = ?";
                 slotsCursor = resolver.query(
-                        ToursContract.SlotEntry.CONTENT_URI,
+                        ToursContract.SlotEntry.buildSlotGuideUri(guideId),
                         SLOT_ID_COLUMNS,
-                        slotSelection,
-                        new String[]{Integer.toString(tourId)},
+                        null,
+                        null,
                         null
                 );
                 if (slotsCursor != null) {
@@ -291,9 +325,13 @@ public class SlotsLoaderService extends IntentService {
                                 null
                         );
 
-                        // If the cursor is empty, i.e. there are no open slots for this tour,
-                        // then delete the tour from the database.
+                        // If the cursor is empty, i.e. there are no reservations for this slot,
+                        // then delete the slot from the database.
                         if (reservationsCursor != null && !reservationsCursor.moveToFirst()) {
+                            String slotSelection = ToursContract.SlotEntry.TABLE_NAME +
+                                    "." + ToursContract.SlotEntry._ID +
+                                    " = ?";
+
                             resolver.delete(
                                     ToursContract.SlotEntry.CONTENT_URI,
                                     slotSelection,
@@ -313,17 +351,18 @@ public class SlotsLoaderService extends IntentService {
             }
 
             // Add slots to the database.
-            int slotsInserted = 0;
+            inserted = 0;
             if ( cvSlotsArrayList.size() > 0 ) {
                 ContentValues[] cvArray = new ContentValues[cvSlotsArrayList.size()];
                 cvSlotsArrayList.toArray(cvArray);
-                slotsInserted = this.getContentResolver().bulkInsert(
+                inserted = getContentResolver().bulkInsert(
                         ToursContract.SlotEntry.CONTENT_URI,
                         cvArray
                 );
+
             }
 
-            Log.d(LOG_TAG, "Slots loader service complete. " + slotsInserted + " slots inserted to slots table.");
+            Log.d(LOG_TAG, "ManageSlotsLoaderService complete. " + inserted + " slots inserted to the local database.");
 
             sendBroadcast();
 
@@ -333,10 +372,9 @@ public class SlotsLoaderService extends IntentService {
         }
     }
 
-    // Send an Intent with an action named BROADCAST_SLOTS_LOADER_SERVICE_DONE.
+    // Send an Intent with an action named BROADCAST_MANAGE_SLOTS_LOADER_SERVICE_DONE.
     private void sendBroadcast() {
-        Intent intent = new Intent(DetailFragment.BROADCAST_SLOTS_LOADER_SERVICE_DONE);
-        intent.putExtra(DetailFragment.INTENT_EXTRA_BTN_ID, mButtonClicked);
+        Intent intent = new Intent(ManageSlotsFragment.BROADCAST_MANAGE_SLOTS_LOADER_SERVICE_DONE);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

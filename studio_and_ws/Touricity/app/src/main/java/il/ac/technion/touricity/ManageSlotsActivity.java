@@ -12,16 +12,15 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-public class ManageToursActivity extends ActionBarActivity
+public class ManageSlotsActivity extends ActionBarActivity
         implements LogoutDialogFragment.LogoutDialogListener,
-        DeleteTourDialogFragment.DeleteTourDialogListener,
-        ManageToursFragment.Callback,
-        DetailFragment.Callback,
-        SlotsFragment.Callback,
+        DeleteSlotDialogFragment.DeleteSlotDialogListener,
+        ManageSlotsFragment.Callback,
+        SlotReservationsFragment.Callback,
         DatePickerFragment.DatePickerDialogListener,
         TimePickerFragment.TimePickerDialogListener {
 
-    private static final String LOG_TAG = ManageToursActivity.class.getSimpleName();
+    private static final String LOG_TAG = ManageSlotsActivity.class.getSimpleName();
 
     private boolean mTwoPane;
 
@@ -31,7 +30,7 @@ public class ManageToursActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_manage_tours);
+        setContentView(R.layout.activity_manage_slots);
 
         mDetailContainer = (FrameLayout)findViewById(R.id.tours_slots_detail_container);
         if (mDetailContainer != null) {
@@ -56,7 +55,7 @@ public class ManageToursActivity extends ActionBarActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_manage_tours, menu);
+        getMenuInflater().inflate(R.menu.menu_manage_slots, menu);
 
         return true;
     }
@@ -91,8 +90,8 @@ public class ManageToursActivity extends ActionBarActivity
 //            Intent intent = new Intent(this, MyToursActivity.class);
 //            this.startActivity(intent);
         }
-        else if (id == R.id.action_manage_slots) {
-            Intent intent = new Intent(this, ManageSlotsActivity.class);
+        else if (id == R.id.action_manage_tours) {
+            Intent intent = new Intent(this, ManageToursActivity.class);
             this.startActivity(intent);
         }
 
@@ -100,22 +99,22 @@ public class ManageToursActivity extends ActionBarActivity
     }
 
     @Override
-    public void onItemSelected(Uri tourUri) {
-        if (tourUri == null) {
+    public void onItemSelected(Uri slotUri) {
+        if (slotUri == null) {
             return;
         }
 
         // two-pane mode
         if (mTwoPane) {
             mDetailContainer.setVisibility(View.VISIBLE);
-            DetailFragment fragment = DetailFragment.newInstance(tourUri);
+            SlotReservationsFragment fragment = SlotReservationsFragment.newInstance(slotUri);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.tours_slots_detail_container, fragment, DetailActivity.DETAIL_FRAGMENT_TAG)
+                    .replace(R.id.tours_slots_detail_container, fragment, SlotReservationsActivity.SLOT_RESERVATIONS_FRAGMENT_TAG)
                     .commit();
         }
         // one-pane mode
         else {
-            Intent intent = new Intent(this, DetailActivity.class).setData(tourUri);
+            Intent intent = new Intent(this, SlotReservationsActivity.class).setData(slotUri);
             startActivity(intent);
         }
     }
@@ -139,7 +138,7 @@ public class ManageToursActivity extends ActionBarActivity
     // Fragment.onAttach() callback, which it uses to call the following methods
     // defined by the DeleteTourDialogFragment.DeleteTourDialogListener interface
     @Override
-    public void onDeleteTour(DialogFragment dialog) {
+    public void onDeleteSlot(DialogFragment dialog) {
         dialog.dismiss();
 
         // Always two-pane mode, otherwise detail activity will be called.
@@ -148,17 +147,17 @@ public class ManageToursActivity extends ActionBarActivity
                         .findFragmentById(R.id.tours_slots_detail_container)).commit();
         getSupportFragmentManager().executePendingTransactions();
 
-        ManageToursFragment mtf = (ManageToursFragment)getSupportFragmentManager()
-                .findFragmentById(R.id.fragment_manage_tours);
-        mtf.onDeleteTour();
+        ManageSlotsFragment msf = (ManageSlotsFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_manage_slots);
+        msf.onDeleteSlot();
     }
 
     @Override
-    public void onCreateSlot(Uri tourUri) {
+    public void onEditSlot(Uri slotUri) {
         // always two-pane mode, otherwise pressing the create slot button will lead to
         // slots activity.
         mDetailContainer.setVisibility(View.VISIBLE);
-        CreateSlotFragment fragment = CreateSlotFragment.newInstance(tourUri);
+        CreateSlotFragment fragment = CreateSlotFragment.newInstance(slotUri);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.tours_slots_detail_container, fragment, CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG)
                 .commit();
@@ -180,21 +179,6 @@ public class ManageToursActivity extends ActionBarActivity
     public void onTimeSelected(long timeInMillis) {
         CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG);
         csf.applyTime(timeInMillis);
-    }
-
-    @Override
-    public void onViewSlots(Uri tourUri) {
-        if (tourUri == null) {
-            return;
-        }
-
-        // always two-pane mode, otherwise pressing the view slots button will lead to
-        // detail activity.
-        mDetailContainer.setVisibility(View.VISIBLE);
-        SlotsFragment fragment = SlotsFragment.newInstance(tourUri);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.tours_slots_detail_container, fragment, SlotsActivity.SLOTS_FRAGMENT_TAG)
-                .commit();
     }
 
 }

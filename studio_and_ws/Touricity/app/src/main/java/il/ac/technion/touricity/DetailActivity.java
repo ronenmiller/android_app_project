@@ -14,7 +14,7 @@ public class DetailActivity extends FragmentActivity
         implements DeleteTourDialogFragment.DeleteTourDialogListener,
         DetailFragment.Callback {
 
-    private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
+    static final String DETAIL_FRAGMENT_TAG = "DFTAG";
 
     private AppCompatDelegate mDelegate;
 

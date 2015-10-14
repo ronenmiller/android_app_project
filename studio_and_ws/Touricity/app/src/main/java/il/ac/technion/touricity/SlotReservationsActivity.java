@@ -11,26 +11,27 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-public class SlotsActivity extends FragmentActivity
-        implements LoginDialogFragment.LoginDialogListener,
-        SlotsFragment.Callback {
+public class SlotReservationsActivity extends FragmentActivity
+        implements LogoutDialogFragment.LogoutDialogListener,
+        DeleteSlotDialogFragment.DeleteSlotDialogListener,
+        SlotReservationsFragment.Callback {
 
-    static final String SLOTS_FRAGMENT_TAG = "SFTAG";
+    static final String SLOT_RESERVATIONS_FRAGMENT_TAG = "SRFTAG";
 
     private AppCompatDelegate mDelegate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_slots);
+        setContentView(R.layout.activity_slot_reservations);
 
         // Inflate action bar
         setupActionBar(savedInstanceState);
 
         if (savedInstanceState == null) {
-            SlotsFragment fragment = SlotsFragment.newInstance(getIntent().getData());
+            SlotReservationsFragment fragment = SlotReservationsFragment.newInstance(getIntent().getData());
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.tours_slots_detail_container, fragment, SLOTS_FRAGMENT_TAG)
+                    .add(R.id.tours_slots_detail_container, fragment, SLOT_RESERVATIONS_FRAGMENT_TAG)
                     .commit();
         }
     }
@@ -39,7 +40,7 @@ public class SlotsActivity extends FragmentActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_slots, menu);
+        getMenuInflater().inflate(R.menu.menu_manage_slots, menu);
         return true;
     }
 
@@ -55,11 +56,14 @@ public class SlotsActivity extends FragmentActivity
             this.finish();
             return true;
         }
-        if (id == R.id.action_settings) {
+        else if (id == R.id.action_settings) {
             Context context = this;
             Intent settingsIntent = new Intent(context, SettingsActivity.class);
             startActivity(settingsIntent);
             return true;
+        }
+        else if (id == R.id.action_logout) {
+            Utility.showLogoutDialog(this);
         }
 
         return super.onOptionsItemSelected(item);
@@ -83,31 +87,40 @@ public class SlotsActivity extends FragmentActivity
         return mDelegate;
     }
 
+     // The dialog fragment receives a reference to this Activity through the
+     // Fragment.onAttach() callback, which it uses to call the following methods
+     // defined by the LogoutDialogFragment.LogoutDialogListener interface
+     @Override
+     public void onLogout(DialogFragment dialog) {
+         // User touched the dialog's login button
+         String logoutSuccess = getString(R.string.logout_success);
+         Toast.makeText(this, logoutSuccess, Toast.LENGTH_LONG).show();
+         Utility.saveLogoutState(this.getApplicationContext());
+         dialog.dismiss();
+
+         Intent intent = new Intent(this, MainActivity.class);
+         this.startActivity(intent);
+     }
+
     // The dialog fragment receives a reference to this Activity through the
     // Fragment.onAttach() callback, which it uses to call the following methods
-    // defined by the LoginDialogFragment.LoginDialogListener interface
+    // defined by the DeleteSlotDialogFragment.DeleteSlotDialogListener interface
     @Override
-    public void onLogin(DialogFragment dialog, String userId, boolean isGuide) {
-        // User touched the dialog's login button
-        String loginSuccess = getString(R.string.login_success);
-        Toast.makeText(this, loginSuccess, Toast.LENGTH_LONG).show();
-        // We need to implement this function in this activity, and not in the
-        // LoginDialogActivity, because here one can call getApplicationContext().
-        Utility.saveLoginSession(this.getApplicationContext(), userId, isGuide);
+    public void onDeleteSlot(DialogFragment dialog) {
         dialog.dismiss();
 
-        // TODO: add sign in, login, logout menu buttons to activity
-//        showSignInMenuItems(false);
-
-        SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
-                .findFragmentByTag(SLOTS_FRAGMENT_TAG);
-        sf.showGuideOptions();
+        // Always one-pane mode, otherwise main activity or manage slots activity will be called.
+        Intent intent = new Intent(this, ManageSlotsActivity.class);
+        this.startActivity(intent);
     }
 
     @Override
-    public void onCreateSlot(Uri tourUri) {
-        // always one-pane mode
-        Intent intent = new Intent(this, CreateSlotActivity.class).setData(tourUri);
+    public void onEditSlot(Uri slotUri) {
+        if (slotUri == null) {
+            return;
+        }
+
+        Intent intent = new Intent(this, CreateSlotActivity.class).setData(slotUri);
         startActivity(intent);
     }
 }

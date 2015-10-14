@@ -30,6 +30,10 @@
         <service android:name=".service.ManageToursLoaderService" />
         <service android:name=".service.AddLocationService" />
         <service android:name=".service.DeleteTourService" />
+        <service android:name=".service.ManageSlotsLoaderService" />
+        <service android:name=".service.SlotReservationsLoaderService" />
+        <service android:name=".service.EditSlotService" />
+        <service android:name=".service.DeleteSlotService" />
 
         <!-- SyncAdapter's dummy authentication service -->
         <service android:name=".sync.TouricityAuthenticatorService" >
@@ -144,6 +148,22 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="il.ac.technion.touricity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ManageSlotsActivity"
+            android:label="@string/title_activity_manage_slots"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="il.ac.technion.touricity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".SlotReservationsActivity"
+            android:label="@string/title_activity_slot_reservations"
+            android:parentActivityName=".ManageSlotsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="il.ac.technion.touricity.ManageSlotsActivity" />
         </activity>
     </application>
 

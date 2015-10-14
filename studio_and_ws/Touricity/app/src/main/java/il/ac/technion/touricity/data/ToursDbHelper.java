@@ -33,7 +33,7 @@ import il.ac.technion.touricity.data.ToursContract.ReservationEntry;
 public class ToursDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 1;
 
     static final String DATABASE_NAME = "tours.db";
 
@@ -118,10 +118,14 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 SlotEntry.COLUMN_SLOT_TOUR_ID + " INTEGER NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_DATE + " REAL NOT NULL, " +
                 SlotEntry.COLUMN_SLOT_TIME + " INTEGER NOT NULL, " +
-                SlotEntry.COLUMN_SLOT_CAPACITY + " INTEGER NOT NULL CHECK (" +
-                SlotEntry.COLUMN_SLOT_CAPACITY + " >= 0), " +
+                SlotEntry.COLUMN_SLOT_CURRENT_CAPACITY + " INTEGER NOT NULL CHECK (" +
+                SlotEntry.COLUMN_SLOT_CURRENT_CAPACITY + " >= 0), " +
+                SlotEntry.COLUMN_SLOT_TOTAL_CAPACITY + " INTEGER NOT NULL CHECK (" +
+                SlotEntry.COLUMN_SLOT_TOTAL_CAPACITY + " >= 0), " +
                 // 1 = Slot is active, 0 = otherwise.
                 SlotEntry.COLUMN_SLOT_ACTIVE + " INTEGER NOT NULL, " +
+                // 1 = Slot canceled, 0 = otherwise.
+                SlotEntry.COLUMN_SLOT_CANCELED + " INTEGER NOT NULL, " +
 
                 " PRIMARY KEY (" + SlotEntry._ID + ") ON CONFLICT REPLACE, " +
                 // Set up the guide ID column as a foreign key to the users table.
@@ -143,7 +147,9 @@ public class ToursDbHelper extends SQLiteOpenHelper {
                 "PRIMARY KEY (" + ReservationEntry._ID + ", " +
                 ReservationEntry.COLUMN_RESERVATION_USER_ID + ") ON CONFLICT REPLACE, " +
                 " FOREIGN KEY (" + ReservationEntry._ID + ") REFERENCES " +
-                SlotEntry.TABLE_NAME + " (" + SlotEntry._ID + ") ON DELETE CASCADE)";
+                SlotEntry.TABLE_NAME + " (" + SlotEntry._ID + ") ON DELETE CASCADE, " +
+                " FOREIGN KEY (" + ReservationEntry.COLUMN_RESERVATION_USER_ID + ") REFERENCES " +
+                UserEntry.TABLE_NAME + " (" + UserEntry._ID + ") ON DELETE CASCADE)";
 
         sqLiteDatabase.execSQL(SQL_CREATE_RESERVATIONS_TABLE);
 

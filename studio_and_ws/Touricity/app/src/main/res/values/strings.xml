@@ -17,6 +17,7 @@
     <string name="dialog_login_title">Login</string>
     <string name="title_activity_manage_tours">Manage tours</string>
     <string name="title_activity_manage_slots">Manage slots</string>
+    <string name="title_activity_slot_reservations">Reservations</string>
 
     <!-- Menu-related strings -->
     <string name="action_main">Main</string>
@@ -89,7 +90,7 @@
     <string name="action_delete_tour">Delete tour</string>
     <string name="tour_duration">Duration: <xliff:g id="duration">%s</xliff:g> minutes</string>
     <string name="tour_language">Language: <xliff:g id="language">%s</xliff:g></string>
-    <string name="tour_location">Tour starts from: <xliff:g id="location">%s</xliff:g></string>
+    <string name="tour_location">Tour departs from: <xliff:g id="location">%s</xliff:g></string>
 
     <!-- Strings related to slot activity -->
     <string name="slot_reserved">Reserved</string>
@@ -106,7 +107,7 @@
     <string name="create_tour_title">Tour title</string>
     <string name="create_tour_language">Choose a language</string>
     <string name="create_tour_duration">Tour Duration (minutes)</string>
-    <string name="create_tour_location">Tour starts from...</string>
+    <string name="create_tour_location">Tour departs from…</string>
     <string name="create_tour_description">Tour description</string>
     <string name="action_create_tour_short">Go</string>
     <string name="action_create_tour_btn">Create</string>
@@ -122,6 +123,10 @@
     <string name="create_slot_capacity">Slot capacity</string>
     <string name="action_create_slot_short">Go</string>
     <string name="action_create_slot_btn">Create</string>
+
+    <string name="edit_slot_header">Edit slot</string>
+    <string name="action_edit_slot_btn">Save</string>
+    <string name="edit_slot_updated">Slot updated</string>
 
     <string name="error_date_passed">The selected date has passed</string>
     <string name="error_time_passed">The selected time has passed</string>
@@ -200,5 +205,24 @@
     <string name="dialog_delete_tour_success">Tour deleted successfully</string>
     <string name="dialog_delete_tour_fail">Server ERROR: tour deletion failed</string>
 
+    <!-- Manage slots fragment -->
+    <string name="manage_slot_reserved"><xliff:g id="reserved">%1$s</xliff:g>/<xliff:g id="capacity">%2$s</xliff:g></string>
+
+    <!-- Slot reservations fragment -->
+    <string name="slot_reservations_departs">Tour departs <xliff:g id="date">%1$s</xliff:g> at <xliff:g id="time">%2$s</xliff:g></string>
+    <string name="slot_reservations_list">Reservations list</string>
+    <string name="slot_reservations_email">Email</string>
+    <string name="slot_reservations_reserved">Reserved</string>
+    <string name="slot_reservations_total">Total</string>
+    <string name="action_delete_slot">Delete slot</string>
+    <string name="action_edit_slot">Edit slot</string>
+
+    <!-- Delete slot dialog -->
+    <string name="dialog_delete_slot_title">Delete slot?</string>
+    <string name="dialog_delete_slot_description">Cancellation emails will be sent automatically to users who reserved this slot.</string>
+    <string name="action_delete_slot_cancel">Cancel</string>
+    <string name="action_delete_slot_confirm">Delete</string>
+    <string name="dialog_delete_slot_success">Slot deleted successfully</string>
+    <string name="dialog_delete_slot_fail">Server ERROR: slot deletion failed</string>
 
 </resources>

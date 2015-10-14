@@ -69,7 +69,7 @@ public class ManageToursAdapter extends CursorAdapter {
         // Find TextView and set the title on it.
         viewHolder.titleView.setText(title);
 
-        // Read tour duration from cursor.
+        // Read tour location from cursor.
         String locationName = cursor.getString(ManageToursFragment.COL_TOUR_LOCATION_NAME);
         int index = locationName.indexOf(",");
         if (index != -1) {

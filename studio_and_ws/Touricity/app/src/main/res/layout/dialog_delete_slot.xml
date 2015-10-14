@@ -1,0 +1,99 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="il.ac.technion.touricity.DeleteSlotDialogFragment">
+
+    <!-- Login progress -->
+    <ProgressBar
+        android:id="@+id/delete_slot_progressbar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/delete_slot_linear_form"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_delete_slot_title"
+                android:fontFamily="sans-serif"
+                android:textColor="@color/touricity_teal"
+                android:textSize="28sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/dialog_delete_slot_description"
+                android:fontFamily="sans-serif-light"
+                android:textColor="@color/black"
+                android:textAppearance="?android:textAppearanceMedium" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp">
+
+            <Button
+                android:id="@+id/delete_slot_confirm_btn"
+                style="?android:textAppearanceSmall"
+                android:minWidth="64dp"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:text="@string/action_delete_slot_confirm"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textAppearance="?android:textAppearanceButton"
+                android:background="@drawable/btn_dialog_touricity"
+                android:textColor="@color/touricity_teal" />
+
+            <Button
+                android:id="@+id/delete_slot_cancel_btn"
+                style="?android:textAppearanceSmall"
+                android:minWidth="64dp"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_toLeftOf="@id/delete_slot_confirm_btn"
+                android:layout_toStartOf="@id/delete_slot_confirm_btn"
+                android:text="@string/action_delete_slot_cancel"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textAppearance="?android:textAppearanceButton"
+                android:background="@drawable/btn_dialog_touricity"
+                android:textColor="@color/touricity_teal" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+</LinearLayout>

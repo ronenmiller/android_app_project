@@ -95,7 +95,7 @@ public final class JDBCServer {
 					int tourId = requestJSON.getInt(Message.MessageKeys.SLOT_TOUR_ID_KEY);
 					int date = requestJSON.getInt(Message.MessageKeys.SLOT_DATE_KEY);
 					long time = requestJSON.getLong(Message.MessageKeys.SLOT_TIME_KEY);
-					int capacity = requestJSON.getInt(Message.MessageKeys.SLOT_CAPACITY_KEY);
+					int capacity = requestJSON.getInt(Message.MessageKeys.SLOT_CURRENT_CAPACITY_KEY);
 					return createSlot(guideId, tourId, date, time, capacity);
 				}
 				case Message.MessageTypes.ADD_LOCATION: {
@@ -113,6 +113,25 @@ public final class JDBCServer {
 				case Message.MessageTypes.DELETE_TOUR: {
 					int tourId = requestJSON.getInt(Message.MessageKeys.TOUR_ID_KEY);
 					return deleteTour(tourId);
+				}
+				case Message.MessageTypes.QUERY_SLOTS_BY_GUIDE_ID: {
+					String guideId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+					return querySlotsByGuideId(guideId);
+				}
+				case Message.MessageTypes.QUERY_RESERVATIONS_BY_SLOT_ID: {
+					long slotId = requestJSON.getLong(Message.MessageKeys.SLOT_ID_KEY);
+					return queryReservationsBySlotId(slotId);
+				}
+				case Message.MessageTypes.EDIT_SLOT: {
+					long slotId = requestJSON.getLong(Message.MessageKeys.SLOT_ID_KEY);
+					int date = requestJSON.getInt(Message.MessageKeys.SLOT_DATE_KEY);
+					long time = requestJSON.getLong(Message.MessageKeys.SLOT_TIME_KEY);
+					int capacity = requestJSON.getInt(Message.MessageKeys.SLOT_TOTAL_CAPACITY_KEY);
+					return editSlot(slotId, date, time, capacity);
+				}
+				case Message.MessageTypes.DELETE_SLOT: {
+					long slotId = requestJSON.getLong(Message.MessageKeys.SLOT_ID_KEY);
+					return deleteSlot(slotId);
 				}
 				default: {
 					throw new IllegalArgumentException("Illegal message ID!");
@@ -834,6 +853,177 @@ public final class JDBCServer {
 		String messageJsonStr = jsonObject.toString();
 		// put the message in an envelope
 		Message message = new Message(Message.MessageTypes.DELETE_TOUR, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	public static String querySlotsByGuideId(String guideId) throws Exception {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray slots = null;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call query_slots_by_guide_id (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, guideId);
+			   resultSet = queryDB(cstmt);
+			   slots = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in querySlotsByGuideId!");
+			}
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		if (slots != null) {
+			// generate JSON message with the results
+			String messageJsonStr = slots.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.QUERY_SLOTS_BY_GUIDE_ID, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
+		}
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
+	}
+	
+	public static String queryReservationsBySlotId(long slotId) throws Exception {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray reservations = null;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call query_reservations_by_slot_id (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setLong(1, slotId);
+			   resultSet = queryDB(cstmt);
+			   reservations = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in queryReservationsBySlotId!");
+			}
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		if (reservations != null) {
+			// generate JSON message with the results
+			String messageJsonStr = reservations.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.QUERY_RESERVATIONS_BY_SLOT_ID, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
+		}
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
+	}
+	
+	public static String editSlot(long slotID, int date, long time, int capacity) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call edit_slot (?, ?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setLong(1, slotID);
+			   cstmt.setInt(2, date);
+			   cstmt.setLong(3, time);
+			   cstmt.setInt(4, capacity);
+			   
+			   // modify database
+			   System.out.println("Editing slot in the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in editSlot!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+					
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.EDIT_SLOT, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	public static String deleteSlot(long slotId) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call delete_slot (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setLong(1, slotId);
+			   
+			   // modify database
+			   System.out.println("Deleting slot from the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in deleteSlot!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+					
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.DELETE_SLOT, messageJsonStr);
 		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);

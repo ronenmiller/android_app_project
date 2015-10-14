@@ -24,45 +24,49 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
-import il.ac.technion.touricity.service.ManageToursLoaderService;
+import il.ac.technion.touricity.service.ManageSlotsLoaderService;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ManageToursFragment extends Fragment
+public class ManageSlotsFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener {
 
-    public final String LOG_TAG = ManageToursFragment.class.getSimpleName();
+    public final String LOG_TAG = ManageSlotsFragment.class.getSimpleName();
 
-    private static final int TOURS_LOADER = 0;
+    private static final int SLOTS_LOADER = 0;
 
-    public static final String BROADCAST_MANAGE_TOURS_LOADER_SERVICE_DONE = "broadcast_manage_tours_loader_service_done";
+    public static final String BROADCAST_MANAGE_SLOTS_LOADER_SERVICE_DONE = "broadcast_manage_slots_loader_service_done";
 
     // package-shared
-    static final String[] TOUR_COLUMNS = {
-            // Used for projection.
-            // _ID must be used in every projection
-            ToursContract.TourEntry.TABLE_NAME + "." + ToursContract.TourEntry._ID,
+    private static final String[] SLOTS_COLUMNS = {
+            ToursContract.SlotEntry.TABLE_NAME + "." + ToursContract.SlotEntry._ID,
+            ToursContract.SlotEntry.COLUMN_SLOT_DATE,
+            ToursContract.SlotEntry.COLUMN_SLOT_TIME,
+            ToursContract.SlotEntry.COLUMN_SLOT_CURRENT_CAPACITY,
+            ToursContract.SlotEntry.COLUMN_SLOT_TOTAL_CAPACITY,
             ToursContract.TourEntry.COLUMN_TOUR_TITLE,
-            ToursContract.LocationEntry.COLUMN_LOCATION_NAME,
             ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE,
-            ToursContract.LanguageEntry.COLUMN_LANGUAGE_NAME,
-            ToursContract.TourEntry.COLUMN_TOUR_RATING,
+            ToursContract.LanguageEntry.COLUMN_LANGUAGE_NAME
     };
 
-    static final int COL_TOUR_ID = 0;
-    static final int COL_TOUR_TITLE = 1;
-    static final int COL_TOUR_LOCATION_NAME = 2;
-    static final int COL_TOUR_LANGUAGE = 3;
-    static final int COL_TOUR_LANGUAGE_NAME = 4;
-    static final int COL_TOUR_RATING = 5;
+    // These indices are tied to SLOT_COLUMNS.  If SLOT_COLUMNS changes, these
+    // must change.
+    public static final int COL_SLOT_ID = 0;
+    public static final int COL_SLOT_DATE = 1;
+    public static final int COL_SLOT_TIME = 2;
+    public static final int COL_SLOT_CURRENT_CAPACITY = 3;
+    public static final int COL_SLOT_TOTAL_CAPACITY = 4;
+    public static final int COL_TOUR_TITLE = 5;
+    public static final int COL_TOUR_LANGUAGE = 6;
+    public static final int COL_TOUR_LANGUAGE_NAME = 7;
 
-    private ManageToursAdapter mManageToursAdapter;
+    private ManageSlotsAdapter mManageSlotsAdapter;
 
     private View mHeaderView;
     private TextView mHeaderText;
-    private ListView mToursListView;
+    private ListView mSlotsListView;
     private SwipeRefreshLayout mSwipeLayout;
 
     private static final String SELECTED_KEY = "selected_position";
@@ -77,21 +81,21 @@ public class ManageToursFragment extends Fragment
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        void onItemSelected(Uri tourUri);
+        void onItemSelected(Uri slotUri);
     }
 
 
-    public ManageToursFragment() {
+    public ManageSlotsFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_manage_tours, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_manage_slots, container, false);
 
-        mManageToursAdapter = new ManageToursAdapter(getActivity(), null, 0);
+        mManageSlotsAdapter = new ManageSlotsAdapter(getActivity(), null, 0);
 
-        mToursListView = (ListView)rootView.findViewById(R.id.listview_manage_tours);
+        mSlotsListView = (ListView)rootView.findViewById(R.id.listview_manage_slots);
 
         mSwipeLayout = (SwipeRefreshLayout)rootView.findViewById(R.id.swipe_container);
         mSwipeLayout.setOnRefreshListener(this);
@@ -103,18 +107,18 @@ public class ManageToursFragment extends Fragment
                 (Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_item_header, null, false);
         mHeaderText = (TextView)mHeaderView.findViewById(R.id.list_item_header);
 
-        mToursListView.setAdapter(mManageToursAdapter);
-        mToursListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mSlotsListView.setAdapter(mManageSlotsAdapter);
+        mSlotsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView adapterView, View view, int position, long l) {
                 // CursorAdapter returns a cursor at the correct position for getItem(), or null
                 // if it cannot seek to that position.
-                Cursor cursor = (Cursor)adapterView.getItemAtPosition(position);
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
-                    int tourId = cursor.getInt(COL_TOUR_ID);
-                    Uri tourUri = ToursContract.TourEntry.buildTourIdUri(tourId);
-                    ((Callback)getActivity()).onItemSelected(tourUri);
+                    int slotId = cursor.getInt(COL_SLOT_ID);
+                    Uri slotUri = ToursContract.SlotEntry.buildSlotIdUri(slotId);
+                    ((Callback) getActivity()).onItemSelected(slotUri);
                 }
                 mPosition = position;
             }
@@ -138,7 +142,7 @@ public class ManageToursFragment extends Fragment
 
     @Override
     public void onRefresh() {
-        Intent intent = new Intent(getActivity(), ManageToursLoaderService.class);
+        Intent intent = new Intent(getActivity(), ManageSlotsLoaderService.class);
         getActivity().startService(intent);
     }
 
@@ -152,35 +156,34 @@ public class ManageToursFragment extends Fragment
         }
     }
 
-    public void onDeleteTour() {
-        getActivity().getSupportLoaderManager().restartLoader(TOURS_LOADER, null, this);
+    public void onDeleteSlot() {
+        getActivity().getSupportLoaderManager().restartLoader(SLOTS_LOADER, null, this);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        Intent intent = new Intent(getActivity(), ManageToursLoaderService.class);
+        Intent intent = new Intent(getActivity(), ManageSlotsLoaderService.class);
         getActivity().startService(intent);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        // This is called when a new Loader needs to be created.
-        // Sort order:  By tour rating, highest is first.
-        String sortOrder = ToursContract.TourEntry.COLUMN_TOUR_RATING + " DESC";
+        String sortOrder = ToursContract.SlotEntry.COLUMN_SLOT_DATE + " ASC, " +
+                ToursContract.SlotEntry.COLUMN_SLOT_TIME + " ASC";
 
-        String managerId = Utility.getLoggedInUserId(getActivity().getApplicationContext());
-        if (managerId == null) {
+        String guideId = Utility.getLoggedInUserId(getActivity().getApplicationContext());
+        if (guideId == null) {
             return null;
         }
 
-        Uri tourForManagerUri = ToursContract.TourEntry.buildTourManagerUri(managerId);
+        Uri slotForGuideUri = ToursContract.SlotEntry.buildSlotGuideUri(guideId);
 
         return new CursorLoader(
                 getActivity(),
-                tourForManagerUri,
-                TOUR_COLUMNS,
+                slotForGuideUri,
+                SLOTS_COLUMNS,
                 null,
                 null,
                 sortOrder
@@ -191,28 +194,28 @@ public class ManageToursFragment extends Fragment
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        Log.d(LOG_TAG, "Tours manager cursor returned " + cursor.getCount() + " rows.");
-        mManageToursAdapter.swapCursor(cursor);
+        Log.d(LOG_TAG, "Slots manager cursor returned " + cursor.getCount() + " rows.");
+        mManageSlotsAdapter.swapCursor(cursor);
 
         if (cursor.getCount() > 0) {
-            mToursListView.removeHeaderView(mHeaderView);
-            mToursListView.setClickable(true);
+            mSlotsListView.removeHeaderView(mHeaderView);
+            mSlotsListView.setClickable(true);
             if (mPosition != ListView.INVALID_POSITION) {
                 // If we don't need to restart the loader, and there's a desired position to restore
                 // to, do so now.
-                mToursListView.smoothScrollToPosition(mPosition);
+                mSlotsListView.smoothScrollToPosition(mPosition);
             }
         }
         else {
-            mToursListView.removeHeaderView(mHeaderView);
-            String toursNotFound = getString(R.string.tours_not_found);
+            mSlotsListView.removeHeaderView(mHeaderView);
+            String slotsNotFound = getString(R.string.slots_not_found);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                mHeaderText.setText(toursNotFound);
-                mToursListView.addHeaderView(mHeaderView);
-                mToursListView.setClickable(false);
+                mHeaderText.setText(slotsNotFound);
+                mSlotsListView.addHeaderView(mHeaderView);
+                mSlotsListView.setClickable(false);
             }
             else {
-                Toast.makeText(getActivity(), toursNotFound, Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), slotsNotFound, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -222,7 +225,7 @@ public class ManageToursFragment extends Fragment
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        mManageToursAdapter.swapCursor(null);
+        mManageSlotsAdapter.swapCursor(null);
     }
 
     @Override
@@ -230,27 +233,27 @@ public class ManageToursFragment extends Fragment
         super.onResume();
 
         // Register mMessageReceiver to receive messages.
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mToursReceiver,
-                new IntentFilter(BROADCAST_MANAGE_TOURS_LOADER_SERVICE_DONE));
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mSlotsReceiver,
+                new IntentFilter(BROADCAST_MANAGE_SLOTS_LOADER_SERVICE_DONE));
     }
 
-    // handler for received Intents for the BROADCAST_LOCATIONS_LOADER_SERVICE_DONE event.
-    private BroadcastReceiver mToursReceiver = new BroadcastReceiver() {
+    // handler for received Intents for the BROADCAST_MANAGE_SLOTS_LOADER_SERVICE_DONE event.
+    private BroadcastReceiver mSlotsReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // Stop the rotating animation and load the results.
-            Log.d(LOG_TAG, "Tours manager broadcast received.");
+            Log.d(LOG_TAG, "Slots manager broadcast received.");
             mSwipeLayout.setRefreshing(false);
-            ManageToursFragment mtf = (ManageToursFragment)getActivity().getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_manage_tours);
-            getActivity().getSupportLoaderManager().restartLoader(TOURS_LOADER, null, mtf);
+            ManageSlotsFragment msf = (ManageSlotsFragment)getActivity().getSupportFragmentManager()
+                    .findFragmentById(R.id.fragment_manage_slots);
+            getActivity().getSupportLoaderManager().restartLoader(SLOTS_LOADER, null, msf);
         }
     };
 
     @Override
     public void onPause() {
         // Unregister since the activity is not visible.
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mToursReceiver);
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mSlotsReceiver);
         super.onPause();
     }
 }

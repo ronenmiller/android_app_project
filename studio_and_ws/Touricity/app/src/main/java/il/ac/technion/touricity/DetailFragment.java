@@ -189,6 +189,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
         showGuideOptions();
 
+        // On click, load slots from the server in order to check that no slots are attached
+        // to this tour and deletion can occur.
         mDeleteTourBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

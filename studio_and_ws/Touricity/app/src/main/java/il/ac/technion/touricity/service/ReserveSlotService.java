@@ -100,7 +100,7 @@ public class ReserveSlotService extends IntentService {
 
                 cursor = getContentResolver().query(
                         ToursContract.SlotEntry.CONTENT_URI,
-                        new String[]{ToursContract.SlotEntry.COLUMN_SLOT_CAPACITY},
+                        new String[]{ToursContract.SlotEntry.COLUMN_SLOT_CURRENT_CAPACITY},
                         selection,
                         selectionArgs,
                         null
@@ -112,7 +112,7 @@ public class ReserveSlotService extends IntentService {
                             (numOfPlacesRequested - oldNumOfPlacesRequested);
                     // Clear content values from previous operation.
                     cv.clear();
-                    cv.put(ToursContract.SlotEntry.COLUMN_SLOT_CAPACITY, newNumOfPlacesInSlot);
+                    cv.put(ToursContract.SlotEntry.COLUMN_SLOT_CURRENT_CAPACITY, newNumOfPlacesInSlot);
                     getContentResolver().update(
                             ToursContract.SlotEntry.CONTENT_URI,
                             cv,

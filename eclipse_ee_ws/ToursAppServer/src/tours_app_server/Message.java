@@ -32,6 +32,10 @@ public class Message {
 		public static final int ADD_LOCATION = 9;
 		public static final int QUERY_TOURS_BY_MANAGER_ID = 10;
      public static final int DELETE_TOUR = 11;
+     public static final int QUERY_SLOTS_BY_GUIDE_ID = 12;
+     public static final int QUERY_RESERVATIONS_BY_SLOT_ID = 13;
+     public static final int EDIT_SLOT = 14;
+     public static final int DELETE_SLOT = 15;
 //		public static final int UPDATE_USER = 1;
 //		public static final int REMOVE_USER = 2;
 //		public static final int UPDATE_TOUR = 4;
@@ -74,7 +78,8 @@ public class Message {
 		public static final String SLOT_TOUR_ID_KEY = "t_id";
 		public static final String SLOT_DATE_KEY = "s_date";
 		public static final String SLOT_TIME_KEY = "s_time";
-		public static final String SLOT_CAPACITY_KEY = "s_capacity";
+		public static final String SLOT_CURRENT_CAPACITY_KEY = "s_capacity";
+		public static final String SLOT_TOTAL_CAPACITY_KEY = "s_total_capacity";
 		public static final String SLOTS_ACTIVE_KEY = "s_active";
 
 		public static final String RESERVATION_USER_ID_KEY = "u_id";

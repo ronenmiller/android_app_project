@@ -237,16 +237,23 @@ public class ToursContract {
         // julian day in SQLite.
         public static final String COLUMN_SLOT_DATE = "slot_date";
 
-        // The *local* time in which this slot takes place. Stored as a TEXT data type,
-        // representing an HH:MM format in SQLite.
+        // The *local* time in which this slot takes place. Stored as a long data type,
+        // in millis, representing an HH:MM format in SQLite.
         public static final String COLUMN_SLOT_TIME = "slot_time";
 
         // The number of open positions that can still be reserved for this slot.
-        public static final String COLUMN_SLOT_CAPACITY = "slot_vacant";
+        public static final String COLUMN_SLOT_CURRENT_CAPACITY = "slot_vacant";
+
+        // The total number positions that can be reserved for this slot.
+        public static final String COLUMN_SLOT_TOTAL_CAPACITY = "slot_capacity";
 
         // A slot is active as long as its ending time did not already pass, or the guide didn't
         // delete the slot. 1 = Slot is active, 0 = otherwise.
         public static final String COLUMN_SLOT_ACTIVE = "slot_active";
+
+        // A slot becomes canceled if the guide decided to delete the slot. This is possible
+        // only before the tour departs.
+        public static final String COLUMN_SLOT_CANCELED = "slot_canceled";
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_SLOTS).build();
@@ -262,10 +269,17 @@ public class ToursContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        // location ID is actually the OSM ID, as returned from the OSM API.
-        public static Uri buildSlotIdUri(long slotId, int placesLeft) {
+        public static Uri buildSlotIdUri(long slotId) {
+            return CONTENT_URI.buildUpon().appendPath(Long.toString(slotId)).build();
+        }
+
+        public static Uri buildSlotIdAndCurrentCapacityUri(long slotId, int placesLeft) {
             return CONTENT_URI.buildUpon().appendPath(Long.toString(slotId))
             .appendPath(Integer.toString(placesLeft)).build();
+        }
+
+        public static Uri buildSlotGuideUri(String guideId) {
+            return CONTENT_URI.buildUpon().appendPath(guideId).build();
         }
 
         public static long getSlotIdFromUri(Uri uri) {
@@ -274,6 +288,11 @@ public class ToursContract {
 
         public static int getPlacesLeftFromUri(Uri uri) {
             return Integer.parseInt(uri.getPathSegments().get(2));
+        }
+
+        // Retrieve the guide ID.
+        public static String getSlotGuideIdFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
         }
     }
 

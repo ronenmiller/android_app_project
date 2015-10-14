@@ -38,6 +38,8 @@ public class ToursProvider extends ContentProvider {
     static final int TOURS_WITH_MANAGER = 302;
     static final int LANGUAGES = 400;
     static final int SLOTS = 500;
+    static final int SLOTS_WITH_ID = 501;
+    static final int SLOTS_WITH_GUIDE = 502;
     static final int RESERVATIONS = 600;
     static final int USERS = 700;
 
@@ -47,6 +49,8 @@ public class ToursProvider extends ContentProvider {
     private static final SQLiteQueryBuilder sToursWithLocationAndLanguageNameQueryBuilder;
     // A table of slots with the guides of those slots.
     private static final SQLiteQueryBuilder sSlotsWithUsersQueryBuilder;
+    // A table of slots with the corresponding tours and languages.
+    private static final SQLiteQueryBuilder sSlotsWithTourAndLanguageNameQueryBuilder;
     // All the tables together.
     private static final SQLiteQueryBuilder sReservationsQueryBuilder;
 
@@ -91,6 +95,23 @@ public class ToursProvider extends ContentProvider {
                         "." + ToursContract.SlotEntry.COLUMN_SLOT_GUIDE_ID +
                         " = " + ToursContract.UserEntry.TABLE_NAME +
                         "." + ToursContract.UserEntry._ID);
+
+        sSlotsWithTourAndLanguageNameQueryBuilder = new SQLiteQueryBuilder();
+
+        // This is an inner join which looks like
+        // slots INNER JOIN users ON slots.u_id = language._id
+        sSlotsWithTourAndLanguageNameQueryBuilder.setTables(
+                ToursContract.SlotEntry.TABLE_NAME + " INNER JOIN " +
+                        ToursContract.TourEntry.TABLE_NAME +
+                        " ON " + ToursContract.SlotEntry.TABLE_NAME +
+                        "." + ToursContract.SlotEntry.COLUMN_SLOT_TOUR_ID +
+                        " = " + ToursContract.TourEntry.TABLE_NAME +
+                        "." + ToursContract.TourEntry._ID + " INNER JOIN " +
+                        ToursContract.LanguageEntry.TABLE_NAME +
+                        " ON " + ToursContract.TourEntry.TABLE_NAME +
+                        "." + ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE +
+                        " = " + ToursContract.LanguageEntry.TABLE_NAME +
+                        "." + ToursContract.LanguageEntry._ID);
 
         sReservationsQueryBuilder = new SQLiteQueryBuilder();
 
@@ -157,6 +178,29 @@ public class ToursProvider extends ContentProvider {
         );
     }
 
+    // Slot with a specific guide.
+    private static final String sSlotsWithGuideSelection =
+            ToursContract.SlotEntry.TABLE_NAME +
+                    "." + ToursContract.SlotEntry.COLUMN_SLOT_GUIDE_ID + " = ? AND " +
+                    ToursContract.SlotEntry.TABLE_NAME +
+                    "." + ToursContract.SlotEntry.COLUMN_SLOT_ACTIVE + " = 1 AND " +
+                    ToursContract.SlotEntry.TABLE_NAME +
+                    "." + ToursContract.SlotEntry.COLUMN_SLOT_CANCELED + " = 0";
+
+    private Cursor getSlotsWithGuide(Uri uri, String[] projection, String sortOrder) {
+        String guideId = ToursContract.SlotEntry.getSlotGuideIdFromUri(uri);
+
+        return sSlotsWithTourAndLanguageNameQueryBuilder.query(
+                mOpenHelper.getReadableDatabase(),
+                projection,
+                sSlotsWithGuideSelection,
+                new String[]{guideId},
+                null,
+                null,
+                sortOrder
+        );
+    }
+
     /*  The UriMatcher matches a URI to a constant number for the ease of using switch statements. */
     static UriMatcher buildUriMatcher() {
         // 1) The code passed into the constructor represents the code to return for the root
@@ -173,6 +217,8 @@ public class ToursProvider extends ContentProvider {
         uriMatcher.addURI(authority, ToursContract.PATH_TOURS + "/*", TOURS_WITH_MANAGER);
         uriMatcher.addURI(authority, ToursContract.PATH_LANGUAGES, LANGUAGES);
         uriMatcher.addURI(authority, ToursContract.PATH_SLOTS, SLOTS);
+        uriMatcher.addURI(authority, ToursContract.PATH_SLOTS + "/#", SLOTS_WITH_ID);
+        uriMatcher.addURI(authority, ToursContract.PATH_SLOTS + "/*", SLOTS_WITH_GUIDE);
         uriMatcher.addURI(authority, ToursContract.PATH_RESERVATIONS, RESERVATIONS);
         uriMatcher.addURI(authority, ToursContract.PATH_USERS, USERS);
         // 3) Return the new matcher!
@@ -188,7 +234,7 @@ public class ToursProvider extends ContentProvider {
 
     /* Here's where you'll code the getType function that uses the UriMatcher. */
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         // Use the Uri Matcher to determine what kind of URI this is.
         final int match = sUriMatcher.match(uri);
 
@@ -208,6 +254,11 @@ public class ToursProvider extends ContentProvider {
                 return ToursContract.LanguageEntry.CONTENT_ITEM_TYPE;
             case SLOTS:
                 return ToursContract.SlotEntry.CONTENT_TYPE;
+            case SLOTS_WITH_ID:
+                // Always returns a single user.
+                return ToursContract.SlotEntry.CONTENT_ITEM_TYPE;
+            case SLOTS_WITH_GUIDE:
+                return ToursContract.SlotEntry.CONTENT_TYPE;
             case RESERVATIONS:
                 return ToursContract.ReservationEntry.CONTENT_TYPE;
             case USERS:
@@ -219,7 +270,7 @@ public class ToursProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
         // Here's the switch statement that, given a URI, will determine what kind of request it is,
         // and query the database accordingly.
@@ -294,6 +345,22 @@ public class ToursProvider extends ContentProvider {
                 );
                 break;
             }
+            case SLOTS_WITH_ID: {
+                retCursor = sSlotsWithTourAndLanguageNameQueryBuilder.query(
+                        mOpenHelper.getReadableDatabase(),
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case SLOTS_WITH_GUIDE: {
+                retCursor = getSlotsWithGuide(uri, projection, sortOrder);
+                break;
+            }
             case RESERVATIONS: {
                 retCursor = sReservationsQueryBuilder.query(
                         mOpenHelper.getReadableDatabase(),
@@ -321,7 +388,9 @@ public class ToursProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
-        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        if (getContext() != null) {
+            retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        }
         return retCursor;
     }
 
@@ -392,8 +461,10 @@ public class ToursProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
-        // Notify the uri listeners (using the content resolver) about the insertion.
-        getContext().getContentResolver().notifyChange(uri, null);
+        if (getContext() != null && getContext().getContentResolver() != null) {
+            // Notify the uri listeners (using the content resolver) about the insertion.
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
         return returnUri;
     }
 
@@ -469,7 +540,9 @@ public class ToursProvider extends ContentProvider {
         // Notify the uri listeners (using the content resolver) if the rowsDeleted != 0
         // or the selection null (all rows deleted).
         if (rowsDeleted != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
+            if (getContext() != null && getContext().getContentResolver() != null) {
+                getContext().getContentResolver().notifyChange(uri, null);
+            }
         }
 
         // return the actual number of rows that were deleted
@@ -477,8 +550,8 @@ public class ToursProvider extends ContentProvider {
     }
 
     @Override
-    public int update(
-            Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull
+                          Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         // This is a lot like the delete function. Return the number of rows impacted
         // by the update.
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
@@ -555,14 +628,16 @@ public class ToursProvider extends ContentProvider {
 
         // If any rows were updated, notify the uri listeners (using the content resolver).
         if (rowsUpdated != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
+            if (getContext() != null && getContext().getContentResolver() != null) {
+                getContext().getContentResolver().notifyChange(uri, null);
+            }
         }
 
         return rowsUpdated;
     }
 
     @Override
-    public int bulkInsert(Uri uri, ContentValues[] values) {
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
 
@@ -614,7 +689,9 @@ public class ToursProvider extends ContentProvider {
         // Notify the uri listeners (using the content resolver) about the insertion.
         // TOURS adapter is notified using a local broadcast intent.
         if (match != TOURS) {
-            getContext().getContentResolver().notifyChange(uri, null);
+            if (getContext() != null && getContext().getContentResolver() != null) {
+                getContext().getContentResolver().notifyChange(uri, null);
+            }
         }
         return returnCount;
     }

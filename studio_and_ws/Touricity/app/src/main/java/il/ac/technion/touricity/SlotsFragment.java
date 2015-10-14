@@ -63,7 +63,7 @@ public class SlotsFragment extends Fragment
             ToursContract.UserEntry.COLUMN_USER_RATING,
             SlotEntry.COLUMN_SLOT_DATE,
             SlotEntry.COLUMN_SLOT_TIME,
-            SlotEntry.COLUMN_SLOT_CAPACITY,
+            SlotEntry.COLUMN_SLOT_CURRENT_CAPACITY,
     };
 
     // These indices are tied to SLOT_COLUMNS.  If SLOT_COLUMNS changes, these
@@ -177,13 +177,13 @@ public class SlotsFragment extends Fragment
                     }
                     long slotId = cursor.getLong(COL_SLOT_ID);
                     int slotVacant = cursor.getInt(COL_SLOT_CAPACITY);
-                    Uri slotUri = SlotEntry.buildSlotIdUri(slotId, slotVacant);
+                    Uri slotUri = SlotEntry.buildSlotIdAndCurrentCapacityUri(slotId, slotVacant);
                     Utility.showReserveSlotDialog(getActivity(), slotUri);
                 } else {
                     if (Utility.getIsLoggedIn(getActivity().getApplicationContext()) &&
                             Utility.getLoggedInUserIsGuide(getActivity().getApplicationContext())) {
                         if (mSlotsListView.getLastVisiblePosition() == position) {
-                            ((Callback) getActivity()).onCreateSlot(mUri);
+                            ((Callback)getActivity()).onCreateSlot(mUri);
                         }
                     }
                 }
@@ -286,7 +286,8 @@ public class SlotsFragment extends Fragment
         int tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
         Uri uri = SlotEntry.CONTENT_URI;
         String selection = SlotEntry.TABLE_NAME +
-                "." + SlotEntry.COLUMN_SLOT_TOUR_ID + " = ?";
+                "." + SlotEntry.COLUMN_SLOT_TOUR_ID + " = ? AND " +
+                SlotEntry.TABLE_NAME + "." + SlotEntry.COLUMN_SLOT_ACTIVE + " = 1";
         String sortOrder = SlotEntry.COLUMN_SLOT_DATE + " ASC, " +
                 SlotEntry.COLUMN_SLOT_TIME + " ASC";
 

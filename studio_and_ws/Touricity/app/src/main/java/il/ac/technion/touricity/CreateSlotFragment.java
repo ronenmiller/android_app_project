@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,12 +24,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Calendar;
 
 import il.ac.technion.touricity.data.ToursContract;
 import il.ac.technion.touricity.service.CreateSlotService;
+import il.ac.technion.touricity.service.EditSlotService;
 
 
 /**
@@ -39,6 +42,7 @@ public class CreateSlotFragment extends Fragment {
     public final String LOG_TAG = CreateSlotFragment.class.getSimpleName();
 
     public static final String INTENT_EXTRA_TOUR_ID = "extra_tour_id";
+    public static final String INTENT_EXTRA_SLOT_ID = "extra_slot_id";
     public static final String INTENT_EXTRA_DATE = "extra_date";
     public static final String INTENT_EXTRA_TIME = "extra_time";
     public static final String INTENT_EXTRA_CAPACITY = "extra_capacity";
@@ -49,7 +53,24 @@ public class CreateSlotFragment extends Fragment {
 
     private static final String SLOT_URI = "SLOT_URI";
 
+    // package-shared
+    private static final String[] SLOTS_COLUMNS = {
+            ToursContract.SlotEntry.TABLE_NAME + "." + ToursContract.SlotEntry._ID,
+            ToursContract.SlotEntry.COLUMN_SLOT_DATE,
+            ToursContract.SlotEntry.COLUMN_SLOT_TIME,
+            ToursContract.SlotEntry.COLUMN_SLOT_TOTAL_CAPACITY
+    };
+
+    // These indices are tied to SLOT_COLUMNS.  If SLOT_COLUMNS changes, these
+    // must change.
+    public static final int COL_SLOT_ID = 0;
+    public static final int COL_SLOT_DATE = 1;
+    public static final int COL_SLOT_TIME = 2;
+    public static final int COL_SLOT_TOTAL_CAPACITY = 3;
+
     private Uri mUri = null;
+
+    boolean mSlotExists;
 
     private EditText mDateView;
     private EditText mTimeView;
@@ -96,8 +117,21 @@ public class CreateSlotFragment extends Fragment {
                              Bundle savedInstanceState) {
         mUri = getShownUri();
 
+        long slotId = -1L;
+        if (mUri != null) {
+            try {
+                slotId = Long.parseLong(mUri.getPathSegments().get(2));
+                mSlotExists = true;
+            } catch (IndexOutOfBoundsException e) {
+                // Avoid the crash.
+                mSlotExists = false;
+            }
+        }
+
+
         View rootView = inflater.inflate(R.layout.fragment_create_slot, container, false);
 
+        TextView titleView = (TextView)rootView.findViewById(R.id.create_slot_title);
         mDateView = (EditText)rootView.findViewById(R.id.create_slot_date);
         mTimeView = (EditText)rootView.findViewById(R.id.create_slot_time);
         mCapacityView = (EditText)rootView.findViewById(R.id.create_slot_capacity);
@@ -132,6 +166,37 @@ public class CreateSlotFragment extends Fragment {
         mCreateSlotFormView = rootView.findViewById(R.id.create_slot_layout_form);
         mProgressView = rootView.findViewById(R.id.create_slot_progressbar);
 
+        if (mSlotExists) {
+            Cursor slotCursor = null;
+            Uri uri = ToursContract.SlotEntry.buildSlotIdUri(slotId);
+            String selection = ToursContract.SlotEntry.TABLE_NAME + "." +
+                    ToursContract.SlotEntry._ID + " = ?";
+            try {
+                slotCursor = getActivity().getContentResolver().query(
+                        uri,
+                        SLOTS_COLUMNS,
+                        selection,
+                        new String[]{Long.toString(slotId)},
+                        null
+                );
+
+                if (titleView != null) {
+                    titleView.setText(getString(R.string.edit_slot_header));
+                }
+                if (slotCursor != null && slotCursor.moveToNext()) {
+                    applyDate(slotCursor.getInt(COL_SLOT_DATE));
+                    applyTime(slotCursor.getLong(COL_SLOT_TIME));
+                    mCapacityView.setText(Integer.toString(slotCursor.getInt(COL_SLOT_TOTAL_CAPACITY)));
+                }
+                createSlotBtn.setText(getString(R.string.action_edit_slot_btn));
+            }
+            finally {
+                if (slotCursor != null) {
+                    slotCursor.close();
+                }
+            }
+        }
+
         return rootView;
     }
 
@@ -141,6 +206,9 @@ public class CreateSlotFragment extends Fragment {
 
         // Inflate the menu; this adds items to the action bar if it is present.
         inflater.inflate(R.menu.menu_fragment_create_slot, menu);
+
+        MenuItem submitMenuItem = menu.findItem(R.id.action_create_slot);
+        submitMenuItem.setTitle(getString(R.string.action_edit_slot_btn));
     }
 
     @Override
@@ -264,13 +332,31 @@ public class CreateSlotFragment extends Fragment {
             // Show a progress spinner, and kick off a background task to
             // perform the tour creation attempt.
             showProgress(true);
-            Intent intent = new Intent(getActivity(), CreateSlotService.class);
 
-            int tourId = -1;
-            if (mUri != null) {
-                tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
+            Intent intent = null;
+            if (!mSlotExists) {
+                intent = new Intent(getActivity(), CreateSlotService.class);
+                int tourId = -1;
+                if (mUri != null) {
+                    tourId = ToursContract.TourEntry.getTourIdFromUri(mUri);
+                }
+                intent.putExtra(INTENT_EXTRA_TOUR_ID, tourId);
             }
-            intent.putExtra(INTENT_EXTRA_TOUR_ID, tourId);
+            else {
+                intent = new Intent(getActivity(), EditSlotService.class);
+                long slotId = -1L;
+                if (mUri != null) {
+                    try {
+                        slotId = Long.parseLong(mUri.getPathSegments().get(2));
+                        mSlotExists = true;
+                    } catch (IndexOutOfBoundsException e) {
+                        // Avoid the crash.
+                        mSlotExists = false;
+                    }
+                }
+                intent.putExtra(INTENT_EXTRA_SLOT_ID, slotId);
+            }
+
             intent.putExtra(INTENT_EXTRA_DATE, mJulianDate);
             intent.putExtra(INTENT_EXTRA_TIME, mTimeInMillis);
             intent.putExtra(INTENT_EXTRA_CAPACITY, capacity);
@@ -338,9 +424,10 @@ public class CreateSlotFragment extends Fragment {
                 String slotCreationFailed = getString(R.string.error_create_slot_failed);
                 Toast.makeText(context, slotCreationFailed, Toast.LENGTH_LONG).show();
             } else {
-                // TODO: enable manage slots activity
-//                Intent manageSlotsIntent = new Intent(context, ManageSlotsActivity.class);
-//                context.startActivity(manageSlotsIntent);
+                String slotUpdated = getString(R.string.edit_slot_updated);
+                Toast.makeText(getActivity(), slotUpdated, Toast.LENGTH_LONG).show();
+                Intent manageSlotsIntent = new Intent(context, ManageSlotsActivity.class);
+                getActivity().startActivity(manageSlotsIntent);
             }
         }
     };

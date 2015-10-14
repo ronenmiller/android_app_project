@@ -19,6 +19,7 @@ public class Utility {
     static final String LOGOUT_TAG = "logout_tag";
     static final String DELETE_TOUR_TAG = "delete_tour_tag";
     static final String RESERVE_SLOT_TAG = "reserve_slot_tag";
+    static final String DELETE_SLOT_TAG = "delete_slot_tag";
     static final String TIME_PICKER_TAG = "time_picker_tag";
     static final String DATE_PICKER_TAG = "date_picker_tag";
 
@@ -241,6 +242,12 @@ public class Utility {
         // Create an instance of the dialog fragment and show it
         DialogFragment reserveSlotDialogfragment = ReserveSlotDialogFragment.newInstance(uri);
         reserveSlotDialogfragment.show(context.getSupportFragmentManager(), RESERVE_SLOT_TAG);
+    }
+
+    public static void showDeleteSlotDialog(FragmentActivity context, Uri uri) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment deleteSlotDialogFragment = DeleteSlotDialogFragment.newInstance(uri);
+        deleteSlotDialogFragment.show(context.getSupportFragmentManager(), DELETE_SLOT_TAG);
     }
 
     public static void showDatePickerDialog(FragmentActivity context) {

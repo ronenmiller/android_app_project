@@ -44,11 +44,6 @@ public class MainActivity extends ActionBarActivity
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
-    private static final String DETAIL_FRAGMENT_TAG = "DFTAG";
-    private static final String CREATE_TOUR_FRAGMENT_TAG = "CTFTAG";
-    private static final String SLOTS_FRAGMENT_TAG = "SFTAG";
-    private static final String CREATE_SLOT_FRAGMENT_TAG = "CSFTAG";
-
     static final int RECENT_LOCATIONS_LOADER = 0;
 
     private static final String RECENT_BUNDLE_KEY = "recent_bundle_key";
@@ -152,10 +147,10 @@ public class MainActivity extends ActionBarActivity
 
         if (Utility.getIsLoggedIn(getApplicationContext()))
         {
-            showSignInMenuItems(false);
+            showSignInMenuItems();
         }
         else {
-            showSignInMenuItems(true);
+            showSignInMenuItems();
         }
 
         return true;
@@ -273,9 +268,8 @@ public class MainActivity extends ActionBarActivity
             return true;
         }
         else if (id == R.id.action_manage_slots) {
-            // TODO: uncomment when activity is ready
-//            Intent intent = new Intent(this, ManageSlotsActivity.class);
-//            this.startActivity(intent);
+            Intent intent = new Intent(this, ManageSlotsActivity.class);
+            this.startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -292,7 +286,7 @@ public class MainActivity extends ActionBarActivity
             mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
             DetailFragment fragment = DetailFragment.newInstance(tourUri);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.tours_slots_detail_container, fragment, DETAIL_FRAGMENT_TAG)
+                    .replace(R.id.tours_slots_detail_container, fragment, DetailActivity.DETAIL_FRAGMENT_TAG)
                     .commit();
         }
         // one-pane mode
@@ -309,7 +303,7 @@ public class MainActivity extends ActionBarActivity
             mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
             CreateTourFragment fragment = new CreateTourFragment();
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.tours_slots_detail_container, fragment, CREATE_TOUR_FRAGMENT_TAG)
+                    .replace(R.id.tours_slots_detail_container, fragment, CreateTourActivity.CREATE_TOUR_FRAGMENT_TAG)
                     .commit();
         }
         // one-pane mode
@@ -325,7 +319,7 @@ public class MainActivity extends ActionBarActivity
         // slots activity.
         CreateSlotFragment fragment = CreateSlotFragment.newInstance(tourUri);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.tours_slots_detail_container, fragment, CREATE_SLOT_FRAGMENT_TAG)
+                .replace(R.id.tours_slots_detail_container, fragment, CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG)
                 .commit();
     }
 
@@ -334,7 +328,7 @@ public class MainActivity extends ActionBarActivity
     // defined by the LoginDialogFragment.LoginDialogListener interface
     @Override
     public void onDateSelected(int julianDate) {
-        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG);
         csf.applyDate(julianDate);
     }
 
@@ -343,7 +337,7 @@ public class MainActivity extends ActionBarActivity
     // defined by the LoginDialogFragment.LoginDialogListener interface
     @Override
     public void onTimeSelected(long timeInMillis) {
-        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG);
         csf.applyTime(timeInMillis);
     }
 
@@ -357,7 +351,7 @@ public class MainActivity extends ActionBarActivity
         // detail activity.
         SlotsFragment fragment = SlotsFragment.newInstance(tourUri);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.tours_slots_detail_container, fragment, SLOTS_FRAGMENT_TAG)
+                .replace(R.id.tours_slots_detail_container, fragment, SlotsActivity.SLOTS_FRAGMENT_TAG)
                 .commit();
     }
 
@@ -405,18 +399,18 @@ public class MainActivity extends ActionBarActivity
         Utility.saveLoginSession(this.getApplicationContext(), userId, isGuide);
         dialog.dismiss();
 
-        showSignInMenuItems(false);
+        showSignInMenuItems();
 
         MainFragment mf = (MainFragment)getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_main);
         mf.showGuideOptions();
         DetailFragment df = (DetailFragment)getSupportFragmentManager()
-                .findFragmentByTag(DETAIL_FRAGMENT_TAG);
+                .findFragmentByTag(DetailActivity.DETAIL_FRAGMENT_TAG);
         if (df != null) {
             df.showGuideOptions();
         }
         SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
-                .findFragmentByTag(SLOTS_FRAGMENT_TAG);
+                .findFragmentByTag(SlotsActivity.SLOTS_FRAGMENT_TAG);
         if (sf != null) {
             sf.showGuideOptions();
         }
@@ -433,11 +427,11 @@ public class MainActivity extends ActionBarActivity
         Utility.saveLogoutState(this.getApplicationContext());
         dialog.dismiss();
 
-        showSignInMenuItems(true);
+        showSignInMenuItems();
 
         if (mTwoPane) {
             CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager()
-                    .findFragmentByTag(CREATE_SLOT_FRAGMENT_TAG);
+                    .findFragmentByTag(CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG);
             ReserveSlotDialogFragment rsdf = (ReserveSlotDialogFragment)getSupportFragmentManager()
                     .findFragmentByTag(Utility.RESERVE_SLOT_TAG);
             if (rsdf != null) {
@@ -455,12 +449,12 @@ public class MainActivity extends ActionBarActivity
                 .findFragmentById(R.id.fragment_main);
         mf.showGuideOptions();
         DetailFragment df = (DetailFragment)getSupportFragmentManager()
-                .findFragmentByTag(DETAIL_FRAGMENT_TAG);
+                .findFragmentByTag(DetailActivity.DETAIL_FRAGMENT_TAG);
         if (df != null) {
             df.showGuideOptions();
         }
         SlotsFragment sf = (SlotsFragment)getSupportFragmentManager()
-                .findFragmentByTag(SLOTS_FRAGMENT_TAG);
+                .findFragmentByTag(SlotsActivity.SLOTS_FRAGMENT_TAG);
         if (sf != null) {
             sf.showGuideOptions();
         }
@@ -484,24 +478,27 @@ public class MainActivity extends ActionBarActivity
         mf.onDeleteTour();
     }
 
-    private void showSignInMenuItems(boolean show) {
+    private void showSignInMenuItems() {
+        Context context = getApplicationContext();
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(context);
         if (mLoginMenuItem != null) {
-            mLoginMenuItem.setVisible(show);
+            mLoginMenuItem.setVisible(!isUserLoggedIn);
         }
         if (mSignupMenuItem != null) {
-            mSignupMenuItem.setVisible(show);
+            mSignupMenuItem.setVisible(!isUserLoggedIn);
         }
         if (mLogoutMenuItem != null) {
-            mLogoutMenuItem.setVisible(!show);
+            mLogoutMenuItem.setVisible(isUserLoggedIn);
         }
         if (mMyToursMenuItem != null) {
-            mMyToursMenuItem.setVisible(!show);
+            mMyToursMenuItem.setVisible(isUserLoggedIn);
         }
+        boolean isGuideLoggedIn = isUserLoggedIn && Utility.getLoggedInUserIsGuide(context);
         if (mManageToursMenuItem != null) {
-            mManageToursMenuItem.setVisible(!show);
+            mManageToursMenuItem.setVisible(isGuideLoggedIn);
         }
         if (mManageSlotsMenuItem != null) {
-            mManageSlotsMenuItem.setVisible(!show);
+            mManageSlotsMenuItem.setVisible(isGuideLoggedIn);
         }
     }
 
@@ -527,7 +524,7 @@ public class MainActivity extends ActionBarActivity
             editor.remove(context.getString(R.string.pref_user_is_guide_key));
             editor.apply();
 
-            showSignInMenuItems(true);
+            showSignInMenuItems();
         }
 
         String[] languages = new String[]

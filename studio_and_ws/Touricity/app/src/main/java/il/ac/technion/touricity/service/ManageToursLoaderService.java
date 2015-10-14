@@ -183,7 +183,6 @@ public class ManageToursLoaderService extends IntentService {
                 double locationLongitude;
 
                 int tourId;
-
                 String title;
                 // Duration is in minutes.
                 int duration;
@@ -191,7 +190,6 @@ public class ManageToursLoaderService extends IntentService {
                 String location;
                 double rating;
                 String description;
-
                 // TODO: figure these out.
                 Object photos;
                 String comments;
@@ -273,11 +271,11 @@ public class ManageToursLoaderService extends IntentService {
                 );
                 if (toursCursor != null) {
                     while (toursCursor.moveToNext()) {
-                        int tourID = toursCursor.getInt(COL_TOUR_ID);
+                        int tourId = toursCursor.getInt(COL_TOUR_ID);
                         String slotSelection = ToursContract.SlotEntry.TABLE_NAME +
                                 "." + ToursContract.SlotEntry.COLUMN_SLOT_TOUR_ID +
                                 " = ?";
-                        String[] slotSelectionArgs = new String[]{Integer.toString(tourID)};
+                        String[] slotSelectionArgs = new String[]{Integer.toString(tourId)};
 
                         slotsCursor = resolver.query(
                                 ToursContract.SlotEntry.CONTENT_URI,

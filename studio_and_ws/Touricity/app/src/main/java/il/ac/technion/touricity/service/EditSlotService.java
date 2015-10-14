@@ -27,11 +27,11 @@ import il.ac.technion.touricity.CreateTourFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.Utility;
 
-public class CreateSlotService extends IntentService {
+public class EditSlotService extends IntentService {
 
-    private static final String LOG_TAG = CreateTourService.class.getSimpleName();
+    private static final String LOG_TAG = EditSlotService.class.getSimpleName();
 
-    public CreateSlotService() { super("CreateSlotService"); }
+    public EditSlotService() { super("EditSlotService"); }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -39,23 +39,23 @@ public class CreateSlotService extends IntentService {
             return;
         }
 
-        int tourId = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_TOUR_ID, -1);
+        long slotId = intent.getLongExtra(CreateSlotFragment.INTENT_EXTRA_SLOT_ID, -1L);
         int julianDate = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_DATE, -1);
         long timeInMillis = intent.getLongExtra(CreateSlotFragment.INTENT_EXTRA_TIME, -1L);
 
         // Sanity check.
-        if (tourId == -1 || julianDate == -1 || timeInMillis == -1L) {
+        if (slotId == -1L && julianDate == -1 || timeInMillis == -1L) {
             sendBroadcast(false);
         }
 
         String capacity = intent.getStringExtra(CreateSlotFragment.INTENT_EXTRA_CAPACITY);
 
-        boolean success = addSlotToServerDb(tourId, julianDate, timeInMillis, capacity);
+        boolean success = editSlotOnServerDb(slotId, julianDate, timeInMillis, capacity);
 
         sendBroadcast(success);
     }
 
-    public boolean addSlotToServerDb(int tourId, int julianDate, long timeInMillis, String capacity) {
+    public boolean editSlotOnServerDb(long slotId, int julianDate, long timeInMillis, String capacity) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -72,17 +72,14 @@ public class CreateSlotService extends IntentService {
             urlConnection = (HttpURLConnection) url.openConnection();
             Utility.setupHttpUrlConnection(urlConnection);
 
-            String guideId = Utility.getLoggedInUserId(getApplicationContext());
-
             // Create a message to be delivered to the server.
             Map<String, String> map = new HashMap<>();
-            map.put(Message.MessageKeys.SLOT_GUIDE_ID_KEY, guideId);
-            map.put(Message.MessageKeys.SLOT_TOUR_ID_KEY, Integer.toString(tourId));
+            map.put(Message.MessageKeys.SLOT_ID_KEY, Long.toString(slotId));
             map.put(Message.MessageKeys.SLOT_DATE_KEY, Integer.toString(julianDate));
             map.put(Message.MessageKeys.SLOT_TIME_KEY, Long.toString(timeInMillis));
-            map.put(Message.MessageKeys.SLOT_CURRENT_CAPACITY_KEY, capacity);
+            map.put(Message.MessageKeys.SLOT_TOTAL_CAPACITY_KEY, capacity);
             JSONObject jsonObject = new JSONObject(map);
-            Message message = new Message(Message.MessageTypes.CREATE_SLOT, jsonObject.toString());
+            Message message = new Message(Message.MessageTypes.EDIT_SLOT, jsonObject.toString());
             Gson gson = new Gson();
             String requestMessageJsonStr = gson.toJson(message);
 

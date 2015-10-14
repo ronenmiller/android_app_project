@@ -12,6 +12,8 @@ public class CreateTourActivity extends FragmentActivity {
 
     private AppCompatDelegate mDelegate;
 
+    static final String CREATE_TOUR_FRAGMENT_TAG = "CTFTAG";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -32,8 +32,8 @@ public class SlotsAdapter extends CursorAdapter {
 
         public ViewHolder(View view) {
             iconView = (ImageView)view.findViewById(R.id.list_item_slot_icon);
-            dateTimeView = (TextView)view.findViewById(R.id.list_item_slot_date_and_time);
-            capacityView = (TextView)view.findViewById(R.id.list_item_slot_capacity);
+            dateTimeView = (TextView)view.findViewById(R.id.list_item_slot_subtitle);
+            capacityView = (TextView)view.findViewById(R.id.list_item_slot_title);
             ratingBar = (RatingBar)view.findViewById(R.id.list_item_slot_rating_bar);
         }
     }

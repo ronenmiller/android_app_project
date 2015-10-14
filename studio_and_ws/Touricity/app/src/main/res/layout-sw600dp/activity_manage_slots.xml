@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="horizontal"
+    tools:context="com.example.android.sunshine.app.ManageSlotsActivity">
+
+    <!--
+    This layout is a two-pane layout for the Items master/detail flow.
+    -->
+    <fragment
+        android:id="@+id/fragment_manage_slots"
+        android:name="il.ac.technion.touricity.ManageSlotsFragment"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        tools:layout="@android:layout/list_content" />
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:background="@color/touricity_light_grey" />
+
+    <FrameLayout
+        android:id="@+id/tours_slots_detail_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4" />
+
+</LinearLayout>

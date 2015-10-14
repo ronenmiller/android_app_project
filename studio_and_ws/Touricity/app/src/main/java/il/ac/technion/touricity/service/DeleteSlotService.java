@@ -1,6 +1,7 @@
 package il.ac.technion.touricity.service;
 
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -22,16 +23,16 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import il.ac.technion.touricity.CreateSlotFragment;
-import il.ac.technion.touricity.CreateTourFragment;
+import il.ac.technion.touricity.DeleteSlotDialogFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.Utility;
+import il.ac.technion.touricity.data.ToursContract;
 
-public class CreateSlotService extends IntentService {
+public class DeleteSlotService extends IntentService {
 
-    private static final String LOG_TAG = CreateTourService.class.getSimpleName();
+    private static final String LOG_TAG = DeleteSlotService.class.getSimpleName();
 
-    public CreateSlotService() { super("CreateSlotService"); }
+    public DeleteSlotService() { super("DeleteSlotService"); }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -39,23 +40,36 @@ public class CreateSlotService extends IntentService {
             return;
         }
 
-        int tourId = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_TOUR_ID, -1);
-        int julianDate = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_DATE, -1);
-        long timeInMillis = intent.getLongExtra(CreateSlotFragment.INTENT_EXTRA_TIME, -1L);
-
-        // Sanity check.
-        if (tourId == -1 || julianDate == -1 || timeInMillis == -1L) {
-            sendBroadcast(false);
+        long slotId = intent.getLongExtra(DeleteSlotDialogFragment.INTENT_EXTRA_SLOT_ID, -1L);
+        if (slotId == -1L) {
+            return;
         }
 
-        String capacity = intent.getStringExtra(CreateSlotFragment.INTENT_EXTRA_CAPACITY);
+        boolean success = deleteSlotFromServerDb(slotId);
 
-        boolean success = addSlotToServerDb(tourId, julianDate, timeInMillis, capacity);
+        if (success) {
+            String selection = ToursContract.SlotEntry.TABLE_NAME + "." +
+                    ToursContract.SlotEntry._ID + " = ?";
+            ContentValues cv = new ContentValues();
+            cv.put(ToursContract.SlotEntry.COLUMN_SLOT_ACTIVE, 0);
+            cv.put(ToursContract.SlotEntry.COLUMN_SLOT_CANCELED, 1);
+
+            int updated = getContentResolver().update(
+                    ToursContract.SlotEntry.CONTENT_URI,
+                    cv,
+                    selection,
+                    new String[]{Long.toString(slotId)}
+            );
+
+            if (updated == 1) {
+                Log.d(LOG_TAG, "Slot was marked canceled in the local database.");
+            }
+        }
 
         sendBroadcast(success);
     }
 
-    public boolean addSlotToServerDb(int tourId, int julianDate, long timeInMillis, String capacity) {
+    public boolean deleteSlotFromServerDb(long slotId) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -72,17 +86,11 @@ public class CreateSlotService extends IntentService {
             urlConnection = (HttpURLConnection) url.openConnection();
             Utility.setupHttpUrlConnection(urlConnection);
 
-            String guideId = Utility.getLoggedInUserId(getApplicationContext());
-
             // Create a message to be delivered to the server.
-            Map<String, String> map = new HashMap<>();
-            map.put(Message.MessageKeys.SLOT_GUIDE_ID_KEY, guideId);
-            map.put(Message.MessageKeys.SLOT_TOUR_ID_KEY, Integer.toString(tourId));
-            map.put(Message.MessageKeys.SLOT_DATE_KEY, Integer.toString(julianDate));
-            map.put(Message.MessageKeys.SLOT_TIME_KEY, Long.toString(timeInMillis));
-            map.put(Message.MessageKeys.SLOT_CURRENT_CAPACITY_KEY, capacity);
+            Map<String, Long> map = new HashMap<>();
+            map.put(Message.MessageKeys.SLOT_ID_KEY, slotId);
             JSONObject jsonObject = new JSONObject(map);
-            Message message = new Message(Message.MessageTypes.CREATE_SLOT, jsonObject.toString());
+            Message message = new Message(Message.MessageTypes.DELETE_SLOT, jsonObject.toString());
             Gson gson = new Gson();
             String requestMessageJsonStr = gson.toJson(message);
 
@@ -126,7 +134,7 @@ public class CreateSlotService extends IntentService {
             responseMessageJsonStr = buffer.toString();
             Log.v(LOG_TAG, responseMessageJsonStr);
 
-            // We know the message type to be CREATE_SLOT.
+            // We know the message type to be DELETE_SLOT.
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
             String isModified = responseJSON.getString(Message.MessageKeys.IS_MODIFIED);
@@ -156,10 +164,10 @@ public class CreateSlotService extends IntentService {
         return false;
     }
 
-    // Send an Intent with an action named BROADCAST_CREATE_SLOT_SERVICE_DONE.
+    // Send an Intent with an action named BROADCAST_DELETE_SLOT_SERVICE_DONE.
     private void sendBroadcast(boolean success) {
-        Intent broadcastIntent = new Intent(CreateSlotFragment.BROADCAST_CREATE_SLOT_SERVICE_DONE);
-        broadcastIntent.putExtra(CreateTourFragment.BROADCAST_INTENT_RESULT, success);
+        Intent broadcastIntent = new Intent(DeleteSlotDialogFragment.BROADCAST_DELETE_SLOT_SERVICE_DONE);
+        broadcastIntent.putExtra(DeleteSlotDialogFragment.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
 
