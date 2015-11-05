@@ -18,6 +18,8 @@
     <string name="title_activity_manage_tours">Manage tours</string>
     <string name="title_activity_manage_slots">Manage slots</string>
     <string name="title_activity_slot_reservations">Reservations</string>
+    <string name="title_activity_my_tours">My tours</string>
+    <string name="title_activity_reservation_detail">Reservation detail</string>
 
     <!-- Menu-related strings -->
     <string name="action_main">Main</string>
@@ -79,6 +81,10 @@
     <string name="dialog_change_reservation_title">Change reservation</string>
     <string name="reserve_slot_msg">How many places would you like to reserve for this slot?</string>
     <string name="action_reserve_slot_button">Reserve</string>
+    <string name="dialog_create_reservation_success">Reservation created successfully</string>
+    <string name="dialog_change_reservation_success">Reservation changed successfully</string>
+    <string name="dialog_create_reservation_fail">Server ERROR: Reservation failed</string>
+    <string name="dialog_change_reservation_fail">Server ERROR: Reservation unchanged</string>
 
     <!-- Strings related to main fragment -->
     <string name="find_destination">Search for a destination</string>
@@ -92,7 +98,7 @@
     <string name="tour_language">Language: <xliff:g id="language">%s</xliff:g></string>
     <string name="tour_location">Tour departs from: <xliff:g id="location">%s</xliff:g></string>
 
-    <!-- Strings related to slot activity -->
+    <!-- Strings related to slots activity -->
     <string name="slot_reserved">Reserved</string>
     <string name="slot_not_reserved">Not reserved</string>
     <string name="slot_capacity"><xliff:g id="vacant">%s</xliff:g> places left</string>
@@ -123,6 +129,7 @@
     <string name="create_slot_capacity">Slot capacity</string>
     <string name="action_create_slot_short">Go</string>
     <string name="action_create_slot_btn">Create</string>
+    <string name="create_slot_created">Slot created</string>
 
     <string name="edit_slot_header">Edit slot</string>
     <string name="action_edit_slot_btn">Save</string>
@@ -216,6 +223,8 @@
     <string name="slot_reservations_total">Total</string>
     <string name="action_delete_slot">Delete slot</string>
     <string name="action_edit_slot">Edit slot</string>
+    <string name="slot_reservations_canceled">Slot canceled</string>
+    <string name="slot_reservations_completed">Tour completed</string>
 
     <!-- Delete slot dialog -->
     <string name="dialog_delete_slot_title">Delete slot?</string>
@@ -224,5 +233,33 @@
     <string name="action_delete_slot_confirm">Delete</string>
     <string name="dialog_delete_slot_success">Slot deleted successfully</string>
     <string name="dialog_delete_slot_fail">Server ERROR: slot deletion failed</string>
+
+    <!-- Strings related to my tours activity -->
+    <string name="reservations_not_found">No reservations found</string>
+
+    <!-- Strings related to reservation detail activity -->
+    <string name="detail_reservation_rate">Click to rate</string>
+    <string name="detail_reservation_rate_wide">Rate this tour &amp; guide:</string>
+    <string name="detail_reservation_canceled">Tour canceled</string>
+    <string name="detail_reservation_guide">Guided by <xliff:g id="guide_name">%s</xliff:g></string>
+    <string name="detail_reservation_reserved">Reserved <xliff:g id="reserved_num">%s</xliff:g> places</string>
+    <string name="action_delete_reservation">Delete</string>
+    <string name="action_edit_reservation">Edit Reservation</string>
+
+    <!-- Delete reservation dialog -->
+    <string name="dialog_delete_reservation_title">Delete reservation?</string>
+    <string name="action_delete_reservation_cancel">Cancel</string>
+    <string name="action_delete_reservation_confirm">Delete</string>
+    <string name="dialog_delete_reservation_success">Reservation deleted successfully</string>
+    <string name="dialog_delete_reservation_fail">Server ERROR: reservation deletion failed</string>
+
+    <!-- Rating dialog -->
+    <string name="dialog_rate_title">Your rating</string>
+    <string name="dialog_rate_tour">Tour:</string>
+    <string name="dialog_rate_guide">Guide:</string>
+    <string name="action_rate_button">Submit</string>
+    <string name="dialog_rate_success">Rating submitted</string>
+    <string name="dialog_rate_fail">Server ERROR: rating not saved</string>
+    <string name="dialog_rate_init_fail">Server ERROR: failed to load current rating</string>
 
 </resources>

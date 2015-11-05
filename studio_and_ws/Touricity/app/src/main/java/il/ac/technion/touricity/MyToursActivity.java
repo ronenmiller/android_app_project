@@ -12,25 +12,25 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-public class ManageSlotsActivity extends ActionBarActivity
+public class MyToursActivity extends ActionBarActivity
         implements LogoutDialogFragment.LogoutDialogListener,
-        DeleteSlotDialogFragment.DeleteSlotDialogListener,
-        ManageSlotsFragment.Callback,
-        SlotReservationsFragment.Callback,
-        DatePickerFragment.DatePickerDialogListener,
-        TimePickerFragment.TimePickerDialogListener {
+        DeleteReservationDialogFragment.DeleteReservationDialogListener,
+        RatingDialogFragment.RatingDialogListener,
+        MyToursFragment.Callback {
 
-    private static final String LOG_TAG = ManageSlotsActivity.class.getSimpleName();
+    private static final String LOG_TAG = MyToursActivity.class.getSimpleName();
 
     private boolean mTwoPane;
 
     private FrameLayout mDetailContainer;
 
+    private Uri mUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_manage_slots);
+        setContentView(R.layout.activity_my_tours);
 
         mDetailContainer = (FrameLayout)findViewById(R.id.tours_slots_detail_container);
         if (mDetailContainer != null) {
@@ -55,7 +55,7 @@ public class ManageSlotsActivity extends ActionBarActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_manage_slots, menu);
+        getMenuInflater().inflate(R.menu.menu_my_tours, menu);
 
         return true;
     }
@@ -85,12 +85,12 @@ public class ManageSlotsActivity extends ActionBarActivity
         else if (id == R.id.action_logout) {
             Utility.showLogoutDialog(this);
         }
-        else if (id == R.id.action_my_tours) {
-            Intent intent = new Intent(this, MyToursActivity.class);
-            this.startActivity(intent);
-        }
         else if (id == R.id.action_manage_tours) {
             Intent intent = new Intent(this, ManageToursActivity.class);
+            this.startActivity(intent);
+        }
+        else if (id == R.id.action_manage_slots) {
+            Intent intent = new Intent(this, ManageSlotsActivity.class);
             this.startActivity(intent);
         }
 
@@ -103,17 +103,19 @@ public class ManageSlotsActivity extends ActionBarActivity
             return;
         }
 
+        mUri = slotUri;
+
         // two-pane mode
         if (mTwoPane) {
             mDetailContainer.setVisibility(View.VISIBLE);
-            SlotReservationsFragment fragment = SlotReservationsFragment.newInstance(slotUri);
+            ReservationDetailFragment fragment = ReservationDetailFragment.newInstance(mUri);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.tours_slots_detail_container, fragment, SlotReservationsActivity.SLOT_RESERVATIONS_FRAGMENT_TAG)
+                    .replace(R.id.tours_slots_detail_container, fragment, ReservationDetailActivity.RESERVATION_DETAIL_FRAGMENT_TAG)
                     .commit();
         }
         // one-pane mode
         else {
-            Intent intent = new Intent(this, SlotReservationsActivity.class).setData(slotUri);
+            Intent intent = new Intent(this, ReservationDetailActivity.class).setData(slotUri);
             startActivity(intent);
         }
     }
@@ -135,9 +137,9 @@ public class ManageSlotsActivity extends ActionBarActivity
 
     // The dialog fragment receives a reference to this Activity through the
     // Fragment.onAttach() callback, which it uses to call the following methods
-    // defined by the DeleteTourDialogFragment.DeleteTourDialogListener interface
+    // defined by the DeleteReservationDialogFragment.DeleteReservationDialogListener interface
     @Override
-    public void onDeleteSlot(DialogFragment dialog) {
+    public void onDeleteReservation(DialogFragment dialog) {
         dialog.dismiss();
 
         // Always two-pane mode, otherwise detail activity will be called.
@@ -146,38 +148,43 @@ public class ManageSlotsActivity extends ActionBarActivity
                         .findFragmentById(R.id.tours_slots_detail_container)).commit();
         getSupportFragmentManager().executePendingTransactions();
 
-        ManageSlotsFragment msf = (ManageSlotsFragment)getSupportFragmentManager()
-                .findFragmentById(R.id.fragment_manage_slots);
-        msf.onDeleteSlot();
-    }
-
-    @Override
-    public void onEditSlot(Uri slotUri) {
-        // always two-pane mode, otherwise pressing the create slot button will lead to
-        // slots activity.
-        mDetailContainer.setVisibility(View.VISIBLE);
-        CreateSlotFragment fragment = CreateSlotFragment.newInstance(slotUri);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.tours_slots_detail_container, fragment, CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG)
-                .commit();
+        MyToursFragment mtf = (MyToursFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_my_tours);
+        mtf.onDeleteReservation();
     }
 
     // The dialog fragment receives a reference to this Activity through the
     // Fragment.onAttach() callback, which it uses to call the following methods
-    // defined by the DatePickerFragment.DatePickerDialogListener interface
+    // defined by the RatingDialogFragment.RatingDialogListener interface
     @Override
-    public void onDateSelected(int julianDate) {
-        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG);
-        csf.applyDate(julianDate);
-    }
+    public void onRate(DialogFragment dialog) {
+        dialog.dismiss();
 
-    // The dialog fragment receives a reference to this Activity through the
-    // Fragment.onAttach() callback, which it uses to call the following methods
-    // defined by the TimePickerFragment.TimePickerDialogListener interface
-    @Override
-    public void onTimeSelected(long timeInMillis) {
-        CreateSlotFragment csf = (CreateSlotFragment)getSupportFragmentManager().findFragmentByTag(CreateSlotActivity.CREATE_SLOT_FRAGMENT_TAG);
-        csf.applyTime(timeInMillis);
-    }
+        // Always two-pane mode, otherwise reservation detail activity will be called.
+        MyToursFragment mtf = (MyToursFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_my_tours);
+        mtf.onRate();
 
+        // two-pane mode
+        if (mTwoPane && mUri != null) {
+            mDetailContainer.setVisibility(View.VISIBLE);
+            ReservationDetailFragment fragment = ReservationDetailFragment.newInstance(mUri);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.tours_slots_detail_container, fragment, ReservationDetailActivity.RESERVATION_DETAIL_FRAGMENT_TAG)
+                    .commit();
+        }
+        else if (mTwoPane) {
+            ReservationDetailFragment rdf = (ReservationDetailFragment)getSupportFragmentManager()
+                    .findFragmentByTag(ReservationDetailActivity.RESERVATION_DETAIL_FRAGMENT_TAG);
+            if (rdf != null) {
+                mDetailContainer.setVisibility(View.VISIBLE);
+                getSupportFragmentManager().beginTransaction()
+                        .remove(rdf)
+                        .commit();
+            }
+            else {
+                mDetailContainer.setVisibility(View.INVISIBLE);
+            }
+        }
+    }
 }

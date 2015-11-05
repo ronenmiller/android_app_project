@@ -133,6 +133,29 @@ public final class JDBCServer {
 					long slotId = requestJSON.getLong(Message.MessageKeys.SLOT_ID_KEY);
 					return deleteSlot(slotId);
 				}
+				case Message.MessageTypes.DELETE_RESERVATION: {
+					long slotId = requestJSON.getLong(Message.MessageKeys.SLOT_ID_KEY);
+					String userId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+					return deleteReservation(slotId, userId);
+				}
+				case Message.MessageTypes.QUERY_MY_RATINGS: {
+					String myId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+					int tourId = requestJSON.getInt(Message.MessageKeys.TOUR_ID_KEY);
+					String guideId = requestJSON.getString(Message.MessageKeys.SLOT_GUIDE_ID_KEY);
+					return queryMyRatings(myId, tourId, guideId);
+				}
+				case Message.MessageTypes.UPDATE_RATINGS: {
+					String myId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+					int tourId = requestJSON.getInt(Message.MessageKeys.TOUR_ID_KEY);
+					String guideId = requestJSON.getString(Message.MessageKeys.SLOT_GUIDE_ID_KEY);
+					float tourRating = (float)requestJSON.getDouble(Message.MessageKeys.TOUR_RATING_KEY);
+					float guideRating = (float)requestJSON.getDouble(Message.MessageKeys.USER_RATING_KEY);
+					return updateRatings(myId, tourId, guideId, tourRating, guideRating);
+				}
+				case Message.MessageTypes.QUERY_MY_RESERVATIONS: {
+					String myId = requestJSON.getString(Message.MessageKeys.USER_ID_KEY);
+					return queryMyReservations(myId);
+				}
 				default: {
 					throw new IllegalArgumentException("Illegal message ID!");
 				}
@@ -1027,6 +1050,183 @@ public final class JDBCServer {
 		// convert envelope to JSON format
 		Gson gson = new Gson();
 		return gson.toJson(message);
+	}
+	
+	public static String deleteReservation(long slotId, String userId) {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		boolean isModified;
+		
+		try {
+		   if (connection != null) {
+			   String sql = "{call delete_reservation (?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setLong(1, slotId);
+			   cstmt.setString(2, userId);
+			   
+			   // modify database
+			   System.out.println("Deleting reservation from the database...");
+			   isModified = modifyServerDB(cstmt);
+		   }
+		   else { 
+			   throw new NullPointerException("Error: connection is null in deleteReservation!");
+		   }
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} finally {
+			// release resources
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+					
+		// generate JSON message with the results
+		JSONObject jsonObject = new JSONObject();
+		try {
+			jsonObject.put(Message.MessageKeys.IS_MODIFIED, isModified);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		String messageJsonStr = jsonObject.toString();
+		// put the message in an envelope
+		Message message = new Message(Message.MessageTypes.DELETE_RESERVATION, messageJsonStr);
+		// convert envelope to JSON format
+		Gson gson = new Gson();
+		return gson.toJson(message);
+	}
+	
+	
+	public static String queryMyRatings(String myId, int tourId, String guideId) throws Exception {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray ratings = null;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call query_my_ratings (?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, myId);
+			   cstmt.setInt(2, tourId);
+			   cstmt.setString(3, guideId);
+			   resultSet = queryDB(cstmt);
+			   ratings = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in queryMyRatings!");
+			}
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		if (ratings != null) {
+			// generate JSON message with the results
+			String messageJsonStr = ratings.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.QUERY_MY_RATINGS, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
+		}
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
+	}
+	
+	
+	public static String updateRatings(String myId, int tourId, String guideId, float tourRating, float guideRating) throws Exception {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray ratings = null;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call update_ratings (?, ?, ?, ?, ?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, myId);
+			   cstmt.setInt(2, tourId);
+			   cstmt.setString(3, guideId);
+			   cstmt.setFloat(4, tourRating);
+			   cstmt.setFloat(5, guideRating);
+			   resultSet = queryDB(cstmt);
+			   ratings = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in updateRatings!");
+			}
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		if (ratings != null) {
+			// generate JSON message with the results
+			String messageJsonStr = ratings.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.UPDATE_RATINGS, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
+		}
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
+	}
+	
+	public static String queryMyReservations(String myId) throws Exception {
+		Connection connection = initConnection();
+		CallableStatement cstmt = null;
+		ResultSet resultSet = null;
+		JSONArray reservations = null;
+		
+		try {
+			if (connection != null) {
+			   String sql = "{call query_my_reservations (?)}";
+			   cstmt = connection.prepareCall(sql);
+			   cstmt.setString(1, myId);
+			   resultSet = queryDB(cstmt);
+			   reservations = ResultSetConverter.convertResultSetIntoJSON(resultSet);
+			}
+			else { 
+				throw new NullPointerException("Error: connection is null in queryMyReservations!");
+			}
+		} catch (SQLException se) {
+			System.err.println("SQL exception: " + se);
+			return null;
+		} catch (JSONException je) {
+			System.err.println("JSON exception: " + je);
+		} finally {
+			closeResultSet(resultSet);
+			closeStatement(cstmt);
+			closeConnection(connection);
+		}
+		
+		if (reservations != null) {
+			// generate JSON message with the results
+			String messageJsonStr = reservations.toString();
+			// put the message in an envelope
+			Message message = new Message(Message.MessageTypes.QUERY_MY_RESERVATIONS, messageJsonStr);
+			// convert envelope to JSON format
+			Gson gson = new Gson();
+			return gson.toJson(message);
+		}
+		else {
+			throw new Exception("Error: Something went wrong while converting result set to JSONArray");
+		}
 	}
 	
 }

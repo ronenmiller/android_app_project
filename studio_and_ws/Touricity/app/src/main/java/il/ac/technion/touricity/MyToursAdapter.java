@@ -8,32 +8,33 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 /**
  * {@link ToursAdapter} exposes a list of tours
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
  */
-public class ManageSlotsAdapter extends CursorAdapter {
+public class MyToursAdapter extends CursorAdapter {
 
     /**
-     * Cache of the children views for a slot list item.
+     * Cache of the children views for a tour list item.
      */
     public static class ViewHolder {
         public final ImageView iconView;
         public final TextView dateTimeView;
         public final TextView tourTitleView;
-        public final TextView capacityView;
+        public final RatingBar ratingBar;
 
         public ViewHolder(View view) {
-            iconView = (ImageView)view.findViewById(R.id.list_item_slot_icon);
-            dateTimeView = (TextView)view.findViewById(R.id.list_item_slot_title);
-            tourTitleView = (TextView)view.findViewById(R.id.list_item_slot_subtitle);
-            capacityView = (TextView)view.findViewById(R.id.list_item_slot_caption);
+            iconView = (ImageView)view.findViewById(R.id.list_item_tour_icon);
+            dateTimeView = (TextView)view.findViewById(R.id.list_item_tour_title);
+            tourTitleView = (TextView)view.findViewById(R.id.list_item_tour_subtitle);
+            ratingBar = (RatingBar)view.findViewById(R.id.list_item_tour_rating_bar);
         }
     }
 
-    public ManageSlotsAdapter(Context context, Cursor c, int flags) {
+    public MyToursAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
 
@@ -42,7 +43,7 @@ public class ManageSlotsAdapter extends CursorAdapter {
      */
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View view = LayoutInflater.from(context).inflate(R.layout.list_item_manage_slot, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.list_item_tour, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
         view.setTag(viewHolder);
 
@@ -57,22 +58,22 @@ public class ManageSlotsAdapter extends CursorAdapter {
         ViewHolder viewHolder = (ViewHolder)view.getTag();
 
         // Read language ID from cursor in order to set the icon.
-        int languageId = cursor.getInt(ManageSlotsFragment.COL_TOUR_LANGUAGE);
+        int languageId = cursor.getInt(MyToursFragment.COL_TOUR_LANGUAGE);
         // Set image source based on the language ID.
         viewHolder.iconView.setImageResource(Utility.getLanguageIconIdForLanguageId(languageId));
         // For accessibility, add a content description to the icon field.
-        String languageName = cursor.getString(ManageSlotsFragment.COL_TOUR_LANGUAGE_NAME);
+        String languageName = cursor.getString(MyToursFragment.COL_TOUR_LANGUAGE_NAME);
         viewHolder.iconView.setContentDescription(languageName);
 
         Time dayTime = new Time();
 
         // Read julian date from cursor and translate it to a human-readable date string.
-        int julianDate = cursor.getInt(ManageSlotsFragment.COL_SLOT_DATE);
+        int julianDate = cursor.getInt(MyToursFragment.COL_SLOT_DATE);
         long dateInMillis = dayTime.setJulianDay(julianDate);
         String formattedDate = Utility.getFriendlyDayString(context, dateInMillis);
 
         // Read local time string from the cursor.
-        long timeInMillis = cursor.getLong(ManageSlotsFragment.COL_SLOT_TIME);
+        long timeInMillis = cursor.getLong(MyToursFragment.COL_SLOT_TIME);
         String formattedTime = Utility.getFriendlyTimeString(timeInMillis);
         int dateFormatId = R.string.format_full_friendly_date;
 
@@ -82,18 +83,13 @@ public class ManageSlotsAdapter extends CursorAdapter {
                 formattedDate,
                 formattedTime));
 
-        int currentCapacity = cursor.getInt(ManageSlotsFragment.COL_SLOT_CURRENT_CAPACITY);
-        int totalCapacity = cursor.getInt(ManageSlotsFragment.COL_SLOT_TOTAL_CAPACITY);
-        int numReserved = totalCapacity - currentCapacity;
-        int reservedFormatId = R.string.manage_slot_reserved;
-        viewHolder.capacityView.setText(context.getString(
-                reservedFormatId,
-                numReserved,
-                totalCapacity));
+        double tourRating = cursor.getDouble(MyToursFragment.COL_TOUR_RATING);
+        viewHolder.ratingBar.setRating((float) tourRating);
 
         // Read tour duration from cursor.
-        String locationName = cursor.getString(ManageSlotsFragment.COL_TOUR_TITLE);
+        String locationName = cursor.getString(MyToursFragment.COL_TOUR_TITLE);
         // Find TextView and set the tour title on it.
         viewHolder.tourTitleView.setText(locationName);
+
     }
 }

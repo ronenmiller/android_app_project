@@ -29,7 +29,7 @@ public class LocationsLoaderService extends IntentService {
     private static final String LOG_TAG = LocationsLoaderService.class.getSimpleName();
 
     public LocationsLoaderService() {
-        super("LocationService");
+        super("LocationsLoaderService");
     }
 
     @Override

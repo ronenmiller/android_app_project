@@ -326,6 +326,14 @@ public class ToursContract {
         public static Uri buildReservationUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static Uri buildSlotReservationsUri(long slotId) {
+            return CONTENT_URI.buildUpon().appendPath(Long.toString(slotId)).build();
+        }
+
+        public static long getSlotIdFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
+        }
     }
 
     /* Inner class that defines the contents of the users table */

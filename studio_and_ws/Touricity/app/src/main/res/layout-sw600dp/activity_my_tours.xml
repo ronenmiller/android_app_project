@@ -5,14 +5,14 @@
     android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
-    tools:context="il.ac.technion.touricity.ManageSlotsActivity">
+    tools:context="com.example.android.sunshine.app.MyToursActivity">
 
     <!--
     This layout is a two-pane layout for the Items master/detail flow.
     -->
     <fragment
-        android:id="@+id/fragment_manage_slots"
-        android:name="il.ac.technion.touricity.ManageSlotsFragment"
+        android:id="@+id/fragment_my_tours"
+        android:name="il.ac.technion.touricity.MyToursFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="2"

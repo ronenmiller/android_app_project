@@ -8,7 +8,7 @@ DECLARE
 BEGIN
 
 	BEGIN
-		INSERT INTO tours(t_osm_id, u_id, t_title, t_language, t_duration, t_location, t_description, t_available)
+		INSERT INTO tours(t_osm_id, m_id, t_title, t_language, t_duration, t_location, t_description, t_available)
 		VALUES (_osm_id, _u_id::uuid, _title, _language, _duration, _location, _description, B'1');
 
 	EXCEPTION 

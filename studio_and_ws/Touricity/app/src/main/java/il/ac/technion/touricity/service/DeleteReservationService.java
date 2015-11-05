@@ -1,6 +1,7 @@
 package il.ac.technion.touricity.service;
 
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -22,16 +23,17 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import il.ac.technion.touricity.CreateSlotFragment;
-import il.ac.technion.touricity.CreateTourFragment;
+import il.ac.technion.touricity.DeleteReservationDialogFragment;
+import il.ac.technion.touricity.DeleteSlotDialogFragment;
 import il.ac.technion.touricity.Message;
 import il.ac.technion.touricity.Utility;
+import il.ac.technion.touricity.data.ToursContract;
 
-public class CreateSlotService extends IntentService {
+public class DeleteReservationService extends IntentService {
 
-    private static final String LOG_TAG = CreateTourService.class.getSimpleName();
+    private static final String LOG_TAG = DeleteReservationService.class.getSimpleName();
 
-    public CreateSlotService() { super("CreateSlotService"); }
+    public DeleteReservationService() { super("DeleteReservationService"); }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -39,22 +41,38 @@ public class CreateSlotService extends IntentService {
             return;
         }
 
-        int tourId = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_TOUR_ID, -1);
-        int julianDate = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_DATE, -1);
-        long timeInMillis = intent.getLongExtra(CreateSlotFragment.INTENT_EXTRA_TIME, -1L);
-        String capacity = intent.getStringExtra(CreateSlotFragment.INTENT_EXTRA_CAPACITY);
-
-        // Sanity check.
-        if (tourId == -1 || julianDate == -1 || timeInMillis == -1L || capacity == null) {
-            sendBroadcast(false);
+        long slotId = intent.getLongExtra(DeleteSlotDialogFragment.INTENT_EXTRA_SLOT_ID, -1L);
+        String userId = Utility.getLoggedInUserId(getApplicationContext());
+        if (slotId == -1L || userId == null) {
+            return;
         }
 
-        boolean success = addSlotToServerDb(tourId, julianDate, timeInMillis, capacity);
+        boolean success = deleteReservationFromServerDb(slotId, userId);
+
+        if (success) {
+            String selection = ToursContract.ReservationEntry.TABLE_NAME + "." +
+                    ToursContract.ReservationEntry._ID + " = ? AND " +
+                    ToursContract.ReservationEntry.TABLE_NAME + "." +
+                    ToursContract.ReservationEntry.COLUMN_RESERVATION_USER_ID + " = ?";
+            ContentValues cv = new ContentValues();
+            cv.put(ToursContract.ReservationEntry.COLUMN_RESERVATION_ACTIVE, 0);
+
+            int updated = getContentResolver().update(
+                    ToursContract.ReservationEntry.CONTENT_URI,
+                    cv,
+                    selection,
+                    new String[]{Long.toString(slotId), userId}
+            );
+
+            if (updated == 1) {
+                Log.d(LOG_TAG, "Reservation was marked canceled in the local database.");
+            }
+        }
 
         sendBroadcast(success);
     }
 
-    public boolean addSlotToServerDb(int tourId, int julianDate, long timeInMillis, String capacity) {
+    public boolean deleteReservationFromServerDb(long slotId, String userId) {
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
@@ -71,17 +89,12 @@ public class CreateSlotService extends IntentService {
             urlConnection = (HttpURLConnection) url.openConnection();
             Utility.setupHttpUrlConnection(urlConnection);
 
-            String guideId = Utility.getLoggedInUserId(getApplicationContext());
-
             // Create a message to be delivered to the server.
             Map<String, String> map = new HashMap<>();
-            map.put(Message.MessageKeys.SLOT_GUIDE_ID_KEY, guideId);
-            map.put(Message.MessageKeys.SLOT_TOUR_ID_KEY, Integer.toString(tourId));
-            map.put(Message.MessageKeys.SLOT_DATE_KEY, Integer.toString(julianDate));
-            map.put(Message.MessageKeys.SLOT_TIME_KEY, Long.toString(timeInMillis));
-            map.put(Message.MessageKeys.SLOT_CURRENT_CAPACITY_KEY, capacity);
+            map.put(Message.MessageKeys.SLOT_ID_KEY, Long.toString(slotId));
+            map.put(Message.MessageKeys.USER_ID_KEY, userId);
             JSONObject jsonObject = new JSONObject(map);
-            Message message = new Message(Message.MessageTypes.CREATE_SLOT, jsonObject.toString());
+            Message message = new Message(Message.MessageTypes.DELETE_RESERVATION, jsonObject.toString());
             Gson gson = new Gson();
             String requestMessageJsonStr = gson.toJson(message);
 
@@ -125,7 +138,7 @@ public class CreateSlotService extends IntentService {
             responseMessageJsonStr = buffer.toString();
             Log.v(LOG_TAG, responseMessageJsonStr);
 
-            // We know the message type to be CREATE_SLOT.
+            // We know the message type to be DELETE_RESERVATION.
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
             JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
             String isModified = responseJSON.getString(Message.MessageKeys.IS_MODIFIED);
@@ -155,10 +168,10 @@ public class CreateSlotService extends IntentService {
         return false;
     }
 
-    // Send an Intent with an action named BROADCAST_CREATE_SLOT_SERVICE_DONE.
+    // Send an Intent with an action named BROADCAST_DELETE_RESERVATION_SERVICE_DONE.
     private void sendBroadcast(boolean success) {
-        Intent broadcastIntent = new Intent(CreateSlotFragment.BROADCAST_CREATE_SLOT_SERVICE_DONE);
-        broadcastIntent.putExtra(CreateTourFragment.BROADCAST_INTENT_RESULT, success);
+        Intent broadcastIntent = new Intent(DeleteReservationDialogFragment.BROADCAST_DELETE_RESERVATION_SERVICE_DONE);
+        broadcastIntent.putExtra(DeleteReservationDialogFragment.BROADCAST_INTENT_RESULT, success);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
 

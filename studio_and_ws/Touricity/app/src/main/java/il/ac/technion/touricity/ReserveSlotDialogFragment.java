@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
 import il.ac.technion.touricity.service.ReserveSlotService;
@@ -37,13 +39,13 @@ public class ReserveSlotDialogFragment extends DialogFragment {
 
     private Uri mUri = null;
 
-    private TextView mTitle;
     private TextView mSeekBarProgressView;
     private SeekBar mSeekBar;
-    private Button mCancelButton;
     private Button mReserveButton;
     private View mProgressView;
     private View mReserveSlotFormView;
+
+    private boolean mIsAlreadyReserved;
 
     public ReserveSlotDialogFragment() {
 
@@ -69,6 +71,7 @@ public class ReserveSlotDialogFragment extends DialogFragment {
         }
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mUri = getShownUri();
@@ -86,46 +89,8 @@ public class ReserveSlotDialogFragment extends DialogFragment {
         View rootView = inflater.inflate(R.layout.dialog_reserve_slot, null);
         builder.setView(rootView);
 
-        mTitle = (TextView)rootView.findViewById(R.id.reserve_slot_title);
-
-        final long slotId = ToursContract.SlotEntry.getSlotIdFromUri(mUri);
-        final String userId = Utility.getLoggedInUserId(getActivity().getApplicationContext());
-
-        String selection = ToursContract.ReservationEntry.TABLE_NAME + "." +
-                ToursContract.ReservationEntry._ID + " = ? AND " +
-                ToursContract.ReservationEntry.TABLE_NAME + "." +
-                ToursContract.ReservationEntry.COLUMN_RESERVATION_USER_ID + " = ?";
-
-        Cursor reservationCursor = null;
-        boolean isAlreadyReserved = false;
-        try {
-            reservationCursor = getActivity().getContentResolver().query(
-                    ToursContract.ReservationEntry.CONTENT_URI,
-                    // Projection is not important in this case.
-                    new String[]{ToursContract.ReservationEntry.TABLE_NAME +
-                            "." + ToursContract.ReservationEntry._ID},
-                    selection,
-                    new String[]{Long.toString(slotId), userId},
-                    null
-            );
-
-            isAlreadyReserved = reservationCursor != null && reservationCursor.moveToFirst();
-        }
-        finally {
-            if (reservationCursor != null) {
-                reservationCursor.close();
-            }
-        }
-
-        if (isAlreadyReserved) {
-            mTitle.setText(getString(R.string.dialog_change_reservation_title));
-        }
-        else {
-            mTitle.setText(getString(R.string.dialog_create_reservation_title));
-        }
-
         mSeekBar = (SeekBar)rootView.findViewById(R.id.reserve_slot_seekBar);
-        mCancelButton = (Button)rootView.findViewById(R.id.reserve_slot_cancel_btn);
+        Button cancelButton = (Button)rootView.findViewById(R.id.reserve_slot_cancel_btn);
         mReserveButton = (Button)rootView.findViewById(R.id.reserve_slot_btn);
 
         mSeekBar.setMax(ToursContract.SlotEntry.getPlacesLeftFromUri(mUri));
@@ -136,7 +101,7 @@ public class ReserveSlotDialogFragment extends DialogFragment {
         mSeekBar.setProgress(1);
 
         mSeekBarProgressView = (TextView)rootView.findViewById(R.id.reserve_slot_seekBar_progress);
-        mSeekBarProgressView.setText(Integer.toString(mSeekBar.getProgress()));
+        mSeekBarProgressView.setText("1");
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -146,8 +111,7 @@ public class ReserveSlotDialogFragment extends DialogFragment {
                 if (progress == 0) {
                     mReserveButton.setEnabled(false);
                     mReserveButton.setTextColor(getResources().getColor(R.color.touricity_light_grey));
-                }
-                else {
+                } else {
                     mReserveButton.setEnabled(true);
                     mReserveButton.setTextColor(getResources().getColor(R.color.touricity_teal));
                 }
@@ -162,6 +126,46 @@ public class ReserveSlotDialogFragment extends DialogFragment {
 
             }
         });
+
+        final long slotId = ToursContract.SlotEntry.getSlotIdFromUri(mUri);
+        final String userId = Utility.getLoggedInUserId(getActivity().getApplicationContext());
+
+        String selection = ToursContract.ReservationEntry.TABLE_NAME + "." +
+                ToursContract.ReservationEntry._ID + " = ? AND " +
+                ToursContract.ReservationEntry.TABLE_NAME + "." +
+                ToursContract.ReservationEntry.COLUMN_RESERVATION_USER_ID + " = ?";
+
+        Cursor reservationCursor = null;
+        mIsAlreadyReserved = false;
+        try {
+            reservationCursor = getActivity().getContentResolver().query(
+                    ToursContract.ReservationEntry.CONTENT_URI,
+                    new String[]{ToursContract.ReservationEntry.TABLE_NAME +
+                            "." + ToursContract.ReservationEntry.COLUMN_RESERVATION_PARTICIPANTS},
+                    selection,
+                    new String[]{Long.toString(slotId), userId},
+                    null
+            );
+
+            mIsAlreadyReserved = reservationCursor != null && reservationCursor.moveToFirst();
+            if (mIsAlreadyReserved) {
+                mSeekBar.setProgress(reservationCursor.getInt(0));
+            }
+        }
+        finally {
+            if (reservationCursor != null) {
+                reservationCursor.close();
+            }
+        }
+
+        TextView title = (TextView)rootView.findViewById(R.id.reserve_slot_title);
+
+        if (mIsAlreadyReserved) {
+            title.setText(getString(R.string.dialog_change_reservation_title));
+        }
+        else {
+            title.setText(getString(R.string.dialog_create_reservation_title));
+        }
 
         mReserveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,7 +183,7 @@ public class ReserveSlotDialogFragment extends DialogFragment {
             }
         });
 
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
+        cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dismiss();
@@ -245,11 +249,22 @@ public class ReserveSlotDialogFragment extends DialogFragment {
             showProgress(false);
             boolean success = intent.getBooleanExtra(BROADCAST_INTENT_RESULT, false);
             if (success) {
-//                Intent intent = new Intent(getActivity(), MyToursActivity.class);
-//                getActivity().startActivity(intent);
+                if (mIsAlreadyReserved) {
+                    Toast.makeText(context, getString(R.string.dialog_change_reservation_success), Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Toast.makeText(context, getString(R.string.dialog_create_reservation_success), Toast.LENGTH_LONG).show();
+                }
+                Intent myToursIntent = new Intent(getActivity(), MyToursActivity.class);
+                getActivity().startActivity(myToursIntent);
             }
             else {
-                // Nothing we can do.
+                if (mIsAlreadyReserved) {
+                    Toast.makeText(context, getString(R.string.dialog_change_reservation_fail), Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Toast.makeText(context, getString(R.string.dialog_create_reservation_fail), Toast.LENGTH_LONG).show();
+                }
             }
         }
     };

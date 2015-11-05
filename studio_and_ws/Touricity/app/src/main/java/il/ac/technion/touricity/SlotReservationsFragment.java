@@ -47,8 +47,8 @@ public class SlotReservationsFragment extends Fragment
     public static final String BROADCAST_SLOT_RESERVATIONS_LOADER_SERVICE_DONE = "broadcast_slot_reservations_loader_service_done";
 
     private static final String SLOT_URI = "URI";
-    private static final int SLOT_LOADER = 0;
-    private static final int RESERVATIONS_LOADER = 1;
+    private static final int SLOT_LOADER = 1;
+    private static final int RESERVATIONS_LOADER = 2;
 
     public static final String INTENT_EXTRA_SLOT_ID = "extra_slot_id";
 
@@ -71,6 +71,7 @@ public class SlotReservationsFragment extends Fragment
             TourEntry.COLUMN_TOUR_LOCATION,
             ToursContract.SlotEntry.COLUMN_SLOT_DATE,
             ToursContract.SlotEntry.COLUMN_SLOT_TIME,
+            ToursContract.SlotEntry.COLUMN_SLOT_CANCELED
     };
 
     // These indices are tied to SLOT_COLUMNS. If SLOT_COLUMNS changes, these must change.
@@ -83,6 +84,7 @@ public class SlotReservationsFragment extends Fragment
     public static final int COL_TOUR_LOCATION = 6;
     public static final int COL_SLOT_DATE = 7;
     public static final int COL_SLOT_TIME = 8;
+    public static final int COL_SLOT_CANCELED = 9;
 
     private static final String[] SLOT_RESERVATIONS_COLUMNS = {
             ToursContract.UserEntry.TABLE_NAME + "." + ToursContract.UserEntry._ID,
@@ -99,6 +101,7 @@ public class SlotReservationsFragment extends Fragment
     private SlotReservationsAdapter mSlotReservationsAdapter;
 
     private ImageView mLanguageIconView;
+    private TextView mHeaderView;
     private TextView mTitleView;
     private TextView mDurationView;
     private TextView mLanguageView;
@@ -110,6 +113,7 @@ public class SlotReservationsFragment extends Fragment
     private HorizontalScrollView mPhotosView;
     private LinearLayout mCommentsView;
 
+    private Button mEditSlotBtn;
     private Button mDeleteSlotBtn;
 
     private View mSlotReservationsFormView;
@@ -176,6 +180,7 @@ public class SlotReservationsFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_slot_reservations, container, false);
 
         mLanguageIconView = (ImageView)rootView.findViewById(R.id.slot_reservations_language_icon);
+        mHeaderView = (TextView)rootView.findViewById(R.id.slot_reservations_header);
         mTitleView = (TextView)rootView.findViewById(R.id.slot_reservations_tour_title);
         mDurationView = (TextView)rootView.findViewById(R.id.slot_reservations_tour_duration);
         mLanguageView = (TextView)rootView.findViewById(R.id.slot_reservations_tour_language);
@@ -208,9 +213,9 @@ public class SlotReservationsFragment extends Fragment
 
         mReservationsListView.setAdapter(mSlotReservationsAdapter);
 
-        Button editSlotBtn = (Button)rootView.findViewById(R.id.slot_reservations_edit_slot_btn);
+        mEditSlotBtn = (Button)rootView.findViewById(R.id.slot_reservations_edit_slot_btn);
 
-        editSlotBtn.setOnClickListener(new View.OnClickListener() {
+        mEditSlotBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mUri == null) {
@@ -219,12 +224,11 @@ public class SlotReservationsFragment extends Fragment
 
                 Uri tourAndSlotUri = TourEntry.buildTourIdUri(mTourId)
                         .buildUpon().appendPath(Long.toString(mSlotId)).build();
-                ((Callback)getActivity()).onEditSlot(tourAndSlotUri);
+                ((Callback) getActivity()).onEditSlot(tourAndSlotUri);
             }
         });
 
         mDeleteSlotBtn = (Button)rootView.findViewById(R.id.slot_reservations_delete_slot_btn);
-        mDeleteSlotBtn.setEnabled(false);
         mDeleteSlotBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -347,29 +351,27 @@ public class SlotReservationsFragment extends Fragment
             return null;
         }
 
-        long slotId = ToursContract.SlotEntry.getSlotIdFromUri(mUri);
-
         if (id == SLOT_LOADER) {
-
-            Uri uri = ToursContract.SlotEntry.buildSlotIdUri(slotId);
+            long slotId = ToursContract.SlotEntry.getSlotIdFromUri(mUri);
             String selection = ToursContract.SlotEntry.TABLE_NAME + "."
-                    + ToursContract.SlotEntry.COLUMN_SLOT_ACTIVE + " = 1";
+                    + ToursContract.SlotEntry._ID + " = ?";
 
             // Now create and return a CursorLoader that will take care of
             // creating a Cursor for the data being displayed.
             return new CursorLoader(
                     getActivity(),
-                    uri,
+                    mUri,
                     SLOT_COLUMNS,
                     selection,
-                    null,
+                    new String[]{Long.toString(slotId)},
                     null
             );
         }
         else if (id == RESERVATIONS_LOADER) {
-            Uri uri = ToursContract.ReservationEntry.CONTENT_URI;
-            String selection = ToursContract.ReservationEntry.TABLE_NAME + "." +
-                    ToursContract.ReservationEntry._ID + " = ?";
+            long slotId = ToursContract.SlotEntry.getSlotIdFromUri(mUri);
+            Uri uri = ToursContract.ReservationEntry.buildSlotReservationsUri(slotId);
+            String sortOrder = ToursContract.ReservationEntry.TABLE_NAME + "." +
+                    ToursContract.ReservationEntry.COLUMN_RESERVATION_PARTICIPANTS + " DESC";
 
             // Now create and return a CursorLoader that will take care of
             // creating a Cursor for the data being displayed.
@@ -377,9 +379,9 @@ public class SlotReservationsFragment extends Fragment
                     getActivity(),
                     uri,
                     SLOT_RESERVATIONS_COLUMNS,
-                    selection,
-                    new String[]{Long.toString(slotId)},
-                    null
+                    null,
+                    null,
+                    sortOrder
             );
         }
         else {
@@ -446,7 +448,26 @@ public class SlotReservationsFragment extends Fragment
                 mSlotId = data.getLong(COL_SLOT_ID);
 
                 mTourId = data.getInt(COL_TOUR_ID);
-                mDeleteSlotBtn.setEnabled(true);
+
+                // Current duration is in minutes.
+                long durationInMillis = duration * 60 * 1000;
+
+                if (System.currentTimeMillis() > dateInMillis + durationInMillis) {
+                    mHeaderView.setVisibility(View.VISIBLE);
+                    mHeaderView.setText(getString(R.string.slot_reservations_completed));
+                    mHeaderView.setTextColor(getResources().getColor(R.color.touricity_teal));
+                    mEditSlotBtn.setEnabled(false);
+                    mDeleteSlotBtn.setEnabled(false);
+                }
+
+                int isCanceled = data.getInt(COL_SLOT_CANCELED);
+                if (isCanceled == 1) {
+                    mHeaderView.setVisibility(View.VISIBLE);
+                    mHeaderView.setText(getString(R.string.slot_reservations_canceled));
+                    mHeaderView.setTextColor(getResources().getColor(R.color.red));
+                    mEditSlotBtn.setEnabled(false);
+                    mDeleteSlotBtn.setEnabled(false);
+                }
 
                 data.close();
             }
@@ -465,7 +486,6 @@ public class SlotReservationsFragment extends Fragment
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mSlotReservationsAdapter.swapCursor(null);
-        mRightFooterView.setText(0);
     }
 
 

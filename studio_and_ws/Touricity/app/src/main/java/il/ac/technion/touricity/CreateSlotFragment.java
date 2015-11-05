@@ -424,7 +424,13 @@ public class CreateSlotFragment extends Fragment {
                 String slotCreationFailed = getString(R.string.error_create_slot_failed);
                 Toast.makeText(context, slotCreationFailed, Toast.LENGTH_LONG).show();
             } else {
-                String slotUpdated = getString(R.string.edit_slot_updated);
+                String slotUpdated;
+                if (mSlotExists) {
+                    slotUpdated = getString(R.string.edit_slot_updated);
+                }
+                else {
+                    slotUpdated = getString(R.string.create_slot_created);
+                }
                 Toast.makeText(getActivity(), slotUpdated, Toast.LENGTH_LONG).show();
                 Intent manageSlotsIntent = new Intent(context, ManageSlotsActivity.class);
                 getActivity().startActivity(manageSlotsIntent);

@@ -9,7 +9,7 @@
     android:orientation="vertical">
 
     <ProgressBar
-        android:id="@+id/slot_reservations_progressbar"
+        android:id="@+id/detail_progressbar"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,7 +18,7 @@
         android:visibility="gone" />
 
     <ScrollView
-        android:id="@+id/slot_reservations_scrollview_form"
+        android:id="@+id/detail_scrollview_form"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -44,16 +44,18 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/slot_reservations_header"
+                        android:id="@+id/detail_tour_canceled"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:fontFamily="sans-serif"
+                        android:text="@string/detail_reservation_canceled"
+                        android:textColor="@color/red"
                         android:textSize="24sp"
                         android:visibility="gone" />
 
                     <TextView
-                        android:id="@+id/slot_reservations_tour_title"
+                        android:id="@+id/detail_tour_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif"
@@ -62,70 +64,133 @@
                         android:textSize="24sp" />
 
                     <TextView
-                        android:id="@+id/slot_reservations_tour_duration"
+                        android:id="@+id/detail_tour_guide"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:fontFamily="sans-serif"
                         android:textColor="@color/black"
-                        android:textAppearance="?android:textAppearanceLarge" />
+                        android:textAppearance="?android:textAppearanceMedium" />
 
                     <TextView
-                        android:id="@+id/slot_reservations_tour_language"
+                        android:id="@+id/detail_tour_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="sans-serif"
+                        android:textColor="@color/black"
+                        android:textAppearance="?android:textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/detail_tour_reserved"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="sans-serif"
+                        android:textColor="@color/black"
+                        android:textAppearance="?android:textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/detail_tour_duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="sans-serif"
+                        android:textColor="@color/black"
+                        android:textAppearance="?android:textAppearanceMedium" />
+
+                    <TextView
+                        android:id="@+id/detail_tour_language"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:gravity="center_vertical"
                         android:fontFamily="sans-serif"
                         android:textColor="@color/black"
-                        android:textAppearance="?android:textAppearanceLarge" />
+                        android:textAppearance="?android:textAppearanceMedium" />
 
                 </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/slot_reservations_language_icon"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_gravity="end"
-                    android:maxHeight="24dp"
-                    android:maxWidth="24dp" />
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/detail_tour_rate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/detail_reservation_rate"
+                        android:textColor="@color/black"
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:visibility="gone" />
+
+                    <RatingBar
+                        android:id="@+id/detail_tour_rating_bar"
+                        style="?android:attr/ratingBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:rating="0"
+                        android:isIndicator="true" />
+
+                    <RatingBar
+                        android:id="@+id/detail_guide_rating_bar"
+                        style="?android:attr/ratingBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:rating="0"
+                        android:isIndicator="true" />
+
+                    <ImageView
+                        android:id="@+id/detail_language_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_gravity="end"
+                        android:maxHeight="24dp"
+                        android:maxWidth="24dp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
             <TextView
-                android:id="@+id/slot_reservations_tour_location"
+                android:id="@+id/detail_tour_location"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif"
                 android:textColor="@color/black"
-                android:textAppearance="?android:textAppearanceLarge" />
+                android:textAppearance="?android:textAppearanceMedium" />
 
             <TextView
-                android:id="@+id/slot_reservations_date_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/black"
-                android:textAppearance="?android:textAppearanceLarge" />
-
-            <TextView
-                android:id="@+id/slot_reservations_list"
+                android:id="@+id/detail_tour_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:fontFamily="sans-serif"
-                android:text="@string/slot_reservations_list"
-                android:textColor="@color/teal_500"
-                android:textAppearance="?android:textAppearanceLarge" />
+                android:fontFamily="sans-serif-light"
+                android:textColor="@color/black"
+                android:textAppearance="?android:textAppearanceMedium" />
 
-            <ListView
-                android:id="@+id/slot_reservations_listview"
+            <!-- Tour photos go inside the horizontal scrollview -->
+            <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="240dp"
-                android:divider="?android:attr/listDivider" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+
+            </HorizontalScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -135,12 +200,12 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/slot_reservations_delete_slot_btn"
+                android:id="@+id/detail_delete_reservation_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
-                android:text="@string/action_delete_slot"
+                android:text="@string/action_delete_reservation"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textColor="@color/white"
@@ -148,13 +213,13 @@
                 android:background="@drawable/btn_touricity_red" />
 
             <Button
-                android:id="@+id/slot_reservations_edit_slot_btn"
+                android:id="@+id/detail_edit_reservation_btn"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginLeft="8dp"
                 android:layout_marginStart="8dp"
-                android:text="@string/action_edit_slot"
+                android:text="@string/action_edit_reservation"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textColor="@color/white"

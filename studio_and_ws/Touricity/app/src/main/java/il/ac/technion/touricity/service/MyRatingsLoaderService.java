@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,16 +23,17 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import il.ac.technion.touricity.CreateSlotFragment;
-import il.ac.technion.touricity.CreateTourFragment;
 import il.ac.technion.touricity.Message;
+import il.ac.technion.touricity.RatingDialogFragment;
 import il.ac.technion.touricity.Utility;
 
-public class CreateSlotService extends IntentService {
+public class MyRatingsLoaderService extends IntentService {
 
-    private static final String LOG_TAG = CreateTourService.class.getSimpleName();
+    private static final String LOG_TAG = MyRatingsLoaderService.class.getSimpleName();
 
-    public CreateSlotService() { super("CreateSlotService"); }
+    public MyRatingsLoaderService() {
+        super("MyRatingService");
+    }
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -39,24 +41,14 @@ public class CreateSlotService extends IntentService {
             return;
         }
 
-        int tourId = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_TOUR_ID, -1);
-        int julianDate = intent.getIntExtra(CreateSlotFragment.INTENT_EXTRA_DATE, -1);
-        long timeInMillis = intent.getLongExtra(CreateSlotFragment.INTENT_EXTRA_TIME, -1L);
-        String capacity = intent.getStringExtra(CreateSlotFragment.INTENT_EXTRA_CAPACITY);
+        String userId = Utility.getLoggedInUserId(getApplicationContext());
+        int tourId = intent.getIntExtra(RatingDialogFragment.INTENT_EXTRA_TOUR_ID, -1);
+        String guideId = intent.getStringExtra(RatingDialogFragment.INTENT_EXTRA_GUIDE_ID);
 
-        // Sanity check.
-        if (tourId == -1 || julianDate == -1 || timeInMillis == -1L || capacity == null) {
-            sendBroadcast(false);
+        if (userId == null || tourId == -1 || guideId == null) {
+            return;
         }
 
-        boolean success = addSlotToServerDb(tourId, julianDate, timeInMillis, capacity);
-
-        sendBroadcast(success);
-    }
-
-    public boolean addSlotToServerDb(int tourId, int julianDate, long timeInMillis, String capacity) {
-        // These two need to be declared outside the try/catch
-        // so that they can be closed in the finally block.
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
@@ -71,17 +63,13 @@ public class CreateSlotService extends IntentService {
             urlConnection = (HttpURLConnection) url.openConnection();
             Utility.setupHttpUrlConnection(urlConnection);
 
-            String guideId = Utility.getLoggedInUserId(getApplicationContext());
-
             // Create a message to be delivered to the server.
             Map<String, String> map = new HashMap<>();
+            map.put(Message.MessageKeys.USER_ID_KEY, userId);
+            map.put(Message.MessageKeys.TOUR_ID_KEY, Integer.toString(tourId));
             map.put(Message.MessageKeys.SLOT_GUIDE_ID_KEY, guideId);
-            map.put(Message.MessageKeys.SLOT_TOUR_ID_KEY, Integer.toString(tourId));
-            map.put(Message.MessageKeys.SLOT_DATE_KEY, Integer.toString(julianDate));
-            map.put(Message.MessageKeys.SLOT_TIME_KEY, Long.toString(timeInMillis));
-            map.put(Message.MessageKeys.SLOT_CURRENT_CAPACITY_KEY, capacity);
             JSONObject jsonObject = new JSONObject(map);
-            Message message = new Message(Message.MessageTypes.CREATE_SLOT, jsonObject.toString());
+            Message message = new Message(Message.MessageTypes.QUERY_MY_RATINGS, jsonObject.toString());
             Gson gson = new Gson();
             String requestMessageJsonStr = gson.toJson(message);
 
@@ -125,11 +113,21 @@ public class CreateSlotService extends IntentService {
             responseMessageJsonStr = buffer.toString();
             Log.v(LOG_TAG, responseMessageJsonStr);
 
-            // We know the message type to be CREATE_SLOT.
+            // We know the message type to be FETCH_RATINGS.
             Message responseMessage = gson.fromJson(responseMessageJsonStr, Message.class);
-            JSONObject responseJSON = new JSONObject(responseMessage.getMessageJson());
-            String isModified = responseJSON.getString(Message.MessageKeys.IS_MODIFIED);
-            return Boolean.valueOf(isModified);
+            JSONArray ratingsArray = new JSONArray(responseMessage.getMessageJson());
+
+            // A single row is returned with the (possibly null) ratings.
+            if (ratingsArray.isNull(0)) {
+                sendBroadcast(Float.NaN, Float.NaN);
+                return;
+            }
+
+            JSONObject ratingsObject = ratingsArray.getJSONObject(0);
+            float tourRating = (float)ratingsObject.getDouble(Message.MessageKeys.TOUR_RATING_KEY);
+            float guideRating = (float)ratingsObject.getDouble(Message.MessageKeys.GUIDE_RATING_KEY);
+
+            sendBroadcast(tourRating, guideRating);
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -151,15 +149,20 @@ public class CreateSlotService extends IntentService {
                 }
             }
         }
-
-        return false;
     }
 
-    // Send an Intent with an action named BROADCAST_CREATE_SLOT_SERVICE_DONE.
-    private void sendBroadcast(boolean success) {
-        Intent broadcastIntent = new Intent(CreateSlotFragment.BROADCAST_CREATE_SLOT_SERVICE_DONE);
-        broadcastIntent.putExtra(CreateTourFragment.BROADCAST_INTENT_RESULT, success);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+    // Send an Intent with an action named BROADCAST_MY_RATING_LOADER_SERVICE_DONE.
+    private void sendBroadcast(float tourRating, float guideRating) {
+        Intent broadcastIntent = new Intent(RatingDialogFragment.BROADCAST_MY_RATING_LOADER_SERVICE_DONE);
+        if (Float.isNaN(tourRating) || Float.isNaN(guideRating)) {
+            broadcastIntent.putExtra(RatingDialogFragment.BROADCAST_INTENT_RESULT, true);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+        }
+        else {
+            broadcastIntent.putExtra(RatingDialogFragment.BROADCAST_INTENT_RESULT, true);
+            broadcastIntent.putExtra(RatingDialogFragment.BROADCAST_INTENT_TOUR_RATING, tourRating);
+            broadcastIntent.putExtra(RatingDialogFragment.BROADCAST_INTENT_GUIDE_RATING, guideRating);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+        }
     }
-
 }

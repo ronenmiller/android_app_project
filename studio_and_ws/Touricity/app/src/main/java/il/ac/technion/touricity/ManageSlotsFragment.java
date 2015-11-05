@@ -79,7 +79,7 @@ public class ManageSlotsFragment extends Fragment
      */
     public interface Callback {
         /**
-         * DetailFragmentCallback for when an item has been selected.
+         * ManageSlotsFragmentCallback for when an item has been selected.
          */
         void onItemSelected(Uri slotUri);
     }
@@ -114,11 +114,11 @@ public class ManageSlotsFragment extends Fragment
             public void onItemClick(AdapterView adapterView, View view, int position, long l) {
                 // CursorAdapter returns a cursor at the correct position for getItem(), or null
                 // if it cannot seek to that position.
-                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                Cursor cursor = (Cursor)adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     int slotId = cursor.getInt(COL_SLOT_ID);
                     Uri slotUri = ToursContract.SlotEntry.buildSlotIdUri(slotId);
-                    ((Callback) getActivity()).onItemSelected(slotUri);
+                    ((Callback)getActivity()).onItemSelected(slotUri);
                 }
                 mPosition = position;
             }

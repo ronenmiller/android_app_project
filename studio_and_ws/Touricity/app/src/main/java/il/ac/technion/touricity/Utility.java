@@ -20,8 +20,10 @@ public class Utility {
     static final String DELETE_TOUR_TAG = "delete_tour_tag";
     static final String RESERVE_SLOT_TAG = "reserve_slot_tag";
     static final String DELETE_SLOT_TAG = "delete_slot_tag";
+    static final String DELETE_RESERVATION_TAG = "delete_reservation_tag";
     static final String TIME_PICKER_TAG = "time_picker_tag";
     static final String DATE_PICKER_TAG = "date_picker_tag";
+    static final String RATE_TAG = "rate_tag";
 
     public class ServerConfig {
 
@@ -32,9 +34,11 @@ public class Utility {
         // Ori's home
 //        public static final String SERVER_IP = "10.100.102.8";
         // Liron's apartment
-        public static final String SERVER_IP = "10.0.0.2";
+        public static final String SERVER_IP = "10.0.0.1";
         // Ronen's apartment
 //        public static final String SERVER_IP = "10.0.0.1";
+        // Technion
+//        public static final String SERVER_IP = "132.68.50.169";
         public static final String SERVER_PORT = "8080";
         public static final String SERVER_APP = "ToursAppServer";
         public static final String SERVER_SERVLET = "tours_slet";
@@ -95,7 +99,7 @@ public class Utility {
         editor.putString(context.getString(R.string.pref_location_name_key), name);
         editor.putFloat(context.getString(R.string.pref_location_lat_key), latitude);
         editor.putFloat(context.getString(R.string.pref_location_long_key), longitude);
-        editor.commit();
+        editor.apply();
     }
 
     public static boolean getIsLoggedIn(Context context) {
@@ -123,7 +127,7 @@ public class Utility {
         editor.putBoolean(context.getString(R.string.pref_user_is_logged_in_key), true);
         editor.putString(context.getString(R.string.pref_user_id_key), userId);
         editor.putBoolean(context.getString(R.string.pref_user_is_guide_key), isGuide);
-        editor.commit();
+        editor.apply();
     }
 
     public static void saveLogoutState(Context context) {
@@ -133,7 +137,7 @@ public class Utility {
         editor.putBoolean(context.getString(R.string.pref_user_is_logged_in_key), false);
         editor.remove(context.getString(R.string.pref_user_id_key));
         editor.remove(context.getString(R.string.pref_user_is_guide_key));
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -240,14 +244,20 @@ public class Utility {
 
     public static void showReserveSlotDialog(FragmentActivity context, Uri uri) {
         // Create an instance of the dialog fragment and show it
-        DialogFragment reserveSlotDialogfragment = ReserveSlotDialogFragment.newInstance(uri);
-        reserveSlotDialogfragment.show(context.getSupportFragmentManager(), RESERVE_SLOT_TAG);
+        DialogFragment reserveSlotDialogFragment = ReserveSlotDialogFragment.newInstance(uri);
+        reserveSlotDialogFragment.show(context.getSupportFragmentManager(), RESERVE_SLOT_TAG);
     }
 
     public static void showDeleteSlotDialog(FragmentActivity context, Uri uri) {
         // Create an instance of the dialog fragment and show it
         DialogFragment deleteSlotDialogFragment = DeleteSlotDialogFragment.newInstance(uri);
         deleteSlotDialogFragment.show(context.getSupportFragmentManager(), DELETE_SLOT_TAG);
+    }
+
+    public static void showDeleteReservationDialog(FragmentActivity context, Uri uri) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment deleteReservationDialogFragment = DeleteReservationDialogFragment.newInstance(uri);
+        deleteReservationDialogFragment.show(context.getSupportFragmentManager(), DELETE_RESERVATION_TAG);
     }
 
     public static void showDatePickerDialog(FragmentActivity context) {
@@ -260,6 +270,12 @@ public class Utility {
         // Create an instance of the dialog fragment and show it
         DialogFragment timePickerFragment = new TimePickerFragment();
         timePickerFragment.show(context.getSupportFragmentManager(), TIME_PICKER_TAG);
+    }
+
+    public static void showRatingDialog(FragmentActivity context, int tourId, String guideId) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment ratingDialogFragment = RatingDialogFragment.newInstance(tourId, guideId);
+        ratingDialogFragment.show(context.getSupportFragmentManager(), RATE_TAG);
     }
 
     public static String getFriendlyTimeString(long timeInMillis) {
@@ -292,11 +308,15 @@ public class Utility {
         // is "Today, June 24"
         if (julianDay == currentJulianDay) {
             return context.getString(R.string.today);
-        } else if ( julianDay < currentJulianDay + 7 ) {
+        } else if (julianDay < currentJulianDay) {
+            // For past dates, use the form "Mon Jun 3, 2015"
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy");
+            return shortenedDateFormat.format(dateInMillis);
+        } else if (julianDay < currentJulianDay + 7) {
             // If the input date is less than a week in the future, just return the day name.
             return getDayName(context, dateInMillis);
         } else {
-            // Otherwise, use the form "Mon Jun 3"
+            // Otherwise, use the form "Mon Jun 3, 2015"
             SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy");
             return shortenedDateFormat.format(dateInMillis);
         }

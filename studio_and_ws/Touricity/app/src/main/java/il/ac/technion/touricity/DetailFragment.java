@@ -45,7 +45,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public static final String BROADCAST_SLOTS_LOADER_SERVICE_DONE = "broadcast_slots_loader_service_done";
 
     private static final String DETAIL_URI = "URI";
-    private static final int DETAIL_LOADER = 0;
+    private static final int DETAIL_LOADER = 2;
 
     public static final String INTENT_EXTRA_TOUR_ID = "extra_tour_id";
     public static final String INTENT_EXTRA_BTN_ID = "extra_btn_id";

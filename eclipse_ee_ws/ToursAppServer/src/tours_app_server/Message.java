@@ -36,11 +36,10 @@ public class Message {
      public static final int QUERY_RESERVATIONS_BY_SLOT_ID = 13;
      public static final int EDIT_SLOT = 14;
      public static final int DELETE_SLOT = 15;
-//		public static final int UPDATE_USER = 1;
-//		public static final int REMOVE_USER = 2;
-//		public static final int UPDATE_TOUR = 4;
-//		public static final int REMOVE_SLOT = 7;
-
+     public static final int DELETE_RESERVATION = 16;
+     public static final int QUERY_MY_RATINGS = 17;
+     public static final int UPDATE_RATINGS = 18;
+     public static final int QUERY_MY_RESERVATIONS = 19;
 	}
 	
 	public class MessageKeys {
@@ -63,12 +62,13 @@ public class Message {
 		
 		public static final String TOUR_ID_KEY = "t_id";
 		public static final String TOUR_OSM_ID = "t_osm_id";
-		public static final String TOUR_MANAGER_KEY = "u_id";
+		public static final String TOUR_MANAGER_KEY = "m_id";
      public static final String TOUR_TITLE_KEY = "t_title";
 		public static final String TOUR_DURATION_KEY = "t_duration";
      public static final String TOUR_LANGUAGE_KEY = "t_language";
 		public static final String TOUR_LOCATION_KEY = "t_location";
      public static final String TOUR_RATING_KEY = "t_rating";
+     public static final String TOUR_AVAILABLE_KEY = "t_available";
 		public static final String TOUR_DESCRIPTION_KEY = "t_description";
 		public static final String TOUR_PHOTOS_KEY = "t_photos";
 		public static final String TOUR_COMMENTS_KEY = "t_comments";
@@ -80,12 +80,16 @@ public class Message {
 		public static final String SLOT_TIME_KEY = "s_time";
 		public static final String SLOT_CURRENT_CAPACITY_KEY = "s_capacity";
 		public static final String SLOT_TOTAL_CAPACITY_KEY = "s_total_capacity";
-		public static final String SLOTS_ACTIVE_KEY = "s_active";
+		public static final String SLOT_ACTIVE_KEY = "s_active";
+		public static final String SLOT_CANCELED_KEY = "s_canceled";
 
 		public static final String RESERVATION_USER_ID_KEY = "u_id";
 		public static final String RESERVATION_SLOT_ID_KEY = "s_id";
 		public static final String RESERVATION_OCCUPIED_KEY = "r_occupied";
 		public static final String RESERVATION_ACTIVE_KEY = "r_active";
+
+		public static final String GUIDE_RATING_KEY = "g_rating";
 	}
 
 }
+

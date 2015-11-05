@@ -41,6 +41,7 @@ public class ToursProvider extends ContentProvider {
     static final int SLOTS_WITH_ID = 501;
     static final int SLOTS_WITH_GUIDE = 502;
     static final int RESERVATIONS = 600;
+    static final int SLOT_RESERVATIONS = 601;
     static final int USERS = 700;
 
     // A table of tours with the corresponding languages of those tours.
@@ -52,7 +53,9 @@ public class ToursProvider extends ContentProvider {
     // A table of slots with the corresponding tours and languages.
     private static final SQLiteQueryBuilder sSlotsWithTourAndLanguageNameQueryBuilder;
     // All the tables together.
-    private static final SQLiteQueryBuilder sReservationsQueryBuilder;
+    private static final SQLiteQueryBuilder sMyReservationsQueryBuilder;
+    // Reservations, slots and users tables for a chosen slot.
+    private static final SQLiteQueryBuilder sSlotReservationsQueryBuilder;
 
     static {
         sToursWithLanguageNameQueryBuilder = new SQLiteQueryBuilder();
@@ -87,7 +90,7 @@ public class ToursProvider extends ContentProvider {
         sSlotsWithUsersQueryBuilder = new SQLiteQueryBuilder();
 
         // This is an inner join which looks like
-        // slots INNER JOIN users ON slots.u_id = language._id
+        // slots INNER JOIN users ON slots.u_id = users._id
         sSlotsWithUsersQueryBuilder.setTables(
                 ToursContract.SlotEntry.TABLE_NAME + " INNER JOIN " +
                         ToursContract.UserEntry.TABLE_NAME +
@@ -113,10 +116,10 @@ public class ToursProvider extends ContentProvider {
                         " = " + ToursContract.LanguageEntry.TABLE_NAME +
                         "." + ToursContract.LanguageEntry._ID);
 
-        sReservationsQueryBuilder = new SQLiteQueryBuilder();
+        sMyReservationsQueryBuilder = new SQLiteQueryBuilder();
 
         // This is an inner join which contains all the tables that are related to a tour.
-        sReservationsQueryBuilder.setTables(
+        sMyReservationsQueryBuilder.setTables(
                 ToursContract.ReservationEntry.TABLE_NAME + " INNER JOIN " +
                         ToursContract.SlotEntry.TABLE_NAME +
                         " ON " + ToursContract.ReservationEntry.TABLE_NAME +
@@ -138,6 +141,22 @@ public class ToursProvider extends ContentProvider {
                         "." + ToursContract.TourEntry.COLUMN_TOUR_LANGUAGE +
                         " = " + ToursContract.LanguageEntry.TABLE_NAME +
                         "." + ToursContract.LanguageEntry._ID);
+
+        sSlotReservationsQueryBuilder = new SQLiteQueryBuilder();
+
+        // This is an inner join which contains all the tables that are related to a tour.
+        sSlotReservationsQueryBuilder.setTables(
+                ToursContract.ReservationEntry.TABLE_NAME + " INNER JOIN " +
+                        ToursContract.SlotEntry.TABLE_NAME +
+                        " ON " + ToursContract.ReservationEntry.TABLE_NAME +
+                        "." + ToursContract.ReservationEntry._ID +
+                        " = " + ToursContract.SlotEntry.TABLE_NAME +
+                        "." + ToursContract.SlotEntry._ID + " INNER JOIN " +
+                        ToursContract.UserEntry.TABLE_NAME +
+                        " ON " + ToursContract.ReservationEntry.TABLE_NAME +
+                        "." + ToursContract.ReservationEntry.COLUMN_RESERVATION_USER_ID +
+                        " = " + ToursContract.UserEntry.TABLE_NAME +
+                        "." + ToursContract.UserEntry._ID);
     }
 
     // Tour with a specific location (i.e. OSM ID).
@@ -181,11 +200,7 @@ public class ToursProvider extends ContentProvider {
     // Slot with a specific guide.
     private static final String sSlotsWithGuideSelection =
             ToursContract.SlotEntry.TABLE_NAME +
-                    "." + ToursContract.SlotEntry.COLUMN_SLOT_GUIDE_ID + " = ? AND " +
-                    ToursContract.SlotEntry.TABLE_NAME +
-                    "." + ToursContract.SlotEntry.COLUMN_SLOT_ACTIVE + " = 1 AND " +
-                    ToursContract.SlotEntry.TABLE_NAME +
-                    "." + ToursContract.SlotEntry.COLUMN_SLOT_CANCELED + " = 0";
+                    "." + ToursContract.SlotEntry.COLUMN_SLOT_GUIDE_ID + " = ?";
 
     private Cursor getSlotsWithGuide(Uri uri, String[] projection, String sortOrder) {
         String guideId = ToursContract.SlotEntry.getSlotGuideIdFromUri(uri);
@@ -195,6 +210,25 @@ public class ToursProvider extends ContentProvider {
                 projection,
                 sSlotsWithGuideSelection,
                 new String[]{guideId},
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    // Reservations for a specific slot.
+    private static final String sSlotReservationsSelection =
+            ToursContract.ReservationEntry.TABLE_NAME + "." +
+                    ToursContract.ReservationEntry._ID + " = ?";
+
+    private Cursor getSlotReservations(Uri uri, String[] projection, String sortOrder) {
+        long slotId = ToursContract.ReservationEntry.getSlotIdFromUri(uri);
+
+        return sSlotReservationsQueryBuilder.query(
+                mOpenHelper.getReadableDatabase(),
+                projection,
+                sSlotReservationsSelection,
+                new String[]{Long.toString(slotId)},
                 null,
                 null,
                 sortOrder
@@ -219,6 +253,7 @@ public class ToursProvider extends ContentProvider {
         uriMatcher.addURI(authority, ToursContract.PATH_SLOTS, SLOTS);
         uriMatcher.addURI(authority, ToursContract.PATH_SLOTS + "/#", SLOTS_WITH_ID);
         uriMatcher.addURI(authority, ToursContract.PATH_SLOTS + "/*", SLOTS_WITH_GUIDE);
+        uriMatcher.addURI(authority, ToursContract.PATH_RESERVATIONS + "/#", SLOT_RESERVATIONS);
         uriMatcher.addURI(authority, ToursContract.PATH_RESERVATIONS, RESERVATIONS);
         uriMatcher.addURI(authority, ToursContract.PATH_USERS, USERS);
         // 3) Return the new matcher!
@@ -260,6 +295,8 @@ public class ToursProvider extends ContentProvider {
             case SLOTS_WITH_GUIDE:
                 return ToursContract.SlotEntry.CONTENT_TYPE;
             case RESERVATIONS:
+                return ToursContract.ReservationEntry.CONTENT_TYPE;
+            case SLOT_RESERVATIONS:
                 return ToursContract.ReservationEntry.CONTENT_TYPE;
             case USERS:
                 // Always returns a single user.
@@ -361,8 +398,12 @@ public class ToursProvider extends ContentProvider {
                 retCursor = getSlotsWithGuide(uri, projection, sortOrder);
                 break;
             }
+            case SLOT_RESERVATIONS: {
+                retCursor = getSlotReservations(uri, projection, sortOrder);
+                break;
+            }
             case RESERVATIONS: {
-                retCursor = sReservationsQueryBuilder.query(
+                retCursor = sMyReservationsQueryBuilder.query(
                         mOpenHelper.getReadableDatabase(),
                         projection,
                         selection,

@@ -1,0 +1,144 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="il.ac.technion.touricity.LoginDialogFragment">
+
+    <!-- Login progress -->
+    <ProgressBar
+        android:id="@+id/rate_progressbar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/rate_linear_form"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dialog_rate_title"
+                android:fontFamily="sans-serif"
+                android:textColor="@color/touricity_teal"
+                android:textSize="28sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:paddingRight="8dp"
+                    android:text="@string/dialog_rate_tour"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <RatingBar
+                    android:id="@+id/dialog_rate_tour_rating_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:numStars="5"
+                    android:rating="0" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:paddingRight="8dp"
+                    android:text="@string/dialog_rate_guide"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <RatingBar
+                    android:id="@+id/dialog_rate_guide_rating_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:numStars="5"
+                    android:rating="0" />
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp">
+
+            <Button
+                android:id="@+id/rate_submit_btn"
+                style="?android:textAppearanceSmall"
+                android:minWidth="64dp"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:text="@string/action_rate_button"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textAppearance="?android:textAppearanceButton"
+                android:background="@drawable/btn_dialog_touricity"
+                android:textColor="@color/touricity_teal" />
+
+            <Button
+                android:id="@+id/rate_cancel_btn"
+                style="?android:textAppearanceSmall"
+                android:minWidth="64dp"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_toLeftOf="@id/rate_submit_btn"
+                android:layout_toStartOf="@id/rate_submit_btn"
+                android:text="@string/action_cancel_button"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textAppearance="?android:textAppearanceButton"
+                android:background="@drawable/btn_dialog_touricity"
+                android:textColor="@color/touricity_teal" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+</LinearLayout>
