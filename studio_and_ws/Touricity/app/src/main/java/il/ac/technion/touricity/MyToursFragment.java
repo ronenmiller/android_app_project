@@ -189,10 +189,8 @@ public class MyToursFragment extends Fragment
                 getActivity(),
                 ToursContract.ReservationEntry.CONTENT_URI,
                 RESERVATIONS_COLUMNS,
-//                selection,
-//                new String[]{userId},
-                null,
-                null,
+                selection,
+                new String[]{userId},
                 sortOrder
         );
     }
