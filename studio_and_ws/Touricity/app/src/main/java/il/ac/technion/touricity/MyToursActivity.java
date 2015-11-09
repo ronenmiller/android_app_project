@@ -26,6 +26,9 @@ public class MyToursActivity extends ActionBarActivity
 
     private Uri mUri;
 
+    private MenuItem mManageToursMenuItem;
+    private MenuItem mManageSlotsMenuItem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +59,17 @@ public class MyToursActivity extends ActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_my_tours, menu);
+
+        mManageToursMenuItem = menu.findItem(R.id.action_manage_tours);
+        mManageSlotsMenuItem = menu.findItem(R.id.action_manage_slots);
+
+        if (Utility.getIsLoggedIn(getApplicationContext()))
+        {
+            showSignInMenuItems();
+        }
+        else {
+            showSignInMenuItems();
+        }
 
         return true;
     }
@@ -95,6 +109,18 @@ public class MyToursActivity extends ActionBarActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showSignInMenuItems() {
+        Context context = getApplicationContext();
+        boolean isUserLoggedIn = Utility.getIsLoggedIn(context);
+        boolean isGuideLoggedIn = isUserLoggedIn && Utility.getLoggedInUserIsGuide(context);
+        if (mManageToursMenuItem != null) {
+            mManageToursMenuItem.setVisible(isGuideLoggedIn);
+        }
+        if (mManageSlotsMenuItem != null) {
+            mManageSlotsMenuItem.setVisible(isGuideLoggedIn);
+        }
     }
 
     @Override
