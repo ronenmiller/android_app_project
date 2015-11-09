@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import il.ac.technion.touricity.data.ToursContract;
+import il.ac.technion.touricity.service.AddLocationService;
 import il.ac.technion.touricity.service.LocationsLoaderService;
 import il.ac.technion.touricity.sync.TouricitySyncAdapter;
 
@@ -410,8 +411,14 @@ public class MainFragment extends Fragment
                 cv
         );
 
-        // Release resources.
-        cursor.close();
+        // Update the server database.
+        Intent intent = new Intent(getActivity(), AddLocationService.class);
+        intent.putExtra(SearchFragment.INTENT_EXTRA_LOCATION_ID, osmId);
+        intent.putExtra(SearchFragment.INTENT_EXTRA_LOCATION_NAME, locationName);
+        intent.putExtra(SearchFragment.INTENT_EXTRA_LOCATION_TYPE, locationType);
+        intent.putExtra(SearchFragment.INTENT_EXTRA_LOCATION_LATITUDE, latitude);
+        intent.putExtra(SearchFragment.INTENT_EXTRA_LOCATION_LONGITUDE, longitude);
+        getActivity().startService(intent);
 
         // Load tours from the server and populate the list view.
         updateTours();
@@ -497,8 +504,6 @@ public class MainFragment extends Fragment
         if (cursorLoader.getId() == OSM_LOADER) {
             // returns false if the cursor is empty
             if (!cursor.moveToFirst()) {
-                // Release resources.
-                cursor.close();
                 String locationDisplay = getString(R.string.search_not_found);
                 Toast.makeText(getActivity(), locationDisplay, Toast.LENGTH_LONG).show();
                 if (Utility.getPreferredLocationId(getActivity().getApplicationContext()) == -1L) {
@@ -522,7 +527,6 @@ public class MainFragment extends Fragment
             }
             // There are at least two rows in the cursor, show results in search fragment.
             else {
-                cursor.close();
                 launchSearchFragment();
             }
         }
@@ -560,9 +564,7 @@ public class MainFragment extends Fragment
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        if (loader.getId() == TOURS_LOADER) {
-            mToursAdapter.swapCursor(null);
-        }
+        mToursAdapter.swapCursor(null);
     }
 
     @Override

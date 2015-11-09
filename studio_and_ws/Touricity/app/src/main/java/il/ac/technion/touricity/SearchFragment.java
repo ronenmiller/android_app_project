@@ -68,7 +68,7 @@ public class SearchFragment extends Fragment
 
     private void addLocation(Cursor cursor) {
         // Read contents from cursor.
-        long osmID = cursor.getLong(MainFragment.COL_OSM_LOCATION_ID);
+        long osmId = cursor.getLong(MainFragment.COL_OSM_LOCATION_ID);
         String locationName = cursor.getString(MainFragment.COL_LOCATION_NAME);
         String locationType = cursor.getString(MainFragment.COL_LOCATION_TYPE);
         double latitude = cursor.getDouble(MainFragment.COL_COORD_LAT);
@@ -80,7 +80,7 @@ public class SearchFragment extends Fragment
         Context context = getActivity().getApplicationContext();
         Utility.saveLocationToPreferences(
                 context,
-                osmID,
+                osmId,
                 locationName,
                 (float)latitude,
                 (float)longitude
@@ -88,7 +88,7 @@ public class SearchFragment extends Fragment
 
         // Insert contents into the location table.
         ContentValues cv = new ContentValues();
-        cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_ID, osmID);
+        cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_ID, osmId);
         cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_NAME, locationName);
         cv.put(ToursContract.LocationEntry.COLUMN_LOCATION_TYPE, locationType);
         cv.put(ToursContract.LocationEntry.COLUMN_COORD_LAT, latitude);
@@ -99,11 +99,9 @@ public class SearchFragment extends Fragment
                 cv
         );
 
-        // Release resources.
-        cursor.close();
-
+        // Update the server database.
         Intent intent = new Intent(getActivity(), AddLocationService.class);
-        intent.putExtra(INTENT_EXTRA_LOCATION_ID, osmID);
+        intent.putExtra(INTENT_EXTRA_LOCATION_ID, osmId);
         intent.putExtra(INTENT_EXTRA_LOCATION_NAME, locationName);
         intent.putExtra(INTENT_EXTRA_LOCATION_TYPE, locationType);
         intent.putExtra(INTENT_EXTRA_LOCATION_LATITUDE, latitude);
