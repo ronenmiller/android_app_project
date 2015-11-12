@@ -387,6 +387,19 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    public void showDetailLayout(boolean show) {
+        if (!mTwoPane) {
+            return;
+        }
+
+        if (show) {
+            mToursSlotsDetailContainer.setVisibility(View.VISIBLE);
+        }
+        else {
+            mToursSlotsDetailContainer.setVisibility(View.INVISIBLE);
+        }
+    }
+
     // The dialog fragment receives a reference to this Activity through the
     // Fragment.onAttach() callback, which it uses to call the following methods
     // defined by the LoginDialogFragment.LoginDialogListener interface

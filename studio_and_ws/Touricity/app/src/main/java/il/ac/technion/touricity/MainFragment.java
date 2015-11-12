@@ -424,6 +424,9 @@ public class MainFragment extends Fragment
         updateTours();
         // Update views.
         updateLocationViews(true);
+        // Hide the tour details at the previous location
+        MainActivity mainActivity = (MainActivity)getActivity();
+        mainActivity.showDetailLayout(false);
     }
 
     private void launchSearchFragment() {
@@ -527,6 +530,9 @@ public class MainFragment extends Fragment
             }
             // There are at least two rows in the cursor, show results in search fragment.
             else {
+                // Hide the tour details at the previous location
+                MainActivity mainActivity = (MainActivity)getActivity();
+                mainActivity.showDetailLayout(false);
                 launchSearchFragment();
             }
         }

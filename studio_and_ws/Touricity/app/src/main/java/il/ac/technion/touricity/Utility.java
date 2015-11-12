@@ -34,7 +34,7 @@ public class Utility {
         // Ori's home
 //        public static final String SERVER_IP = "10.100.102.8";
         // Liron's apartment
-        public static final String SERVER_IP = "10.0.0.6";
+        public static final String SERVER_IP = "10.0.0.5";
         // Ronen's apartment
 //        public static final String SERVER_IP = "10.0.0.1";
         // Technion
