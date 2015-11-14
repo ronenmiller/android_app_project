@@ -213,7 +213,12 @@ public class MyToursLoaderService extends IntentService {
                 guideId = reservationObject.getString(Message.MessageKeys.SLOT_GUIDE_ID_KEY);
                 guideName = reservationObject.getString(Message.MessageKeys.USER_NAME_KEY);
                 guideEmail = reservationObject.getString(Message.MessageKeys.USER_EMAIL_KEY);
-                guideRating = (float)reservationObject.getDouble(Message.MessageKeys.USER_RATING_KEY);
+                if (reservationObject.isNull(Message.MessageKeys.USER_RATING_KEY)) {
+                    guideRating = 0;
+                }
+                else {
+                    guideRating = (float)reservationObject.getDouble(Message.MessageKeys.USER_RATING_KEY);
+                }
 
                 ContentValues guideValues = new ContentValues();
 

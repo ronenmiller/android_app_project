@@ -34,10 +34,6 @@ public class ResultSetConverter {
             for (int i = 0; i < totalColumns; i++) {
                 String columnName = resultSet.getMetaData().getColumnLabel(i + 1).toLowerCase();
                 Object columnValue = resultSet.getObject(i + 1);
-                // if the value in the DB is null, then set it to the default value
-                if (columnValue == null) {
-                    columnValue = "null";
-                }
                 obj.put(columnName, columnValue);
             }
             jsonArray.put(obj);

@@ -87,9 +87,8 @@ public class ManageToursActivity extends ActionBarActivity
             Utility.showLogoutDialog(this);
         }
         else if (id == R.id.action_my_tours) {
-            // TODO: uncomment when activity is ready
-//            Intent intent = new Intent(this, MyToursActivity.class);
-//            this.startActivity(intent);
+            Intent intent = new Intent(this, MyToursActivity.class);
+            this.startActivity(intent);
         }
         else if (id == R.id.action_manage_slots) {
             Intent intent = new Intent(this, ManageSlotsActivity.class);
